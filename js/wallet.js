@@ -5,7 +5,7 @@
  */
 
 import { NETWORK } from './config.js';
-
+import { ethers } from 'ethers';
 // Estado interno del módulo
 const state = {
   provider: null,    // ethers.BrowserProvider
@@ -26,12 +26,9 @@ function emit(event, data) {
   (state.listeners[event] || []).forEach(cb => cb(data));
 }
 
-/** Verifica si ethers.js está disponible globalmente. */
+/** Devuelve la instancia de ethers importada. */
 function getEthers() {
-  if (typeof window.ethers === 'undefined') {
-    throw new Error('ethers.js no está cargado. Verifica la etiqueta <script> en index.html.');
-  }
-  return window.ethers;
+  return ethers;
 }
 
 /** Verifica si hay un provider inyectado (MetaMask u otro). */

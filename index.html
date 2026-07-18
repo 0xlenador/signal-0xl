@@ -9,8 +9,7 @@
   <!-- Estilos -->
   <link rel="stylesheet" href="css/style.css" />
 
-  <!-- ethers.js v6 via CDN (UMD build — expone window.ethers) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+
 </head>
 <body>
 
@@ -71,6 +70,30 @@
           <button id="btn-gm" class="btn btn-primary btn-gm-main" disabled>
             🔗 Conecta tu wallet para empezar
           </button>
+        </div>
+
+        <!-- Panel de Fondeo Cross-Chain -->
+        <div class="card" id="fund-panel" style="margin-top: 16px;">
+          <div class="card-title">🌉 Fondear USDC (Unified Balance)</div>
+          <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 8px;">
+            Deposita USDC desde redes externas y gástalo instantáneamente en Arc Testnet sin puentes manuales, gracias al SDK de Circle App Kit.
+          </p>
+          <div class="node-actions" style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <button id="btn-fund-base" class="btn btn-secondary btn-small" disabled>Depositar desde Base Sepolia</button>
+            <button id="btn-fund-arb" class="btn btn-secondary btn-small" disabled>Depositar desde Arb Sepolia</button>
+            <button id="btn-bridge-arc" class="btn btn-primary btn-small" disabled>Traer fondos a Arc Testnet</button>
+          </div>
+        </div>
+
+        <!-- Panel de Agente de IA (ERC-8004) -->
+        <div class="card" id="agent-panel" style="margin-top: 16px;">
+          <div class="card-title">🤖 Agente de IA (ERC-8004)</div>
+          <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 8px;">
+            Al activar tu Runestone (3 nodos), puedes vincular un Agente de IA (registrado en IdentityRegistry) para demostrar tu adopción de la Agentic Economy de Arc.
+          </p>
+          <div id="agent-ui-container">
+            <p class="empty-text">Conecta tu wallet y activa el Runestone para gestionar tu agente.</p>
+          </div>
         </div>
 
       </div>
@@ -165,8 +188,8 @@
       <div class="card" style="margin-top: 16px;">
         <div class="card-title">ℹ️ Cómo funcionan los nodos</div>
         <div style="font-size: 0.88rem; color: var(--color-text-muted); line-height: 1.8;">
-          <p>• <strong style="color: var(--color-text);">VIP (B1):</strong> Activa por racha (gratis excepto 0.01 base) o pagando al instante.</p>
-          <p>• <strong style="color: var(--color-fork);">Bifurcación B2+:</strong> Los nodos son completamente gratuitos. Beneficio de perder la racha.</p>
+          <p>• <strong style="color: var(--color-text);">VIP (B1):</strong> Activa por racha (gratis excepto 0.01 base) o pagando tarifa premium al instante.</p>
+          <p>• <strong style="color: var(--color-fork);">Bifurcación B2+:</strong> Sin tarifas premium. Activas nodos instantáneamente o por racha pagando solo el costo base.</p>
           <p>• <strong style="color: var(--color-runestone);">Runestone:</strong> Se activa automáticamente al tener los 3 nodos. Duplica tus puntos por GM.</p>
           <p>• Si pierdes la racha, los nodos se desactivan y debes reactivarlos.</p>
         </div>

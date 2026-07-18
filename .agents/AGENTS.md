@@ -8,7 +8,8 @@ Todos los agentes y subagentes que interactúen con el código de este proyecto 
 * **Código Limpio y Modular:** Escribe funciones con una única responsabilidad. Evita el código espagueti y mantén la legibilidad (nombres descriptivos, comentarios centrados en el "por qué").
 
 ### 2. Arquitectura de Software y RPCs
-* **Eficiencia vs Funcionalidad:** La prioridad es ser extremadamente eficientes con el uso de recursos y llamadas a la red (RPCs). **Sin embargo, esta eficiencia nunca debe paralizar o afectar negativamente la experiencia del usuario o el funcionamiento de la dApp**. Usa el sentido común: optimiza (ej. usando caché) siempre que sea posible, pero si una función crítica requiere recursos, impleméntala.
+* **Eficiencia vs Crecimiento:** La prioridad es ser eficientes con recursos gratuitos, pero **esta eficiencia nunca debe estancar el crecimiento del proyecto ni paralizar la adopción de nuevas tecnologías**.
+* **Adopción de Infraestructura:** No reinventes la rueda. Cuando el proyecto lo demande, es obligatorio migrar a infraestructuras estándar (Bundlers como Vite, SDKs oficiales como Circle App Kit, librerías robustas) en lugar de mantener Vanilla JS rígido.
 * **Separación de Responsabilidades:** Mantén una arquitectura desacoplada. La lógica de estado, la interacción Web3 y la renderización de la UI deben estar en capas separadas.
 
 ### 3. Seguridad Front-to-Blockchain (Auditoría Continua)

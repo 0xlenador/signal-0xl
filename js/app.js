@@ -12,7 +12,7 @@ import {
 import {
   getUserData, getGMCost, getNodeInstantCost, canActivateByStreak,
   hasGMToday, hasRunestone, doGM, activateNodeInstant, activateNodeByStreak,
-  resetToVIP, parseContractError, weiToUSDC, resetContract
+  resetToVIP, parseContractError, weiToUSDC, resetContract, attachAgent
 } from './contract.js';
 import {
   calculateCommitmentNode, calculateConvictionNode, calculateLegacyNode
@@ -20,6 +20,7 @@ import {
 import { renderRanking } from './ranking.js';
 import { initNetworkPanel, stopPolling } from './network.js';
 import { Cache } from './cache.js';
+import { initAppKit, depositFromBase, depositFromArb, spendToArc } from './app-kit.js';
 
 // ─── Estado global de la UI ───────────────────────────────────────────────
 
@@ -133,6 +134,26 @@ function setupGlobalButtons() {
 
   // Botón cargar datos de nodos
   document.getElementById('btn-load-nodes')?.addEventListener('click', loadNodesData);
+
+  // Botones de App Kit (Unified Balance)
+  document.getElementById('btn-fund-base')?.addEventListener('click', async () => {
+    setButtonLoading('btn-fund-base', true, '⌛');
+    try { await depositFromBase(); showToast('✅ Depósito desde Base iniciado', 'success'); }
+    catch(e) { showToast('❌ Error en depósito', 'error'); }
+    setButtonLoading('btn-fund-base', false, 'Depositar desde Base Sepolia');
+  });
+  document.getElementById('btn-fund-arb')?.addEventListener('click', async () => {
+    setButtonLoading('btn-fund-arb', true, '⌛');
+    try { await depositFromArb(); showToast('✅ Depósito desde Arb iniciado', 'success'); }
+    catch(e) { showToast('❌ Error en depósito', 'error'); }
+    setButtonLoading('btn-fund-arb', false, 'Depositar desde Arb Sepolia');
+  });
+  document.getElementById('btn-bridge-arc')?.addEventListener('click', async () => {
+    setButtonLoading('btn-bridge-arc', true, '⌛');
+    try { await spendToArc(); showToast('✅ Fondos enviados a Arc Testnet', 'success'); }
+    catch(e) { showToast('❌ Error en envío', 'error'); }
+    setButtonLoading('btn-bridge-arc', false, 'Traer fondos a Arc Testnet');
+  });
 }
 
 // ─── Conexión Wallet ───────────────────────────────────────────────────────
@@ -178,6 +199,12 @@ function updateWalletUI(address) {
     if (statusEl) statusEl.classList.add('connected');
     if (heroEl)   heroEl.classList.add('hidden');
     if (mainEl)   mainEl.classList.remove('hidden');
+    
+    // Habilitar App Kit
+    initAppKit();
+    document.getElementById('btn-fund-base').disabled = false;
+    document.getElementById('btn-fund-arb').disabled = false;
+    document.getElementById('btn-bridge-arc').disabled = false;
   } else {
     if (btnConnect) {
       btnConnect.textContent = '🔗 Conectar';
@@ -187,6 +214,11 @@ function updateWalletUI(address) {
     if (statusEl) statusEl.classList.remove('connected');
     if (heroEl)   heroEl.classList.remove('hidden');
     if (mainEl)   mainEl.classList.add('hidden');
+    
+    // Desactivar App Kit buttons
+    document.getElementById('btn-fund-base').disabled = true;
+    document.getElementById('btn-fund-arb').disabled = true;
+    document.getElementById('btn-bridge-arc').disabled = true;
   }
 }
 
@@ -218,6 +250,7 @@ async function loadUserData() {
     renderUserPanel(userData, gmCost, gmDoneToday);
     renderGMButton(userData, gmCost, gmDoneToday);
     renderNodesStatus(userData);
+    renderAgentPanel(userData);
   } catch (err) {
     console.error('[App] Error cargando datos de usuario:', err);
     showToast('⚠️ Error al leer el contrato. ¿Está desplegado?', 'warning');
@@ -272,7 +305,7 @@ function renderUserPanel(userData, gmCost, gmDoneToday) {
     </div>
     ${userData.forkLevel > 1 ? `
     <div class="fork-info">
-      <p>Estás en bifurcación <strong>B${userData.forkLevel}</strong>. Tu GM cuesta un poco más, pero los nodos son <strong>gratuitos</strong>.</p>
+      <p>Estás en bifurcación <strong>B${userData.forkLevel}</strong>. Tu GM cuesta un poco más, pero activar nodos <strong>solo cuesta la tarifa base</strong>.</p>
       <button id="btn-reset-vip" class="btn btn-secondary btn-small">Resetear a VIP</button>
     </div>
     ` : ''}
@@ -536,6 +569,65 @@ async function handleResetVIP() {
     console.error('[ResetVIP]', err);
   } finally {
     setButtonLoading('btn-reset-vip', false, 'Resetear a VIP');
+  }
+}
+
+// ─── Panel de Agente (ERC-8004) ───────────────────────────────────────────
+
+function renderAgentPanel(userData) {
+  const container = document.getElementById('agent-ui-container');
+  if (!container) return;
+
+  const runestone = userData.nodeCommitment && userData.nodeConviction && userData.nodeLegacy;
+
+  if (!runestone) {
+    container.innerHTML = `<p class="empty-text">❌ Debes activar el Runestone (3 nodos) para interactuar con agentes de IA.</p>`;
+    return;
+  }
+
+  if (userData.attachedAgentId > 0) {
+    container.innerHTML = `
+      <div class="stat-item" style="border: 1px solid var(--color-border); padding: 12px; border-radius: 8px; margin-top: 8px; background: rgba(0,0,0,0.2);">
+        <div class="stat-label">Agente Vinculado</div>
+        <div class="stat-value" style="color: var(--color-runestone);">
+          🤖 ID: ${userData.attachedAgentId}
+        </div>
+        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 8px;">
+          Tu Agente de IA está activo y conectado a tu perfil en Signal 0xL.
+        </p>
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <p style="font-size: 0.85rem; margin-bottom: 8px; color: var(--color-text-muted);">
+        ¡Runestone activado! Tienes permiso para vincular tu Agente. Asegúrate de haberlo registrado primero en el <a href="https://testnet.arcscan.app/address/0x8004A818BFB912233c491871b3d84c89A494BD9e" target="_blank" style="color: var(--color-primary);">IdentityRegistry de Arc</a>.
+      </p>
+      <div style="display: flex; gap: 8px; margin-top: 12px;">
+        <input type="number" id="input-agent-id" class="input-base" placeholder="Agent ID (ej. 12)" style="flex: 1;" />
+        <button id="btn-attach-agent" class="btn btn-primary">Vincular Agente</button>
+      </div>
+    `;
+    
+    // Bind event
+    document.getElementById('btn-attach-agent')?.addEventListener('click', async () => {
+      const input = document.getElementById('input-agent-id');
+      const agentId = parseInt(input.value);
+      if (isNaN(agentId) || agentId <= 0) {
+        showToast('ID de Agente inválido.', 'warning');
+        return;
+      }
+      setButtonLoading('btn-attach-agent', true, 'Vinculando...');
+      try {
+        const tx = await attachAgent(agentId);
+        showToast(`✅ Agente ${agentId} vinculado! TX: ${tx.hash.slice(0, 10)}...`, 'success');
+        await loadUserData();
+      } catch (err) {
+        showToast(`❌ ${parseContractError(err)}`, 'error');
+        console.error('[Agent]', err);
+      } finally {
+        setButtonLoading('btn-attach-agent', false, 'Vincular Agente');
+      }
+    });
   }
 }
 

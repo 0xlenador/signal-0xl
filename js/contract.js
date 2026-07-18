@@ -6,6 +6,7 @@
 
 import { CONTRACT_ADDRESS, CONTRACT_ABI, CONSTANTS } from './config.js';
 import { getSigner, getProvider } from './wallet.js';
+import { ethers } from 'ethers';
 
 let _contract = null;
 let _readContract = null;
@@ -13,7 +14,6 @@ let _readContract = null;
 /** Inicializa el contrato con signer (lectura + escritura). */
 function getWriteContract() {
   if (_contract) return _contract;
-  const ethers = window.ethers;
   _contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, getSigner());
   return _contract;
 }
@@ -21,7 +21,6 @@ function getWriteContract() {
 /** Inicializa el contrato solo con provider (lectura, sin wallet). */
 function getReadContract() {
   if (_readContract) return _readContract;
-  const ethers = window.ethers;
   _readContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, getProvider());
   return _readContract;
 }
@@ -64,6 +63,7 @@ async function withRetry(fn, retries = 3, delayMs = 1000) {
  *   nodeConviction: boolean,
  *   nodeLegacy: boolean,
  *   exists: boolean,
+ *   attachedAgentId: number,
  * }>}
  */
 export async function getUserData(address) {
@@ -80,6 +80,7 @@ export async function getUserData(address) {
       nodeConviction: raw.nodeConviction,
       nodeLegacy:     raw.nodeLegacy,
       exists:         raw.exists,
+      attachedAgentId: Number(raw.attachedAgentId),
     };
   });
 }
@@ -254,21 +255,15 @@ export async function activateNodeInstant(nodeId, address) {
 }
 
 /**
- * Activa un nodo por racha (paga 0 si en bifurcación, o baseGMCost si VIP).
+ * Activa un nodo por racha (todos los usuarios pagan baseGMCost).
  * @param {number} nodeId - 1, 2 o 3
  * @param {string} address
  * @returns {Promise<ethers.TransactionReceipt>}
  */
 export async function activateNodeByStreak(nodeId, address) {
   const contract = getWriteContract();
-  const userData = await getUserData(address);
-
-  // B1 (VIP) paga baseGMCost; B2+ gratis
-  let value = BigInt(0);
-  if (userData.forkLevel <= 1) {
-    value = CONSTANTS.BASE_GM_COST_WEI;
-  }
-
+  // Todos pagan el costo base al activar por racha (tanto B1 como B2+)
+  const value = CONSTANTS.BASE_GM_COST_WEI;
   const tx = await contract.activateNodeByStreak(nodeId, { value });
   return tx.wait();
 }
@@ -280,6 +275,17 @@ export async function activateNodeByStreak(nodeId, address) {
 export async function resetToVIP() {
   const contract = getWriteContract();
   const tx = await contract.resetToVIP();
+  return tx.wait();
+}
+
+/**
+ * Vincula un agente de IA al perfil del usuario.
+ * @param {string} agentId - El ID del agente NFT (ERC-8004).
+ * @returns {Promise<ethers.TransactionReceipt>}
+ */
+export async function attachAgent(agentId) {
+  const contract = getWriteContract();
+  const tx = await contract.attachAgent(agentId);
   return tx.wait();
 }
 
@@ -321,6 +327,5 @@ export function parseContractError(err) {
  * @param {number} [dp=4]
  */
 export function weiToUSDC(wei, dp = 4) {
-  const ethers = window.ethers;
   return `${parseFloat(ethers.formatUnits(wei, 18)).toFixed(dp)} USDC`;
 }

@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+interface IIdentityRegistry {
+    function ownerOf(uint256 tokenId) external view returns (address);
+}
+
 /**
  * @title Signal0xL
  * @notice dApp de señales diarias (GM) en Arc Testnet.
@@ -18,7 +22,7 @@ pragma solidity ^0.8.20;
  *  - Nodo 1 instant (B1): 0.51 USD  (50x + 1x base)
  *  - Nodo 2 instant (B1): 1.26 USD  (125x + 1x base)
  *  - Nodo 3 instant (B1): 5.01 USD  (500x + 1x base)
- *  - Bifurcación B2+: nodos gratis al instante o por racha.
+ *  - Bifurcación B2+: nodos cuestan solo la tarifa base (0.01 USD) al instante o por racha.
  *
  * PUNTOS:
  *  - GM normal:   +1 punto
@@ -45,10 +49,14 @@ contract Signal0xL {
         bool nodeConviction;     // Nodo 2 activo
         bool nodeLegacy;         // Nodo 3 activo
         bool exists;             // Flag de registro
+        uint256 attachedAgentId; // ID del agente AI vinculado
     }
 
     mapping(address => UserData) public users;
     address[] public userList;
+    
+    // Dirección del ERC-8004 Identity Registry en Arc Testnet
+    address public identityRegistry = 0x8004A818BFB912233c491871b3d84c89A494BD9e;
 
     // ─────────────────────────────────────────────────────────────────────────
     // EVENTS
@@ -66,6 +74,7 @@ contract Signal0xL {
     event StreakReset(address indexed user);
     event BaseCostUpdated(uint256 newCost);
     event Withdrawn(address indexed to, uint256 amount);
+    event AgentAttached(address indexed user, uint256 agentId);
 
     // ─────────────────────────────────────────────────────────────────────────
     // MODIFIERS
@@ -121,6 +130,13 @@ contract Signal0xL {
         if (nodeId == 1) return users[user].nodeCommitment;
         if (nodeId == 2) return users[user].nodeConviction;
         return users[user].nodeLegacy;
+    }
+
+    /// @dev Helper para enviar ETH/USDC nativo de forma segura en Arc (previene envío a 0x0)
+    function _safeTransferEth(address to, uint256 amount) internal {
+        require(to != address(0), "Signal: Arc EVM forbids zero address transfers");
+        (bool ok, ) = payable(to).call{value: amount}("");
+        require(ok, "Signal: native token transfer failed");
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -179,8 +195,7 @@ contract Signal0xL {
 
         // ── Devolver exceso
         if (msg.value > totalRequired) {
-            (bool ok,) = payable(msg.sender).call{value: msg.value - totalRequired}("");
-            require(ok, "Signal: refund failed");
+            _safeTransferEth(msg.sender, msg.value - totalRequired);
         }
 
         emit GMDone(msg.sender, pointsEarned, u.totalPoints, u.currentStreak, u.forkLevel, superGM);
@@ -197,23 +212,21 @@ contract Signal0xL {
         require(!_nodeActive(msg.sender, nodeId), "Signal: node already active");
 
         UserData storage u = users[msg.sender];
-        uint256 cost = 0;
+        uint256 cost = baseGMCost; // B2+ paga el costo base
 
-        // Solo B1 (VIP) paga tarifa instantánea
+        // Solo B1 (VIP) paga la tarifa instantánea premium
         if (u.forkLevel <= 1) {
-            if (nodeId == 1) cost = 51 * baseGMCost;  // 0.50 + 0.01 = 0.51 USD
+            if (nodeId == 1) cost = 51 * baseGMCost;       // 0.50 + 0.01 = 0.51 USD
             else if (nodeId == 2) cost = 126 * baseGMCost; // 1.25 + 0.01 = 1.26 USD
-            else cost = 501 * baseGMCost;              // 5.00 + 0.01 = 5.01 USD
+            else cost = 501 * baseGMCost;                  // 5.00 + 0.01 = 5.01 USD
         }
-        // B2+: cost = 0 (gratis, pagan sobrecosto en GM)
 
         require(msg.value >= cost, "Signal: insufficient payment for node");
 
         _activateNode(msg.sender, nodeId);
 
         if (msg.value > cost) {
-            (bool ok,) = payable(msg.sender).call{value: msg.value - cost}("");
-            require(ok, "Signal: refund failed");
+            _safeTransferEth(msg.sender, msg.value - cost);
         }
 
         emit NodeActivated(msg.sender, nodeId, false);
@@ -238,15 +251,14 @@ contract Signal0xL {
 
         require(u.currentStreak >= requiredStreak, "Signal: streak too low");
 
-        // B1 paga costo base; B2+ gratis
-        uint256 cost = (u.forkLevel <= 1) ? baseGMCost : 0;
+        // Todos los usuarios pagan el costo base al activar por racha
+        uint256 cost = baseGMCost;
         require(msg.value >= cost, "Signal: insufficient payment");
 
         _activateNode(msg.sender, nodeId);
 
         if (msg.value > cost) {
-            (bool ok,) = payable(msg.sender).call{value: msg.value - cost}("");
-            require(ok, "Signal: refund failed");
+            _safeTransferEth(msg.sender, msg.value - cost);
         }
 
         emit NodeActivated(msg.sender, nodeId, true);
@@ -271,6 +283,27 @@ contract Signal0xL {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // AGENT ECONOMY (ERC-8004)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * @notice Vincula un agente de IA (ERC-8004) al perfil del usuario.
+     * @dev Requiere que el usuario posea el Runestone (los 3 nodos activos).
+     * @param agentId El ID del token NFT en IdentityRegistry.
+     */
+    function attachAgent(uint256 agentId) external onlyRegistered {
+        UserData storage u = users[msg.sender];
+        require(u.nodeCommitment && u.nodeConviction && u.nodeLegacy, "Signal: Runestone required");
+        
+        // Verificar que el usuario sea el owner del agente
+        address agentOwner = IIdentityRegistry(identityRegistry).ownerOf(agentId);
+        require(agentOwner == msg.sender, "Signal: not agent owner");
+
+        u.attachedAgentId = agentId;
+        emit AgentAttached(msg.sender, agentId);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // READ FUNCTIONS
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -284,7 +317,8 @@ contract Signal0xL {
         bool nodeCommitment,
         bool nodeConviction,
         bool nodeLegacy,
-        bool exists
+        bool exists,
+        uint256 attachedAgentId
     ) {
         UserData storage u = users[_user];
         return (
@@ -296,7 +330,8 @@ contract Signal0xL {
             u.nodeCommitment,
             u.nodeConviction,
             u.nodeLegacy,
-            u.exists
+            u.exists,
+            u.attachedAgentId
         );
     }
 
@@ -314,11 +349,11 @@ contract Signal0xL {
 
     /// @notice Costo de activar un nodo al instante para un usuario.
     function getNodeInstantCost(uint8 nodeId, address _user) external view returns (uint256) {
-        if (users[_user].forkLevel > 1) return 0;
+        if (users[_user].forkLevel > 1) return baseGMCost; // B2+ paga costo base
         if (nodeId == 1) return 51 * baseGMCost;
         if (nodeId == 2) return 126 * baseGMCost;
         if (nodeId == 3) return 501 * baseGMCost;
-        return 0;
+        return baseGMCost;
     }
 
     /// @notice Retorna una lista paginada de usuarios (sin ordenar, para no exceder gas).
@@ -436,6 +471,12 @@ contract Signal0xL {
     // ─────────────────────────────────────────────────────────────────────────
     // ADMIN FUNCTIONS
     // ─────────────────────────────────────────────────────────────────────────
+    
+    /// @notice Permite actualizar la dirección del registro de Agentes (ERC-8004).
+    function setIdentityRegistry(address _registry) external onlyOwner {
+        require(_registry != address(0), "Signal: invalid registry");
+        identityRegistry = _registry;
+    }
 
     /// @notice Actualiza el costo base del GM (permite ajustar la paridad USD→nativo).
     function setBaseGMCost(uint256 _newCost) external onlyOwner {
@@ -448,8 +489,7 @@ contract Signal0xL {
     function withdraw() external onlyOwner {
         uint256 balance = address(this).balance;
         require(balance > 0, "Signal: no funds");
-        (bool ok,) = payable(owner).call{value: balance}("");
-        require(ok, "Signal: withdraw failed");
+        _safeTransferEth(owner, balance);
         emit Withdrawn(owner, balance);
     }
 

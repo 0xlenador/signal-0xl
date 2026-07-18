@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signal 0xL — Arc Testnet</title>
+  <meta name="description" content="Signal 0xL: plataforma de señales diarias en Arc Testnet. Haz GM, analiza tu compromiso, convicción y legado en la red." />
+
+  <!-- Estilos -->
+
+
+  <script type="module" crossorigin src="/assets/index-Doi-OqlQ.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-fgeQS1dN.css">
+</head>
+<body>
+
+<div class="app-wrapper">
+
+  <!-- ══════════ HEADER ══════════ -->
+  <header class="app-header">
+    <div class="app-logo">Signal <span>0xL</span></div>
+    <div id="wallet-status" class="wallet-status">
+      <div class="wallet-dot"></div>
+      <button id="btn-connect-wallet" class="btn btn-primary btn-small">🔗 Conectar</button>
+    </div>
+  </header>
+
+  <!-- ══════════ NAVEGACIÓN ══════════ -->
+  <nav class="app-nav">
+    <button class="nav-btn" data-section="gm-section">📡 GM Diario</button>
+    <button class="nav-btn" data-section="nodes-section">🔬 Nodos</button>
+    <button class="nav-btn" data-section="ranking-section">📊 Ranking</button>
+    <button class="nav-btn" data-section="network-section">🌐 Red</button>
+  </nav>
+
+  <!-- ══════════ CONTENIDO ══════════ -->
+  <main class="app-content">
+
+    <!-- ─── SECCIÓN: GM DIARIO ─── -->
+    <section id="gm-section" class="section">
+
+      <!-- HÉROE: no conectado -->
+      <div id="hero-connect-section">
+        <h2>Signal 0xL</h2>
+        <p>Plataforma de señales en cadena para Arc Testnet. Deja tu huella diaria, analiza tu compromiso y escala en el ranking.</p>
+        <button id="btn-connect-wallet-hero" class="btn btn-primary">🔗 Conectar Wallet</button>
+        <p style="margin-top: 16px; font-size: 0.85rem; color: var(--color-text-muted);">
+          Red: Arc Testnet · Chain ID: 5042002
+        </p>
+      </div>
+
+      <!-- APP: conectado -->
+      <div id="main-app-section" class="hidden">
+
+        <!-- Panel de usuario -->
+        <div class="card">
+          <div class="card-title">👤 Tu Señal</div>
+          <div id="user-data-container">
+            <p class="loading-text">Cargando datos del contrato...</p>
+          </div>
+        </div>
+
+        <!-- Panel de GM -->
+        <div class="card" id="gm-panel">
+          <div class="card-title">📡 Señal Diaria</div>
+          <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 8px;">
+            Envía tu señal diaria a Arc Testnet. La ventana es 00:00–23:59 UTC.
+            Cada GM suma +1 punto (o +2 con Runestone activo).
+          </p>
+
+          <button id="btn-gm" class="btn btn-primary btn-gm-main" disabled>
+            🔗 Conecta tu wallet para empezar
+          </button>
+        </div>
+
+        <!-- Panel de Fondeo Cross-Chain -->
+        <div class="card" id="fund-panel" style="margin-top: 16px;">
+          <div class="card-title">🌉 Fondear USDC (Unified Balance)</div>
+          <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 8px;">
+            Deposita USDC desde redes externas y gástalo instantáneamente en Arc Testnet sin puentes manuales, gracias al SDK de Circle App Kit.
+          </p>
+          <div class="node-actions" style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <button id="btn-fund-base" class="btn btn-secondary btn-small" disabled>Depositar desde Base Sepolia</button>
+            <button id="btn-fund-arb" class="btn btn-secondary btn-small" disabled>Depositar desde Arb Sepolia</button>
+            <button id="btn-bridge-arc" class="btn btn-primary btn-small" disabled>Traer fondos a Arc Testnet</button>
+          </div>
+        </div>
+
+        <!-- Panel de Agente de IA (ERC-8004) -->
+        <div class="card" id="agent-panel" style="margin-top: 16px;">
+          <div class="card-title">🤖 Agente de IA (ERC-8004)</div>
+          <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 8px;">
+            Al activar tu Runestone (3 nodos), puedes vincular un Agente de IA (registrado en IdentityRegistry) para demostrar tu adopción de la Agentic Economy de Arc.
+          </p>
+          <div id="agent-ui-container">
+            <p class="empty-text">Conecta tu wallet y activa el Runestone para gestionar tu agente.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ─── SECCIÓN: NODOS ─── -->
+    <section id="nodes-section" class="section">
+      <h2 class="section-title">🔬 Nodos de Análisis</h2>
+
+      <div id="runestone-status" class="runestone-indicator">
+        ○ Runestone inactivo — Activa los 3 nodos
+      </div>
+
+      <div class="nodes-grid" style="margin-top: 16px;">
+
+        <!-- NODO 1: COMPROMISO -->
+        <div class="card node-card" id="node1-card">
+          <div class="node-header">
+            <span class="node-icon">🔬</span>
+            <div class="node-title">Nodo 1 — Compromiso</div>
+            <div id="node1-status" class="node-status-dot inactive" title="Inactivo"></div>
+          </div>
+          <p class="node-description">
+            Analiza el volumen histórico de transacciones y gas consumido en Arc Testnet.
+            Calcula tu tier de actividad y su multiplicador de puntaje.
+          </p>
+          <div id="node1-streak-needed" class="node-streak-info">Requiere racha día 3</div>
+          <div class="node-actions">
+            <button id="btn-node1-streak"  class="btn btn-secondary btn-small">🔥 Activar por Racha</button>
+            <button id="btn-node1-instant" class="btn btn-primary btn-small">⚡ Activar Ahora (0.51 USDC)</button>
+          </div>
+          <div id="node1-data" class="node-data">
+            <p class="loading-text">Carga los datos para analizar.</p>
+          </div>
+        </div>
+
+        <!-- NODO 2: CONVICCIÓN -->
+        <div class="card node-card" id="node2-card">
+          <div class="node-header">
+            <span class="node-icon">💎</span>
+            <div class="node-title">Nodo 2 — Convicción</div>
+            <div id="node2-status" class="node-status-dot inactive" title="Inactivo"></div>
+          </div>
+          <p class="node-description">
+            Calcula el porcentaje del supply total de USDC nativo que posee tu wallet.
+            Mide tu peso económico en la red.
+          </p>
+          <div id="node2-streak-needed" class="node-streak-info">Requiere racha día 12</div>
+          <div class="node-actions">
+            <button id="btn-node2-streak"  class="btn btn-secondary btn-small">🔥 Activar por Racha</button>
+            <button id="btn-node2-instant" class="btn btn-primary btn-small">⚡ Activar Ahora (1.26 USDC)</button>
+          </div>
+          <div id="node2-data" class="node-data">
+            <p class="loading-text">Carga los datos para analizar.</p>
+          </div>
+        </div>
+
+        <!-- NODO 3: LEGADO -->
+        <div class="card node-card" id="node3-card">
+          <div class="node-header">
+            <span class="node-icon">🏛️</span>
+            <div class="node-title">Nodo 3 — Legado</div>
+            <div id="node3-status" class="node-status-dot inactive" title="Inactivo"></div>
+          </div>
+          <p class="node-description">
+            Analiza el timestamp de tu primera y última transacción en Arc Testnet.
+            Cuanto más antiguo seas en la red, mayor será tu multiplicador de legado.
+          </p>
+          <div id="node3-streak-needed" class="node-streak-info">Requiere racha día 25</div>
+          <div class="node-actions">
+            <button id="btn-node3-streak"  class="btn btn-secondary btn-small">🔥 Activar por Racha</button>
+            <button id="btn-node3-instant" class="btn btn-primary btn-small">⚡ Activar Ahora (5.01 USDC)</button>
+          </div>
+          <div id="node3-data" class="node-data">
+            <p class="loading-text">Carga los datos para analizar.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Botón cargar datos analíticos -->
+      <div style="margin-top: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <button id="btn-load-nodes" class="btn btn-secondary">
+          📊 Cargar Datos de Nodos (desde Blockscout)
+        </button>
+        <span style="font-size: 0.82rem; color: var(--color-text-muted);">
+          Consume ~60 créditos API. Resultado se cachea 1 hora.
+        </span>
+      </div>
+
+      <!-- Info de bifurcación y nodos -->
+      <div class="card" style="margin-top: 16px;">
+        <div class="card-title">ℹ️ Cómo funcionan los nodos</div>
+        <div style="font-size: 0.88rem; color: var(--color-text-muted); line-height: 1.8;">
+          <p>• <strong style="color: var(--color-text);">VIP (B1):</strong> Activa por racha (gratis excepto 0.01 base) o pagando tarifa premium al instante.</p>
+          <p>• <strong style="color: var(--color-fork);">Bifurcación B2+:</strong> Sin tarifas premium. Activas nodos instantáneamente o por racha pagando solo el costo base.</p>
+          <p>• <strong style="color: var(--color-runestone);">Runestone:</strong> Se activa automáticamente al tener los 3 nodos. Duplica tus puntos por GM.</p>
+          <p>• Si pierdes la racha, los nodos se desactivan y debes reactivarlos.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ─── SECCIÓN: RANKING ─── -->
+    <section id="ranking-section" class="section">
+      <h2 class="section-title">📊 Tabla de Señales</h2>
+
+      <div class="card" style="margin-bottom: 16px;">
+        <p style="font-size: 0.88rem; color: var(--color-text-muted);">
+          El ranking está ordenado por <strong style="color: var(--color-text);">puntaje acumulado total</strong>, no por racha activa.
+          Cualquier wallet puede ser TOP 1 con suficientes puntos, independientemente de su bifurcación.
+        </p>
+      </div>
+
+      <div id="ranking-container" class="card">
+        <p class="loading-text">⏳ Cargando ranking...</p>
+      </div>
+
+      <div style="margin-top: 12px; text-align: right;">
+        <button
+          class="btn btn-secondary btn-small"
+          onclick="document.getElementById('ranking-container').innerHTML='<p class=loading-text>Recargando...</p>'; import('./js/ranking.js').then(m=>m.renderRanking('ranking-container', null))">
+          🔄 Actualizar
+        </button>
+      </div>
+    </section>
+
+    <!-- ─── SECCIÓN: RED ─── -->
+    <section id="network-section" class="section">
+      <h2 class="section-title">🌐 Análisis de Red — Arc Testnet</h2>
+
+      <div class="card" style="margin-bottom: 16px;">
+        <p style="font-size: 0.88rem; color: var(--color-text-muted);">
+          Métricas en tiempo real obtenidas desde Blockscout PRO API.
+          Se actualiza automáticamente cada 30 segundos con caché local de 2 minutos.
+        </p>
+      </div>
+
+      <div id="network-container">
+        <p class="loading-text">⏳ Conectando con Arc Testnet...</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ══════════ FOOTER ══════════ -->
+  <footer style="padding: 16px 24px; border-top: 1px solid var(--color-border); text-align: center; font-size: 0.8rem; color: var(--color-text-muted);">
+    Signal 0xL · Arc Testnet (Chain ID: 5042002) ·
+    <a href="https://testnet.arcscan.app" target="_blank" rel="noopener">Explorador</a> ·
+    MVP v0.1
+  </footer>
+
+</div><!-- /app-wrapper -->
+
+<!-- ══════════ Módulo principal (ES Modules) ══════════ -->
+
+</body>
+</html>
