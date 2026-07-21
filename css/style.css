@@ -1,5 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Space+Grotesk:wght@400;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ════════════════════════════════════════════════════════════════════════════
-   style.css — Signal 0xL
+   style.css — Signal 0xL (Neon Obsidian)
    Estilos funcionales minimalistas. Sin frameworks externos.
    Prioridad: legibilidad, estado de los elementos, feedback visual claro.
    ════════════════════════════════════════════════════════════════════════════ */
@@ -8,22 +14,23 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --color-bg:          #0d0f14;
-  --color-surface:     #161a24;
-  --color-surface-2:   #1e2333;
-  --color-border:      #2a3044;
-  --color-text:        #e2e8f0;
-  --color-text-muted:  #8892a4;
-  --color-primary:     #3b82f6;
-  --color-primary-dim: #1d4ed8;
-  --color-success:     #22c55e;
-  --color-warning:     #f59e0b;
-  --color-danger:      #ef4444;
+  --color-bg:          #05050A;
+  --color-surface:     rgba(20, 20, 30, 0.4);
+  --color-surface-2:   rgba(30, 30, 45, 0.6);
+  --color-border:      rgba(255, 255, 255, 0.08);
+  --color-text:        #F8FAFC;
+  --color-text-muted:  #94A3B8;
+  --color-primary:     #00E5FF;
+  --color-primary-dim: #00B3CC;
+  --color-success:     #00E676;
+  --color-warning:     #FFD600;
+  --color-danger:      #FF1744;
   --color-vip:         #a78bfa;
   --color-fork:        #fb923c;
-  --color-runestone:   #e879f9;
-  --radius:            8px;
-  --font:              system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --color-runestone:   #FF007F;
+  --radius:            16px; /* more rounded */
+  --font:              'Outfit', system-ui, -apple-system, sans-serif;
+  --font-mono:         'Space Grotesk', ui-monospace, monospace;
 }
 
 html, body {
@@ -162,13 +169,7 @@ a:hover { text-decoration: underline; }
 }
 
 /* ─── Contenido Principal ──────────────────────────────────────────────────── */
-.app-content {
-  flex: 1;
-  padding: 24px;
-  max-width: 960px;
-  margin: 0 auto;
-  width: 100%;
-}
+
 
 /* ─── Secciones ────────────────────────────────────────────────────────────── */
 .section { display: none; }
@@ -604,7 +605,7 @@ a:hover { text-decoration: underline; }
 
 /* ─── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
-  .app-content { padding: 16px; }
+
   .app-header { padding: 10px 16px; }
   .app-nav { padding: 8px 16px; }
   .user-stats-grid { grid-template-columns: 1fr 1fr; }
@@ -625,4 +626,134 @@ a:hover { text-decoration: underline; }
 }
 .node-data-item:hover .obfuscated-value {
   filter: blur(2px);
+}
+
+/* ─── Orbit Animations ────────────────────────────────────────────────────── */
+@keyframes node-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.runestone-core-container {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  align-items: center;
+}
+
+.satellite-node {
+  position: absolute;
+  font-size: 0.55rem;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0.4;
+  transition: all 0.5s ease;
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border-light);
+  border-radius: 9999px;
+  padding: 6px 12px;
+  background: var(--color-surface-1);
+}
+
+.satellite-node.is-active {
+  opacity: 1;
+  animation: node-float 4s ease-in-out infinite;
+  border-color: rgba(74, 222, 128, 0.4);
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3), inset 0 0 10px rgba(34, 197, 94, 0.1);
+}
+
+.satellite-node-1 { top: 10%; right: 15%; animation-delay: 0s; } /* Compromiso */
+.satellite-node-2 { top: 50%; left: 10%; animation-delay: 1.2s; } /* Legado */
+.satellite-node-3 { bottom: 15%; right: 10%; animation-delay: 2.4s; } /* Convicción */
+
+/* Base GM (Pedestal) */
+.gm-pedestal {
+  position: absolute;
+  bottom: 0;
+  width: 140px;
+  height: 36px;
+  background: linear-gradient(to bottom, #320024, #121218);
+  border: 1px solid rgba(230, 0, 172, 0.4);
+  border-top: 1px solid rgba(230, 0, 172, 0.8);
+  border-radius: 4px 4px 16px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 -10px 30px rgba(230, 0, 172, 0.3), inset 0 2px 10px rgba(230, 0, 172, 0.2);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.gm-pedestal:hover:not(:disabled) {
+  box-shadow: 0 -15px 40px rgba(230, 0, 172, 0.5), inset 0 2px 15px rgba(230, 0, 172, 0.4);
+  border-top-color: #ff007f;
+}
+
+.gm-pedestal:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.8) brightness(0.5);
+}
+
+.crystal-svg {
+  filter: drop-shadow(0 0 25px rgba(220, 20, 140, 0.7));
+  animation: pulse-glow 4s ease-in-out infinite alternate;
+  transition: all 0.5s ease;
+}
+
+.crystal-svg.is-inactive {
+  filter: grayscale(100%) brightness(40%) !important;
+  animation: none !important;
+  opacity: 0.8;
+}
+
+@keyframes pulse-glow {
+  from { filter: drop-shadow(0 0 10px rgba(255, 0, 127, 0.4)); }
+  to { filter: drop-shadow(0 0 35px rgba(255, 0, 127, 0.9)); }
+}
+
+/* ─── Clases Utilitarias Neon Obsidian ─────────────────────────────────────── */
+.glass-panel {
+  background: var(--color-surface);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.glow-cyan-hover:hover {
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+  border-color: rgba(0, 229, 255, 0.5);
+}
+
+.glow-magenta-hover:hover {
+  box-shadow: 0 0 20px rgba(255, 0, 127, 0.4);
+  border-color: rgba(255, 0, 127, 0.5);
+}
+
+/* ─── Visor de Señales en Vivo (Live Signals) ──────────────────────────────── */
+.mask-image-fade-top {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 30%);
+}
+
+.signal-line {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: signal-entry 0.3s ease-out forwards;
+  transition: opacity 1s ease-out;
+}
+
+.signal-line.fade-out {
+  opacity: 0 !important;
+}
+
+@keyframes signal-entry {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

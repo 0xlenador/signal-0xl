@@ -115,11 +115,11 @@ export async function renderRanking(containerId, currentAddress = null, currentU
       `;
     }).join('');
 
+    // Actualizar el conteo de usuarios en el header de index.html
+    const totalCountEl = document.getElementById('ranking-total-count');
+    if (totalCountEl) totalCountEl.innerHTML = `${total} ${t('ranking.registered')}`;
+
     container.innerHTML = `
-      <div class="ranking-header">
-        <h3>${t('ranking.title')}</h3>
-        <span class="total-count">${total} ${t('ranking.registered')}</span>
-      </div>
       <div class="table-wrapper">
         <table class="ranking-table">
           <thead>

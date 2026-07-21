@@ -61,75 +61,44 @@ export function startPolling(containerId) {
  * @param {string} containerId
  */
 export async function renderNetworkStats(containerId) {
+  if (document.hidden) return; // Congelar peticiones si la pestaña está oculta
   const container = document.getElementById(containerId);
   if (!container) return;
 
   try {
     const stats = await fetchNetworkStats();
     const blockTimeSec = (stats.averageBlockTime / 1000).toFixed(2);
-    const gasAvg = stats.gasAverage.toFixed(2);
-    const utilization = Number(stats.networkUtilization).toFixed(1);
     const txToday = Number(stats.transactionsToday).toLocaleString();
     const totalBlocks = Number(stats.totalBlocks).toLocaleString();
-
-    // Colorear utilización de red
-    let utilClass = 'util-low';
-    if (utilization > 70) utilClass = 'util-high';
-    else if (utilization > 40) utilClass = 'util-medium';
-
+    const gasAvg = Number(stats.gasAverage).toFixed(2);
     container.innerHTML = `
-      <div class="network-grid">
-        <div class="metric-card">
-          <div class="metric-icon">⚡</div>
-          <div class="metric-label">${t('network.blockSpeed')}</div>
-          <div class="metric-value">${blockTimeSec}s</div>
-          <div class="metric-sub">${t('network.avgTime')}</div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-icon">⛽</div>
-          <div class="metric-label">${t('network.avgGas')}</div>
-          <div class="metric-value">${gasAvg}</div>
-          <div class="metric-sub">Gwei</div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-icon">📦</div>
-          <div class="metric-label">${t('network.totalBlocks')}</div>
-          <div class="metric-value">${totalBlocks}</div>
-          <div class="metric-sub">${t('network.inArcTestnet')}</div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-icon">🔄</div>
-          <div class="metric-label">${t('network.txToday')}</div>
-          <div class="metric-value">${txToday}</div>
-          <div class="metric-sub">${t('network.transactions')}</div>
-        </div>
-
-        <div class="metric-card metric-card-wide">
-          <div class="metric-icon">📡</div>
-          <div class="metric-label">${t('network.utilization')}</div>
-          <div class="utilization-bar">
-            <div class="utilization-fill ${utilClass}" style="width: ${Math.min(utilization, 100)}%"></div>
+      <div class="flex flex-col gap-4 h-full">
+        <div class="grid grid-cols-4 gap-2">
+          <!-- Gas -->
+          <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
+            <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate" title="GAS"><span>⛽</span> <span>GAS</span></div>
+            <div class="font-mono text-white text-xs font-bold flex items-center h-5 truncate">${gasAvg} <span class="text-[0.65rem] text-text-muted font-sans font-normal ml-1">Gwei</span></div>
           </div>
-          <div class="metric-value ${utilClass}">${utilization}%</div>
-        </div>
-
-        <div class="metric-card metric-card-wide">
-          <div class="metric-icon">💰</div>
-          <div class="metric-label">${t('network.gasTiers')}</div>
-          <div class="gas-tiers">
-            <span class="gas-slow">🐢 ${stats.gasSlow.toFixed(1)}</span>
-            <span class="gas-avg">⚡ ${stats.gasAverage.toFixed(1)}</span>
-            <span class="gas-fast">🚀 ${stats.gasFast.toFixed(1)}</span>
+          <!-- Block Time -->
+          <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
+            <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate" title="BLK TIME"><span>⏱️</span> <span>BLK TIME</span></div>
+            <div class="font-mono text-white text-xs font-bold flex items-center h-5 truncate">${blockTimeSec} <span class="text-[0.65rem] text-text-muted font-sans font-normal ml-1">s</span></div>
           </div>
-          <div class="metric-sub">${t('network.inGwei')}</div>
+          <!-- Total Blocks -->
+          <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
+            <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate" title="BLOCKS"><span>📦</span> <span>BLOCKS</span></div>
+            <div class="font-mono text-white text-xs font-bold flex items-center h-5 truncate">${totalBlocks}</div>
+          </div>
+          <!-- Tx Today -->
+          <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
+            <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate" title="TXs"><span>🔄</span> <span>TXs</span></div>
+            <div class="font-mono text-white text-xs font-bold flex items-center h-5 truncate">${txToday}</div>
+          </div>
         </div>
-      </div>
-      <div class="network-footer">
-        <span>${t('network.updated', {time: new Date().toLocaleTimeString(getLanguage())})}</span>
-        <span>${t('network.source', {sec: NETWORK_POLL_INTERVAL / 1000})}</span>
+        <!-- Espacio reservado para gráficas (Network) -->
+        <div id="network-graphs-container" class="flex-grow bg-surface-1/30 border border-white/5 rounded-xl min-h-[100px] flex items-center justify-center border-dashed">
+          <span class="text-text-muted text-xs font-light tracking-wide opacity-50">Reservado para gráficas</span>
+        </div>
       </div>
     `;
   } catch (err) {
@@ -138,10 +107,9 @@ export async function renderNetworkStats(containerId) {
     if (!existing) {
       // Solo mostrar error si no hay datos previos
       container.innerHTML = `
-        <div class="network-error">
-          <p>${t('network.error')}</p>
-          <p class="error-detail">${err.message}</p>
-          <button id="btn-retry-network" class="btn btn-secondary">${t('network.retry')}</button>
+        <div class="flex items-center gap-2 px-4 text-accent-error text-xs">
+          <span>❌ Error de red</span>
+          <button id="btn-retry-network" class="underline hover:text-white">Reintentar</button>
         </div>
       `;
       document.getElementById('btn-retry-network')?.addEventListener('click', () => {

@@ -19,7 +19,7 @@ import {
   calculateCommitmentNode, calculateConvictionNode, calculateLegacyNode
 } from './nodes.js';
 import { renderRanking } from './ranking.js';
-import { initNetworkPanel, stopPolling } from './network.js';
+import { initNetworkPanel, stopPolling, renderNetworkStats } from './network.js';
 import { Cache } from './cache.js';
 import { initAppKit, depositFromBase, depositFromArb, spendToArc } from './app-kit.js';
 import { initI18n, setLanguage, getLanguage, t } from './i18n.js';
@@ -40,10 +40,10 @@ let appState = {
 
 window.addEventListener('DOMContentLoaded', () => {
   initI18n();
-  setupNavigation();
   setupWalletListeners();
   setupGlobalButtons();
-  showSection('gm-section');
+  // Cargar datos iniciales
+  renderRanking('ranking-container', null, null);
 
   // Si hay provider inyectado, intentar reconectar silenciosamente (con un pequeño delay por latencia de inyección)
   if (hasInjectedProvider()) {
@@ -51,14 +51,25 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   // Inicializar panel de red siempre (no requiere wallet)
-  initNetworkPanel('network-container');
+  initNetworkPanel('dashboard-network-stats');
 
   // Auto-refresh del ranking cada 30 segundos en background
   setInterval(() => {
+    if (document.hidden) return; // Congelar peticiones si la pestaña está minimizada/oculta
     // Solo recargar si la pestaña de ranking esta visible o si queremos que este fresco cuando entren
     Cache.invalidatePrefix('ranking_cf');
     renderRanking('ranking-container', appState.address, appState.userData);
   }, 30000);
+
+  // Reanudar peticiones al instante al volver a la pestaña (Page Visibility API)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      Cache.invalidatePrefix('ranking_cf');
+      renderRanking('ranking-container', appState.address, appState.userData);
+      // Refrescar el estado de la red
+      renderNetworkStats('navbar-network-stats');
+    }
+  });
 });
 
 // ─── Reconexión silenciosa ─────────────────────────────────────────────────
@@ -74,27 +85,7 @@ async function silentReconnect() {
   }
 }
 
-// ─── Navegación ───────────────────────────────────────────────────────────
-
-function setupNavigation() {
-  document.querySelectorAll('[data-section]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const section = btn.getAttribute('data-section');
-      showSection(section);
-      // Cargar datos de la sección al navegar
-      if (section === 'ranking-section') renderRanking('ranking-container', appState.address, appState.userData);
-      if (section === 'nodes-section' && appState.address) loadNodesData();
-    });
-  });
-}
-
-function showSection(sectionId) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('[data-section]').forEach(b => b.classList.remove('nav-active'));
-  document.getElementById(sectionId)?.classList.add('active');
-  document.querySelector(`[data-section="${sectionId}"]`)?.classList.add('nav-active');
-}
-
+// ─── Navegación removida (One-Page Dashboard) ────────────────────────────────
 // ─── Wallet ────────────────────────────────────────────────────────────────
 
 function setupWalletListeners() {
@@ -169,30 +160,7 @@ function setupGlobalButtons() {
   // Botón reset a VIP
   document.getElementById('btn-reset-vip')?.addEventListener('click', handleResetVIP);
 
-  // Botón cargar datos de nodos
-  document.getElementById('btn-load-nodes')?.addEventListener('click', loadNodesData);
-
-
-
-  // Botones de App Kit (Unified Balance)
-  document.getElementById('btn-fund-base')?.addEventListener('click', async () => {
-    setButtonLoading('btn-fund-base', true, '⌛');
-    try { await depositFromBase(); showToast('✅ Depósito desde Base iniciado', 'success'); }
-    catch(e) { showToast(`❌ ${e.message}`, 'error'); }
-    setButtonLoading('btn-fund-base', false, 'Depositar desde Base Sepolia');
-  });
-  document.getElementById('btn-fund-arb')?.addEventListener('click', async () => {
-    setButtonLoading('btn-fund-arb', true, '⌛');
-    try { await depositFromArb(); showToast('✅ Depósito desde Arb iniciado', 'success'); }
-    catch(e) { showToast(`❌ ${e.message}`, 'error'); }
-    setButtonLoading('btn-fund-arb', false, 'Depositar desde Arb Sepolia');
-  });
-  document.getElementById('btn-bridge-arc')?.addEventListener('click', async () => {
-    setButtonLoading('btn-bridge-arc', true, '⌛');
-    try { await spendToArc(); showToast('✅ Fondos enviados a Arc Testnet', 'success'); }
-    catch(e) { showToast(`❌ ${e.message}`, 'error'); }
-    setButtonLoading('btn-bridge-arc', false, 'Traer fondos a Arc Testnet');
-  });
+  // Botones de App Kit eliminados (Unified Balance)
 }
 
 // ─── Conexión Wallet ───────────────────────────────────────────────────────
@@ -246,12 +214,9 @@ function updateWalletUI(address) {
     if (statusEl) statusEl.classList.add('connected');
     if (heroEl)   heroEl.classList.add('hidden');
     if (mainEl)   mainEl.classList.remove('hidden');
-    
-    // Habilitar App Kit (Desactivado temporalmente por falta de soporte CCTP en Arc)
-    // initAppKit();
-    // document.getElementById('btn-fund-base').disabled = false;
-    // document.getElementById('btn-fund-arb').disabled = false;
-    // document.getElementById('btn-bridge-arc').disabled = false;
+    // Cargar datos de las demás secciones automáticamente
+    loadNodesData();
+    renderRanking('ranking-container', address, appState.userData);
   } else {
     if (btnConnect) {
       btnConnect.setAttribute('data-i18n', 'header.connect');
@@ -263,10 +228,7 @@ function updateWalletUI(address) {
     if (heroEl)   heroEl.classList.remove('hidden');
     if (mainEl)   mainEl.classList.add('hidden');
     
-    // Desactivar App Kit buttons
-    document.getElementById('btn-fund-base').disabled = true;
-    document.getElementById('btn-fund-arb').disabled = true;
-    document.getElementById('btn-bridge-arc').disabled = true;
+    // Desactivar botones eliminados
   }
 }
 
@@ -334,36 +296,28 @@ function renderUserPanel(userData, gmCost, gmDoneToday) {
   const debtDisplay  = gmCost.debtCost > BigInt(0) ? `<span class="debt-warn">+ ${weiToUSDC(gmCost.debtCost, 4)} ${t('dashboard.debt')}</span>` : '';
 
   container.innerHTML = `
-    <div class="user-stats-grid">
-      <div class="stat-item">
-        <div class="stat-label">${t('dashboard.statStatus')}</div>
-        <div class="stat-value">${forkLabel}</div>
+    <div class="grid grid-cols-4 gap-2">
+      <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
+        <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate"><span>🎖️</span> <span>${t('dashboard.statStatus')}</span></div>
+        <div class="text-xs font-bold flex items-center h-5 truncate">${forkLabel}</div>
       </div>
-      <div class="stat-item">
-        <div class="stat-label">${t('dashboard.statStreak')}</div>
-        <div class="stat-value">🔥 ${streakDays}</div>
+      <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
+        <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate"><span>🔥</span> <span>${t('dashboard.statStreak')}</span></div>
+        <div class="text-xs font-mono font-bold text-white h-5 flex items-center truncate">${streakDays}</div>
       </div>
-      <div class="stat-item">
-        <div class="stat-label">${t('dashboard.statPoints')}</div>
-        <div class="stat-value">⚡ ${userData.totalPoints.toLocaleString()} pts</div>
+      <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
+        <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate"><span>⚡</span> <span>${t('dashboard.statPoints')}</span></div>
+        <div class="text-xs font-mono font-bold text-white h-5 flex items-center truncate">${userData.totalPoints.toLocaleString()}</div>
       </div>
-      <div class="stat-item">
-        <div class="stat-label">${t('dashboard.statGms')}</div>
-        <div class="stat-value">📡 ${userData.gmCount}</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-label">${t('dashboard.statCost')}</div>
-        <div class="stat-value">${costDisplay} ${debtDisplay}</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-label">${t('dashboard.statRunestone')}</div>
-        <div class="stat-value">${runestone ? `🔮 ${t('dashboard.active')}` : `○ ${t('dashboard.inactive')}`}</div>
+      <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
+        <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate"><span>📡</span> <span title="${t('dashboard.statGms')}">${t('dashboard.statGms')}</span></div>
+        <div class="text-xs font-mono font-bold text-white h-5 flex items-center truncate">${userData.gmCount}</div>
       </div>
     </div>
     ${userData.forkLevel > 1 ? `
-    <div class="fork-info">
-      <p>${t('dashboard.forkInfo', {fork: userData.forkLevel})}</p>
-      <button id="btn-reset-vip" class="btn btn-secondary btn-small">${t('dashboard.btnResetVip')}</button>
+    <div class="mt-3 flex items-center justify-between bg-warning/10 border border-warning/30 p-2 rounded text-xs">
+      <p class="text-warning mb-0">${t('dashboard.forkInfo', {fork: userData.forkLevel})}</p>
+      <button id="btn-reset-vip" class="bg-surface hover:bg-border border border-border-color px-2 py-1 rounded text-white transition-colors">${t('dashboard.btnResetVip')}</button>
     </div>
     ` : ''}
   `;
@@ -374,28 +328,61 @@ function renderUserPanel(userData, gmCost, gmDoneToday) {
 
 // ─── Botón GM ──────────────────────────────────────────────────────────────
 
+let gmCountdownInterval = null;
+
 function renderGMButton(userData, gmCost, gmDoneToday) {
   const btn = document.getElementById('btn-gm');
+  const txt = document.getElementById('btn-gm-text');
   if (!btn) return;
+  const targetTxt = txt || btn;
 
+  if (gmCountdownInterval) {
+    clearInterval(gmCountdownInterval);
+    gmCountdownInterval = null;
+  }
+
+  btn.classList.remove('btn-runestone', 'btn-done');
+  
   const runestone = userData.nodeCommitment && userData.nodeConviction && userData.nodeLegacy;
-  const isNewUser = !userData.exists;
+  const svgEl = document.querySelector('.crystal-svg');
+  if (svgEl) {
+    if (runestone) {
+      svgEl.classList.remove('is-inactive');
+    } else {
+      svgEl.classList.add('is-inactive');
+    }
+  }
 
   if (gmDoneToday) {
-    btn.textContent = t('dashboard.btnGmDone');
     btn.disabled = true;
-    btn.classList.remove('btn-runestone');
-    btn.classList.add('btn-done');
-  } else if (runestone) {
-    btn.textContent = t('dashboard.btnSuperGm');
-    btn.disabled = false;
-    btn.classList.add('btn-runestone');
-    btn.classList.remove('btn-done');
+    targetTxt.classList.add('opacity-50');
+    
+    const updateCountdown = () => {
+      const now = new Date();
+      const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+      const diff = tomorrow - now;
+      if (diff <= 0) {
+        targetTxt.textContent = "GM (REFRESH)";
+        const countdownEl = document.getElementById('gm-countdown');
+        if (countdownEl) countdownEl.innerHTML = "";
+        clearInterval(gmCountdownInterval);
+        return;
+      }
+      const h = Math.floor((diff / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
+      const m = Math.floor((diff / 1000 / 60) % 60).toString().padStart(2, '0');
+      const s = Math.floor((diff / 1000) % 60).toString().padStart(2, '0');
+      targetTxt.textContent = runestone ? "SUPER GM" : "GM";
+      const countdownEl = document.getElementById('gm-countdown');
+      if (countdownEl) {
+        countdownEl.innerHTML = `${h}:${m}:${s}`;
+      }
+    };
+    updateCountdown();
+    gmCountdownInterval = setInterval(updateCountdown, 1000);
   } else {
-    const label = isNewUser ? t('dashboard.btnGmFirst') : t('dashboard.btnGmNormal');
-    btn.textContent = label;
     btn.disabled = false;
-    btn.classList.remove('btn-runestone', 'btn-done');
+    targetTxt.classList.remove('opacity-50');
+    targetTxt.textContent = runestone ? "SUPER GM" : "GM";
   }
 }
 
@@ -422,7 +409,8 @@ async function handleGM() {
     showToast(`❌ ${msg}`, 'error');
     console.error('[GM]', err);
   } finally {
-    setButtonLoading('btn-gm', false, '📡 Enviar Señal (GM)');
+    const isSuper = appState.userData && appState.userData.nodeCommitment && appState.userData.nodeConviction && appState.userData.nodeLegacy;
+    setButtonLoading('btn-gm', false, isSuper ? 'SUPER GM' : 'GM');
   }
 }
 
@@ -438,15 +426,41 @@ function renderNodesStatus(userData) {
   nodes.forEach(node => {
     const indicator = document.getElementById(`node${node.id}-status`);
     if (indicator) {
-      indicator.className = `node-status-dot ${node.active ? 'active' : 'inactive'}`;
+      if (node.active) {
+        indicator.classList.remove('bg-accent-error', 'bg-error', 'bg-text-muted', 'shadow-[0_0_8px_rgba(255,23,68,0.6)]', 'shadow-[0_0_5px_rgba(239,68,68,0.5)]');
+        indicator.classList.add('bg-[#4ade80]', 'shadow-[0_0_10px_#4ade80]');
+      } else {
+        indicator.classList.remove('bg-[#4ade80]', 'shadow-[0_0_10px_#4ade80]', 'bg-success', 'shadow-[0_0_10px_rgba(34,197,94,0.8)]');
+        indicator.classList.add('bg-accent-error', 'shadow-[0_0_8px_rgba(255,23,68,0.6)]');
+      }
       indicator.title = node.active ? `${node.name}: Activo` : `${node.name}: Inactivo`;
+    }
+
+    // Actualizar también los visuales del panel derecho
+    const visualDot = document.getElementById(`visual-dot-${node.id}`);
+    const satelliteWrapper = document.getElementById(`satellite-node-${node.id}`);
+    if (visualDot) {
+      if (node.active) {
+        visualDot.classList.remove('bg-text-muted');
+        visualDot.classList.add('bg-[#4ade80]', 'shadow-[0_0_12px_#4ade80]');
+        if (satelliteWrapper) satelliteWrapper.classList.add('is-active');
+      } else {
+        visualDot.classList.remove('bg-[#4ade80]', 'shadow-[0_0_12px_#4ade80]');
+        visualDot.classList.add('bg-text-muted');
+        if (satelliteWrapper) satelliteWrapper.classList.remove('is-active');
+      }
     }
 
     const streakEl = document.getElementById(`node${node.id}-streak-needed`);
     if (streakEl) {
-      streakEl.textContent = node.active
-        ? `✅ ${t('dashboard.active')}`
-        : t(`nodes.node${node.id}.req`);
+      if (node.active) {
+        streakEl.style.display = 'none';
+      } else {
+        streakEl.style.display = 'inline-block';
+        streakEl.textContent = t(`nodes.node${node.id}.req`);
+        streakEl.classList.remove('text-success', 'bg-success/10');
+        streakEl.classList.add('text-warning', 'bg-warning/10');
+      }
     }
 
     const btnStreak = document.getElementById(`btn-node${node.id}-streak`);
@@ -455,7 +469,7 @@ function renderNodesStatus(userData) {
       if (btnStreak) btnStreak.style.display = 'none';
       if (btnInstant) btnInstant.style.display = 'none';
     } else {
-      if (btnStreak) btnStreak.style.display = 'inline-block'; // o 'block'/'inline-flex' según CSS
+      if (btnStreak) btnStreak.style.display = 'inline-block';
       if (btnInstant) btnInstant.style.display = 'inline-block';
     }
   });
@@ -464,8 +478,15 @@ function renderNodesStatus(userData) {
   const runestone = userData.nodeCommitment && userData.nodeConviction && userData.nodeLegacy;
   const runestoneEl = document.getElementById('runestone-status');
   if (runestoneEl) {
-    runestoneEl.className = `runestone-indicator ${runestone ? 'active' : ''}`;
-    runestoneEl.textContent = runestone ? t('nodes.runestoneActive') : t('nodes.runestoneInactive');
+    if (runestone) {
+      runestoneEl.classList.remove('text-text-muted', 'border-border-color/50');
+      runestoneEl.classList.add('text-runestone', 'border-runestone/50', 'shadow-[0_0_15px_rgba(232,121,249,0.3)]');
+      runestoneEl.textContent = t('nodes.runestoneActive');
+    } else {
+      runestoneEl.classList.remove('text-runestone', 'border-runestone/50', 'shadow-[0_0_15px_rgba(232,121,249,0.3)]');
+      runestoneEl.classList.add('text-text-muted', 'border-border-color/50');
+      runestoneEl.textContent = t('nodes.runestoneInactive');
+    }
   }
 }
 
@@ -474,9 +495,6 @@ function renderNodesStatus(userData) {
 async function loadNodesData() {
   const address = appState.address;
   if (!address) { showToast('Conecta tu wallet primero.', 'warning'); return; }
-
-  const btn = document.getElementById('btn-load-nodes');
-  if (btn) { btn.disabled = true; btn.textContent = `⏳ ${t('js.loading')}`; }
 
   // Nodo 1: Compromiso
   setLoading('node1-data', true, 'Analizando transacciones...');
@@ -504,8 +522,6 @@ async function loadNodesData() {
   } catch (err) {
     console.error('[Nodes]', err);
     showToast(`❌ Error al cargar datos de nodos: ${err.message}`, 'error');
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = t('nodes.btnLoad'); }
   }
 }
 
@@ -514,11 +530,23 @@ function renderCommitmentData(d) {
   if (!el) return;
   const labels = t('js.node1Data');
   el.innerHTML = `
-    <div class="node-data-grid">
-      <div class="node-data-item"><span>${labels[0]}</span><strong>${d.totalTxs.toLocaleString()}</strong></div>
-      <div class="node-data-item"><span>${labels[1]}</span><strong>${d.totalGasUsedFormatted}</strong></div>
-      <div class="node-data-item"><span>${labels[2]}</span><strong>${d.totalFeePaidFormatted} USDC</strong></div>
-      <div class="node-data-item"><span>${labels[3]}</span><strong>${t(`js.commitmentTiers.${d.tier.index}`)} (×${d.tier.multiplier})</strong></div>
+    <div class="grid grid-cols-2 gap-1.5">
+      <div class="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
+        <span class="text-[0.55rem] text-text-muted uppercase tracking-wider truncate" title="${labels[0]}">${labels[0]}</span>
+        <strong class="text-xs text-white truncate">${d.totalTxs.toLocaleString()}</strong>
+      </div>
+      <div class="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
+        <span class="text-[0.55rem] text-text-muted uppercase tracking-wider truncate" title="${labels[1]}">${labels[1]}</span>
+        <strong class="text-xs text-white truncate">${d.totalGasUsedFormatted}</strong>
+      </div>
+      <div class="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
+        <span class="text-[0.55rem] text-text-muted uppercase tracking-wider truncate" title="${labels[2]}">${labels[2]}</span>
+        <strong class="text-xs text-white truncate">${d.totalFeePaidFormatted}</strong>
+      </div>
+      <div class="flex flex-col bg-accent-primary/10 px-2 py-1 rounded border border-accent-primary/30">
+        <span class="text-[0.55rem] text-accent-primary uppercase tracking-wider truncate" title="${labels[3]}">${labels[3]}</span>
+        <strong class="text-xs text-accent-primary font-bold truncate">${t(`js.commitmentTiers.${d.tier.index}`)} <span class="text-[0.55rem] opacity-70">(×${d.tier.multiplier})</span></strong>
+      </div>
     </div>
   `;
 }
@@ -528,11 +556,23 @@ function renderConvictionData(d) {
   if (!el) return;
   const labels = t('js.node2Data');
   el.innerHTML = `
-    <div class="node-data-grid">
-      <div class="node-data-item"><span>${labels[0]}</span><strong>${d.balanceUSDC} USDC</strong></div>
-      <div class="node-data-item"><span>${labels[1]}</span><strong>${d.percentageOfSupply}%</strong></div>
-      <div class="node-data-item"><span>${labels[2]}</span><strong>${d.supplyTotal.toLocaleString()} USDC</strong></div>
-      <div class="node-data-item"><span>${labels[3]}</span><strong>${d.tier}</strong></div>
+    <div class="grid grid-cols-2 gap-1.5">
+      <div class="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
+        <span class="text-[0.55rem] text-text-muted uppercase tracking-wider truncate" title="${labels[0]}">${labels[0]}</span>
+        <strong class="text-xs text-white truncate">${d.balanceUSDC}</strong>
+      </div>
+      <div class="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
+        <span class="text-[0.55rem] text-text-muted uppercase tracking-wider truncate" title="${labels[1]}">${labels[1]}</span>
+        <strong class="text-xs text-white truncate">${d.percentageOfSupply}%</strong>
+      </div>
+      <div class="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
+        <span class="text-[0.55rem] text-text-muted uppercase tracking-wider truncate" title="${labels[2]}">${labels[2]}</span>
+        <strong class="text-xs text-white truncate">${d.supplyTotal.toLocaleString()}</strong>
+      </div>
+      <div class="flex flex-col bg-accent-primary/10 px-2 py-1 rounded border border-accent-primary/30">
+        <span class="text-[0.55rem] text-accent-primary uppercase tracking-wider truncate" title="${labels[3]}">${labels[3]}</span>
+        <strong class="text-xs text-accent-primary font-bold truncate">${d.tier}</strong>
+      </div>
     </div>
   `;
 }
@@ -546,12 +586,23 @@ function renderLegacyData(d) {
   }
   const labels = t('js.node3Data');
   el.innerHTML = `
-    <div class="node-data-grid">
-      <div class="node-data-item"><span>${labels[0]}</span><strong>${d.firstTxTimestamp.toLocaleDateString(getLanguage())}</strong></div>
-      <div class="node-data-item"><span>${labels[1]}</span><strong>${d.lastTxTimestamp.toLocaleDateString(getLanguage())}</strong></div>
-      <div class="node-data-item"><span>${labels[2]}</span><strong>${d.daysSinceGenesis}</strong></div>
-      <div class="node-data-item"><span>${labels[3]}</span><strong>${d.rangeDays}</strong></div>
-      <div class="node-data-item span-2"><span>${labels[4]}</span><strong>${t(`js.legacyTiers.${d.badge.index}`)} (×${d.badge.multiplier})</strong></div>
+    <div class="grid grid-cols-2 gap-1.5">
+      <div class="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
+        <span class="text-[0.55rem] text-text-muted uppercase tracking-wider truncate" title="${labels[0]}">${labels[0]}</span>
+        <strong class="text-xs text-white truncate">${d.firstTxTimestamp.toLocaleDateString(getLanguage())}</strong>
+      </div>
+      <div class="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
+        <span class="text-[0.55rem] text-text-muted uppercase tracking-wider truncate" title="${labels[1]}">${labels[1]}</span>
+        <strong class="text-xs text-white truncate">${d.lastTxTimestamp.toLocaleDateString(getLanguage())}</strong>
+      </div>
+      <div class="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
+        <span class="text-[0.55rem] text-text-muted uppercase tracking-wider truncate" title="${labels[2]} (Arc)">${labels[2]}</span>
+        <strong class="text-xs text-white truncate">${d.daysSinceGenesis} d</strong>
+      </div>
+      <div class="flex flex-col bg-accent-primary/10 px-2 py-1 rounded border border-accent-primary/30">
+        <span class="text-[0.55rem] text-accent-primary uppercase tracking-wider truncate" title="${labels[4]}">${labels[4]}</span>
+        <strong class="text-xs text-accent-primary font-bold truncate">${t(`js.legacyTiers.${d.badge.index}`)} <span class="text-[0.55rem] opacity-70">(×${d.badge.multiplier})</span></strong>
+      </div>
     </div>
   `;
 }
@@ -647,47 +698,48 @@ async function renderAgentPanel(userData) {
 
   if (userData.attachedAgentId > 0) {
     container.innerHTML = `
-      <div class="stat-item" style="border: 1px solid var(--color-border); padding: 12px; border-radius: 8px; margin-top: 8px; background: rgba(0,0,0,0.2);">
-        <div class="stat-label">${t('dashboard.agentTitle')}</div>
-        <div class="stat-value" style="color: var(--color-runestone);">
-          🤖 ID: ${userData.attachedAgentId}
+      <div class="mt-2 bg-runestone/10 border border-runestone/30 p-3 rounded flex items-center justify-between">
+        <div class="flex flex-col">
+          <span class="text-[0.65rem] text-text-muted uppercase">${t('dashboard.agentTitle')}</span>
+          <span class="text-sm font-bold text-runestone">🤖 ID: ${userData.attachedAgentId}</span>
         </div>
-        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 8px;">
+        <div class="text-[0.65rem] text-text-muted max-w-[100px] text-right leading-tight">
           ${t('dashboard.agentActiveDesc')}
-        </p>
+        </div>
       </div>
     `;
     return;
   }
 
   // Estado: Runestone activo pero sin agente. Buscamos agentes en la blockchain.
-  container.innerHTML = `<p class="loading-text" style="font-size: 0.85rem; margin-top: 12px;">${t('dashboard.agentSearching')}</p>`;
+  container.innerHTML = `<p class="animate-pulse text-xs mt-2">${t('dashboard.agentSearching')}</p>`;
   
   try {
     const userAgents = await fetchUserAgents(appState.address);
 
     if (userAgents.length === 0) {
       container.innerHTML = `
-        <p style="font-size: 0.85rem; margin-bottom: 8px; color: var(--color-text-muted);">
-          ${t('dashboard.agentPermission')}
-        </p>
-        <div style="margin-top: 12px; padding: 12px; background: rgba(255,100,100,0.1); border-left: 3px solid var(--color-error); border-radius: 4px;">
-          <p style="font-size: 0.85rem; color: var(--color-text);">${t('dashboard.agentNoneFound')}</p>
-          <a href="https://testnet.arcscan.app/address/0x8004A818BFB912233c491871b3d84c89A494BD9e" target="_blank" class="btn btn-secondary btn-small" style="margin-top: 8px; display: inline-block;">${t('dashboard.agentRegisterBtn')}</a>
+        <div class="mt-2 flex items-center justify-between bg-surface/30 p-1.5 rounded border border-border-color/30">
+          <span class="text-[0.6rem] text-error flex items-center gap-1 cursor-help relative group/tt">
+            ⚠️ <span class="hidden sm:inline">No Agents</span>
+            <div class="absolute bottom-full left-0 mb-2 w-48 p-2 bg-surface-2 border border-error/50 rounded shadow-xl text-[0.55rem] text-text-muted opacity-0 group-hover/tt:opacity-100 pointer-events-none transition-opacity z-50 text-left normal-case tracking-normal">
+              ${t('dashboard.agentNoneFound')}
+            </div>
+          </span>
+          <a href="https://testnet.arcscan.app/address/0x8004A818BFB912233c491871b3d84c89A494BD9e" target="_blank" class="bg-surface hover:bg-border border border-border-color text-white px-2 py-0.5 rounded text-[0.6rem] transition-colors">${t('dashboard.agentRegisterBtn')}</a>
         </div>
       `;
     } else {
       let options = userAgents.map(id => `<option value="${id.toString()}">${t('dashboard.agentOption', { id: id.toString() })}</option>`).join('');
       container.innerHTML = `
-        <p style="font-size: 0.85rem; margin-bottom: 8px; color: var(--color-text-muted);">
-          ${t('dashboard.agentPermission')}
-        </p>
-        <div style="display: flex; gap: 8px; margin-top: 12px;">
-          <select id="input-agent-id" class="input-base" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid var(--color-border); background: var(--color-bg); color: var(--color-text);">
-            <option value="" disabled selected>${t('dashboard.agentSelectPlaceholder')}</option>
-            ${options}
-          </select>
-          <button id="btn-attach-agent" class="btn btn-primary">${t('js.attachAgentBtn') || 'Vincular Agente'}</button>
+        <div class="mt-2">
+          <div class="flex gap-2">
+            <select id="input-agent-id" class="flex-1 bg-surface border border-border-color rounded text-xs px-2 py-1.5 focus:border-primary outline-none">
+              <option value="" disabled selected>${t('dashboard.agentSelectPlaceholder')}</option>
+              ${options}
+            </select>
+            <button id="btn-attach-agent" class="bg-primary/20 hover:bg-primary/40 border border-primary/50 text-primary px-3 py-1.5 rounded text-xs transition-colors whitespace-nowrap">${t('js.attachAgentBtn') || 'Vincular Agente'}</button>
+          </div>
         </div>
       `;
 
@@ -699,7 +751,7 @@ async function renderAgentPanel(userData) {
           showToast(t('dashboard.agentSelectWarning'), 'warning');
           return;
         }
-        setButtonLoading('btn-attach-agent', true, t('dashboard.agentAttaching'));
+        setButtonLoading('btn-attach-agent', true, '⏳...');
         try {
           const agentId = BigInt(agentIdStr);
           const tx = await attachAgent(agentId);
@@ -709,13 +761,13 @@ async function renderAgentPanel(userData) {
           showToast(`❌ ${parseContractError(err)}`, 'error');
           console.error('[Agent]', err);
         } finally {
-          setButtonLoading('btn-attach-agent', false, 'Vincular Agente');
+          setButtonLoading('btn-attach-agent', false, t('js.attachAgentBtn') || 'Vincular Agente');
         }
       });
     }
   } catch (error) {
     console.error("Error renderizando dropdown de agentes:", error);
-    container.innerHTML = `<p class="empty-text">${t('dashboard.agentSearchError')}</p>`;
+    container.innerHTML = `<p class="text-xs text-error mt-2">${t('dashboard.agentSearchError')}</p>`;
   }
 }
 
@@ -725,7 +777,12 @@ function setButtonLoading(id, loading, label) {
   const btn = document.getElementById(id);
   if (!btn) return;
   btn.disabled = loading;
-  btn.textContent = label;
+  const txt = document.getElementById(id + '-text');
+  if (txt) {
+    txt.textContent = label;
+  } else {
+    btn.textContent = label;
+  }
 }
 
 function setLoading(containerId, loading, msg = 'Cargando...') {

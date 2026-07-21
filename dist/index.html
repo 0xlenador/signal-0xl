@@ -9,239 +9,311 @@
   <!-- Estilos -->
 
 
-  <script type="module" crossorigin src="/assets/index-Cd9jw8NN.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-BR_b_sXN.css">
+  <script type="module" crossorigin src="/assets/index-DmuaFBOy.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-BV7WOX5T.css">
 </head>
 <body>
 
 <div class="app-wrapper">
 
   <!-- ══════════ HEADER ══════════ -->
-  <header class="app-header">
-    <div class="app-logo">Signal <span>0xL</span></div>
-    <div style="display: flex; gap: 12px; align-items: center;">
+  <header class="app-header w-full flex items-center justify-between p-4 px-6 bg-surface-1/95 backdrop-blur-2xl border-b border-border-light sticky top-0 z-50 transition-all shadow-lg">
+    <div class="app-logo text-xl font-bold tracking-tight text-white">Signal <span class="text-accent-primary drop-shadow-[0_0_10px_rgba(0,229,255,0.5)]">0xL</span></div>
+    
+    <div class="flex gap-4 items-center">
       <!-- Language Switcher -->
-      <select id="lang-switcher" class="btn btn-secondary btn-small" style="padding: 4px 8px; font-size: 0.8rem; background: var(--color-surface); border: 1px solid var(--color-border); color: var(--color-text);">
+      <select id="lang-switcher" class="bg-bg-primary/50 border border-border-color text-text-primary text-xs px-3 py-1.5 rounded-full cursor-pointer hover:border-accent-primary transition-colors focus:outline-none focus:border-accent-primary">
         <option value="en">🇺🇸 EN</option>
         <option value="es">🇪🇸 ES</option>
       </select>
-      <div id="wallet-status" class="wallet-status" style="position: relative;">
-        <div class="wallet-dot"></div>
-        <button id="btn-connect-wallet" class="btn btn-primary btn-small" data-i18n="header.connect">🔗 Conectar</button>
+      <div id="wallet-status" class="wallet-status relative flex items-center gap-2">
+        <div class="wallet-dot w-2 h-2 rounded-full bg-text-muted transition-colors duration-300"></div>
+        <button id="btn-connect-wallet" class="bg-accent-primary hover:bg-accent-primary-dim text-bg-primary font-bold text-sm px-5 py-1.5 rounded-full transition-all shadow-glow-cyan" data-i18n="header.connect">🔗 Conectar</button>
         <!-- Dropdown -->
-        <div id="wallet-dropdown" class="wallet-dropdown hidden">
-          <button id="btn-disconnect-wallet" class="dropdown-item" data-i18n="header.disconnect">Cerrar Sesión</button>
+        <div id="wallet-dropdown" class="wallet-dropdown hidden absolute top-full right-0 mt-3 bg-surface-2/90 backdrop-blur-xl border border-border-light rounded-2xl shadow-xl min-w-[150px] z-50">
+          <button id="btn-disconnect-wallet" class="w-full text-left px-5 py-3 text-sm text-accent-error font-semibold hover:bg-white/5 transition-colors" data-i18n="header.disconnect">Cerrar Sesión</button>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- ══════════ NAVEGACIÓN ══════════ -->
-  <nav class="app-nav">
-    <button class="nav-btn" data-section="gm-section" data-i18n="nav.dailyGm">📡 GM Diario</button>
-    <button class="nav-btn" data-section="nodes-section" data-i18n="nav.nodes">🔬 Nodos</button>
-    <button class="nav-btn" data-section="ranking-section" data-i18n="nav.ranking">📊 Ranking</button>
-    <button class="nav-btn" data-section="network-section" data-i18n="nav.network">🌐 Red</button>
-  </nav>
-
   <!-- ══════════ CONTENIDO ══════════ -->
-  <main class="app-content">
+  <main class="app-content p-4 md:p-6 lg:p-8 w-full mx-auto flex flex-col gap-6">
 
-    <!-- ─── SECCIÓN: GM DIARIO ─── -->
-    <section id="gm-section" class="section">
-
-      <!-- HÉROE: no conectado -->
-      <div id="hero-connect-section">
-        <h2 data-i18n="hero.title">Signal 0xL</h2>
-        <p data-i18n="hero.desc">Plataforma de señales en cadena para Arc Testnet. Deja tu huella diaria, analiza tu compromiso y escala en el ranking.</p>
-        <button id="btn-connect-wallet-hero" class="btn btn-primary" data-i18n="hero.connectBtn">🔗 Conectar Wallet</button>
-        <p style="margin-top: 16px; font-size: 0.85rem; color: var(--color-text-muted);" data-i18n="hero.networkInfo">
-          Red: Arc Testnet · Chain ID: 5042002
-        </p>
-      </div>
-
-      <!-- APP: conectado -->
-      <div id="main-app-section" class="hidden">
-
-        <!-- Panel de usuario -->
-        <div class="card">
-          <div class="card-title" data-i18n="dashboard.yourSignal">👤 Tu Señal</div>
-          <div id="user-data-container">
-            <p class="loading-text" data-i18n="dashboard.loadingContract">Cargando datos del contrato...</p>
-          </div>
-        </div>
-
-        <!-- Panel de GM -->
-        <div class="card" id="gm-panel">
-          <div class="card-title" data-i18n="dashboard.dailyGmTitle">📡 Señal Diaria</div>
-          <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 8px;" data-i18n="dashboard.dailyGmDesc">
-            Envía tu señal diaria a Arc Testnet. La ventana es 00:00–23:59 UTC.
-            Cada GM suma +1 punto (o +2 con Runestone activo).
-          </p>
-
-          <button id="btn-gm" class="btn btn-primary btn-gm-main" disabled data-i18n="dashboard.btnGmDisabled">
-            🔗 Conecta tu wallet para empezar
-          </button>
-        </div>
-
-        <!-- Panel de Fondeo Cross-Chain -->
-        <div class="card" id="fund-panel" style="margin-top: 16px;">
-          <div class="card-title" data-i18n="dashboard.fundTitle">🌉 Fondear USDC (Unified Balance)</div>
-          <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 8px;" data-i18n="dashboard.fundDesc">
-            Deposita USDC desde redes externas y gástalo instantáneamente en Arc Testnet sin puentes manuales, gracias al SDK de Circle App Kit.
-          </p>
-          <div class="node-actions" style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
-            <button id="btn-fund-base" class="btn btn-secondary btn-small" disabled data-i18n="dashboard.btnFundBase">Depositar desde Base Sepolia</button>
-            <button id="btn-fund-arb" class="btn btn-secondary btn-small" disabled data-i18n="dashboard.btnFundArb">Depositar desde Arb Sepolia</button>
-            <button id="btn-bridge-arc" class="btn btn-primary btn-small" disabled data-i18n="dashboard.btnBridgeArc">Traer fondos a Arc Testnet</button>
-          </div>
-        </div>
-
-        <!-- Panel de Agente de IA (ERC-8004) -->
-        <div class="card" id="agent-panel" style="margin-top: 16px;">
-          <div class="card-title" data-i18n="dashboard.agentTitle">🤖 Agente de IA (ERC-8004)</div>
-          <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 8px;" data-i18n="dashboard.agentDesc">
-            Al activar tu Runestone (3 nodos), puedes vincular un Agente de IA (registrado en IdentityRegistry) para demostrar tu adopción de la Agentic Economy de Arc.
-          </p>
-          <div id="agent-ui-container">
-            <p class="empty-text" data-i18n="dashboard.agentEmpty">Conecta tu wallet y activa el Runestone para gestionar tu agente.</p>
-          </div>
-        </div>
-
-      </div>
+    <!-- HÉROE: no conectado -->
+    <section id="hero-connect-section" class="flex flex-col items-center justify-center text-center py-24 glass-panel rounded-[2.5rem] shadow-glow-cyan-lg relative overflow-hidden my-8">
+      <div class="absolute inset-0 bg-gradient-to-b from-accent-primary/5 to-transparent pointer-events-none"></div>
+      <h2 class="text-5xl md:text-7xl font-extrabold text-white mb-6 tracking-tight drop-shadow-md" data-i18n="hero.title">Signal <span class="text-accent-primary drop-shadow-[0_0_20px_rgba(0,229,255,0.6)]">0xL</span></h2>
+      <p class="text-text-muted max-w-lg mx-auto text-lg mb-10 font-light" data-i18n="hero.desc">Plataforma de señales en cadena para Arc Testnet. Deja tu huella diaria, analiza tu compromiso y escala en el ranking.</p>
+      <button id="btn-connect-wallet-hero" class="bg-accent-primary hover:bg-accent-primary-dim text-bg-primary font-bold px-10 py-4 rounded-full transition-all shadow-glow-cyan hover:scale-105 hover:shadow-glow-cyan-lg" data-i18n="hero.connectBtn">🔗 Conectar Wallet</button>
+      <p class="mt-8 text-sm text-text-muted font-mono bg-bg-primary/50 px-5 py-2 rounded-full border border-border-color" data-i18n="hero.networkInfo">
+        Red: Arc Testnet · Chain ID: 5042002
+      </p>
     </section>
 
-    <!-- ─── SECCIÓN: NODOS ─── -->
-    <section id="nodes-section" class="section">
-      <h2 class="section-title" data-i18n="nodes.title">🔬 Nodos de Análisis</h2>
+    <!-- DASHBOARD PRINCIPAL (Conectado) -->
+    <div id="main-app-section" class="hidden flex-col gap-4">
 
-      <div id="runestone-status" class="runestone-indicator" data-i18n="nodes.runestoneInactive">
-        ○ Runestone inactivo — Activa los 3 nodos
-      </div>
+      <!-- ================= SECCIÓN SUPERIOR (Filas 1 y 2 + Runestone) ================= -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
+        
+        <!-- ================= COLUMNA IZQUIERDA (Span 8) ================= -->
+        <div class="xl:col-span-8 flex flex-col gap-4">
+          
+          <!-- Fila 1: Tu Señal & Network Stats -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Tu Señal -->
+            <div class="glass-panel rounded-3xl p-5 shadow-lg relative flex flex-col group hover:shadow-glow-cyan transition-shadow duration-500">
+              <h3 class="text-sm font-bold text-text-muted uppercase tracking-wider mb-4 flex items-center justify-between">
+                <span data-i18n="dashboard.yourSignal" class="group-hover:text-accent-primary transition-colors">Tu Señal</span>
+                <span class="text-lg opacity-80 group-hover:opacity-100 transition-opacity">👤</span>
+              </h3>
+              <div id="user-data-container" class="text-sm flex-grow">
+                <p class="text-text-muted animate-pulse font-light" data-i18n="dashboard.loadingContract">Cargando datos...</p>
+              </div>
+            </div>
 
-      <div class="nodes-grid" style="margin-top: 16px;">
+            <!-- Network Stats (Arc Testnet) -->
+            <div class="glass-panel rounded-3xl p-5 shadow-lg relative flex flex-col justify-between group hover:shadow-glow-cyan transition-shadow duration-500">
+              <div class="absolute inset-0 bg-gradient-to-br from-accent-primary/5 to-transparent pointer-events-none rounded-3xl group-hover:from-accent-primary/10 transition-colors"></div>
+              <h3 class="text-sm font-bold text-text-muted uppercase tracking-wider mb-4 flex items-center justify-between relative z-10">
+                <span class="group-hover:text-accent-primary transition-colors">Arc Testnet <span class="text-[0.6rem] ml-1 bg-accent-success/10 text-accent-success px-2 py-0.5 rounded-full border border-accent-success/20">En Línea</span></span>
+                <span class="text-lg cursor-help relative group/tt opacity-80 group-hover:opacity-100 transition-opacity">
+                  🌐
+                  <div class="absolute bottom-full right-0 mb-2 w-48 p-2 bg-surface-2/90 backdrop-blur-xl border border-border-light rounded-xl shadow-xl text-[0.65rem] text-text-primary opacity-0 group-hover/tt:opacity-100 pointer-events-none transition-opacity z-50 text-left font-normal normal-case tracking-normal">
+                    Estado en tiempo real de la red Arc Testnet consumido vía Blockscout API.
+                  </div>
+                </span>
+              </h3>
+              <div id="dashboard-network-stats" class="flex-grow w-full relative z-10">
+                <p class="text-text-muted animate-pulse text-sm font-light">Sincronizando con Arc Testnet...</p>
+              </div>
+            </div>
 
-        <!-- NODO 1: COMPROMISO -->
-        <div class="card node-card" id="node1-card">
-          <div class="node-header">
-            <span class="node-icon">🔬</span>
-            <div class="node-title" data-i18n="nodes.node1.title">Nodo 1 — Compromiso</div>
-            <div id="node1-status" class="node-status-dot inactive" title="Inactivo"></div>
+
+
           </div>
-          <p class="node-description" data-i18n="nodes.node1.desc">
-            Analiza el volumen histórico de transacciones y gas consumido en Arc Testnet.
-            Calcula tu tier de actividad y su multiplicador de puntaje.
-          </p>
-          <div id="node1-streak-needed" class="node-streak-info" data-i18n="nodes.node1.req">Requiere racha día 3</div>
-          <div class="node-actions">
-            <button id="btn-node1-streak"  class="btn btn-secondary btn-small" data-i18n="nodes.node1.streakBtn">🔥 Activar por Racha</button>
-            <button id="btn-node1-instant" class="btn btn-primary btn-small" data-i18n="nodes.node1.instantBtn">⚡ Activar Ahora (0.51 USDC)</button>
+
+          <!-- Fila 3: Nodos (Súper compactos) -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <!-- NODO 1 -->
+            <div class="glass-panel rounded-2xl p-4 flex flex-col glow-cyan-hover transition-all duration-300 relative group" id="node1-card">
+              <div class="absolute top-0 right-0 w-16 h-16 bg-accent-primary/5 rounded-bl-full rounded-tr-2xl pointer-events-none group-hover:bg-accent-primary/10 transition-colors"></div>
+              <div class="flex items-center justify-between mb-3 relative z-10">
+                <div class="flex items-center gap-2 font-bold text-white text-sm">
+                  <span class="text-lg drop-shadow-md">🔬</span> <span data-i18n="nodes.node1.title" class="group-hover:text-accent-primary transition-colors">Compromiso</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm cursor-help relative group/tt opacity-80 group-hover:opacity-100 transition-opacity">
+                    ℹ️
+                    <div class="absolute bottom-full right-0 mb-2 w-48 p-2 bg-surface-2/90 backdrop-blur-xl border border-border-light rounded-xl shadow-xl text-[0.65rem] text-text-primary opacity-0 group-hover/tt:opacity-100 pointer-events-none transition-opacity z-50 text-left font-normal normal-case tracking-normal" data-i18n="nodes.node1.desc">Analiza transacciones y gas consumido. Calcula tu tier de actividad.</div>
+                  </span>
+                  <div id="node1-status" class="w-2.5 h-2.5 rounded-full bg-accent-error shadow-[0_0_8px_rgba(255,23,68,0.6)]"></div>
+                </div>
+              </div>
+              <div id="node1-streak-needed" class="text-[0.6rem] font-mono text-accent-warning bg-accent-warning/10 px-2 py-0.5 rounded-md mb-2 w-max border border-accent-warning/20" data-i18n="nodes.node1.req">Día 3</div>
+              <div id="node1-data" class="text-[0.65rem] text-text-muted mb-3 flex-grow font-light"><p class="animate-pulse" data-i18n="nodes.loadingData">Esperando datos...</p></div>
+              <div class="grid grid-cols-2 gap-2 mt-auto relative z-10">
+                <button id="btn-node1-streak" class="bg-surface-2 hover:bg-surface-1 border border-border-light text-[0.65rem] font-semibold text-white py-2 rounded-lg transition-colors hover:border-accent-primary/50" data-i18n="nodes.node1.streakBtn">🔥 Racha</button>
+                <button id="btn-node1-instant" class="bg-accent-primary/10 hover:bg-accent-primary/20 border border-accent-primary/30 hover:border-accent-primary text-accent-primary font-bold text-[0.65rem] py-2 rounded-lg transition-all shadow-glow-cyan" data-i18n="nodes.node1.instantBtn">⚡ 0.51</button>
+              </div>
+            </div>
+
+            <!-- NODO 2 -->
+            <div class="glass-panel rounded-2xl p-4 flex flex-col glow-cyan-hover transition-all duration-300 relative group" id="node2-card">
+              <div class="absolute top-0 right-0 w-16 h-16 bg-accent-primary/5 rounded-bl-full rounded-tr-2xl pointer-events-none group-hover:bg-accent-primary/10 transition-colors"></div>
+              <div class="flex items-center justify-between mb-3 relative z-10">
+                <div class="flex items-center gap-2 font-bold text-white text-sm">
+                  <span class="text-lg drop-shadow-md">💎</span> <span data-i18n="nodes.node2.title" class="group-hover:text-accent-primary transition-colors">Convicción</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm cursor-help relative group/tt opacity-80 group-hover:opacity-100 transition-opacity">
+                    ℹ️
+                    <div class="absolute bottom-full right-0 mb-2 w-48 p-2 bg-surface-2/90 backdrop-blur-xl border border-border-light rounded-xl shadow-xl text-[0.65rem] text-text-primary opacity-0 group-hover/tt:opacity-100 pointer-events-none transition-opacity z-50 text-left font-normal normal-case tracking-normal" data-i18n="nodes.node2.desc">Calcula % del supply total de USDC nativo. Mide tu peso económico.</div>
+                  </span>
+                  <div id="node2-status" class="w-2.5 h-2.5 rounded-full bg-accent-error shadow-[0_0_8px_rgba(255,23,68,0.6)]"></div>
+                </div>
+              </div>
+              <div id="node2-streak-needed" class="text-[0.6rem] font-mono text-accent-warning bg-accent-warning/10 px-2 py-0.5 rounded-md mb-2 w-max border border-accent-warning/20" data-i18n="nodes.node2.req">Día 12</div>
+              <div id="node2-data" class="text-[0.65rem] text-text-muted mb-3 flex-grow font-light"><p class="animate-pulse" data-i18n="nodes.loadingData">Esperando datos...</p></div>
+              <div class="grid grid-cols-2 gap-2 mt-auto relative z-10">
+                <button id="btn-node2-streak" class="bg-surface-2 hover:bg-surface-1 border border-border-light text-[0.65rem] font-semibold text-white py-2 rounded-lg transition-colors hover:border-accent-primary/50" data-i18n="nodes.node2.streakBtn">🔥 Racha</button>
+                <button id="btn-node2-instant" class="bg-accent-primary/10 hover:bg-accent-primary/20 border border-accent-primary/30 hover:border-accent-primary text-accent-primary font-bold text-[0.65rem] py-2 rounded-lg transition-all shadow-glow-cyan" data-i18n="nodes.node2.instantBtn">⚡ 1.26</button>
+              </div>
+            </div>
+
+            <!-- NODO 3 -->
+            <div class="glass-panel rounded-2xl p-4 flex flex-col glow-cyan-hover transition-all duration-300 relative group" id="node3-card">
+              <div class="absolute top-0 right-0 w-16 h-16 bg-accent-primary/5 rounded-bl-full rounded-tr-2xl pointer-events-none group-hover:bg-accent-primary/10 transition-colors"></div>
+              <div class="flex items-center justify-between mb-3 relative z-10">
+                <div class="flex items-center gap-2 font-bold text-white text-sm">
+                  <span class="text-lg drop-shadow-md">🏛️</span> <span data-i18n="nodes.node3.title" class="group-hover:text-accent-primary transition-colors">Legado</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm cursor-help relative group/tt opacity-80 group-hover:opacity-100 transition-opacity">
+                    ℹ️
+                    <div class="absolute bottom-full right-0 mb-2 w-48 p-2 bg-surface-2/90 backdrop-blur-xl border border-border-light rounded-xl shadow-xl text-[0.65rem] text-text-primary opacity-0 group-hover/tt:opacity-100 pointer-events-none transition-opacity z-50 text-left font-normal normal-case tracking-normal" data-i18n="nodes.node3.desc">Analiza la antigüedad de tu wallet en Arc Testnet para el multiplicador.</div>
+                  </span>
+                  <div id="node3-status" class="w-2.5 h-2.5 rounded-full bg-accent-error shadow-[0_0_8px_rgba(255,23,68,0.6)]"></div>
+                </div>
+              </div>
+              <div id="node3-streak-needed" class="text-[0.6rem] font-mono text-accent-warning bg-accent-warning/10 px-2 py-0.5 rounded-md mb-2 w-max border border-accent-warning/20" data-i18n="nodes.node3.req">Día 25</div>
+              <div id="node3-data" class="text-[0.65rem] text-text-muted mb-3 flex-grow font-light"><p class="animate-pulse" data-i18n="nodes.loadingData">Esperando datos...</p></div>
+              <div class="grid grid-cols-2 gap-2 mt-auto relative z-10">
+                <button id="btn-node3-streak" class="bg-surface-2 hover:bg-surface-1 border border-border-light text-[0.65rem] font-semibold text-white py-2 rounded-lg transition-colors hover:border-accent-primary/50" data-i18n="nodes.node3.streakBtn">🔥 Racha</button>
+                <button id="btn-node3-instant" class="bg-accent-primary/10 hover:bg-accent-primary/20 border border-accent-primary/30 hover:border-accent-primary text-accent-primary font-bold text-[0.65rem] py-2 rounded-lg transition-all shadow-glow-cyan" data-i18n="nodes.node3.instantBtn">⚡ 5.01</button>
+              </div>
+            </div>
+
           </div>
-          <div id="node1-data" class="node-data">
-            <p class="loading-text" data-i18n="nodes.loadingData">Carga los datos para analizar.</p>
-          </div>
+
+          <!-- ─── SECCIÓN: RANKING (Movida aquí) ─── -->
+          <section id="ranking-section" class="glass-panel rounded-3xl p-5 shadow-lg flex-grow flex flex-col relative group">
+            <div class="absolute inset-0 bg-gradient-to-t from-accent-primary/5 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-3xl"></div>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2 border-b border-border-light pb-3 relative z-10">
+              <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                <span class="text-2xl drop-shadow-md">🏆</span> <span data-i18n="ranking.title" class="group-hover:text-accent-primary transition-colors">Tabla de Señales</span>
+                <span class="text-sm cursor-help relative group/tt ml-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                  ℹ️
+                  <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-surface-2/90 backdrop-blur-xl border border-border-light rounded-xl shadow-xl text-[0.65rem] text-text-primary opacity-0 group-hover/tt:opacity-100 pointer-events-none transition-opacity z-50 text-left font-normal normal-case tracking-normal whitespace-normal" data-i18n-html data-i18n="ranking.desc">
+                    Ordenado por puntaje total acumulado.
+                  </div>
+                </span>
+              </h2>
+              <div id="ranking-total-count" class="text-xs text-text-muted font-mono bg-surface-2 px-3 py-1 rounded-full border border-border-light"></div>
+            </div>
+
+            <!-- Ajustamos altura máxima para asegurar scroll interno si hay más de 3, o dejarlo flex-grow para que abrace todo el espacio. -->
+            <div id="ranking-container" class="w-full overflow-y-auto max-h-[300px] xl:max-h-full xl:flex-grow">
+              <p class="text-sm text-text-muted animate-pulse py-4 text-center" data-i18n="ranking.loading">⏳ Cargando ranking...</p>
+            </div>
+          </section>
+
         </div>
 
-        <!-- NODO 2: CONVICCIÓN -->
-        <div class="card node-card" id="node2-card">
-          <div class="node-header">
-            <span class="node-icon">💎</span>
-            <div class="node-title" data-i18n="nodes.node2.title">Nodo 2 — Convicción</div>
-            <div id="node2-status" class="node-status-dot inactive" title="Inactivo"></div>
-          </div>
-          <p class="node-description" data-i18n="nodes.node2.desc">
-            Calcula el porcentaje del supply total de USDC nativo que posee tu wallet.
-            Mide tu peso económico en la red.
-          </p>
-          <div id="node2-streak-needed" class="node-streak-info" data-i18n="nodes.node2.req">Requiere racha día 12</div>
-          <div class="node-actions">
-            <button id="btn-node2-streak"  class="btn btn-secondary btn-small" data-i18n="nodes.node2.streakBtn">🔥 Activar por Racha</button>
-            <button id="btn-node2-instant" class="btn btn-primary btn-small" data-i18n="nodes.node2.instantBtn">⚡ Activar Ahora (1.26 USDC)</button>
-          </div>
-          <div id="node2-data" class="node-data">
-            <p class="loading-text" data-i18n="nodes.loadingData">Carga los datos para analizar.</p>
-          </div>
+        <!-- ================= COLUMNA DERECHA SUPERIOR (Span 4) - RUNESTONE ================= -->
+        <div class="xl:col-span-4 flex flex-col h-full">
+          
+          <!-- Tarjeta Principal (Runestone & GM) -->
+          <div class="bg-bg-primary rounded-[2.5rem] border border-border-light shadow-glow-magenta relative flex flex-col items-center p-6 justify-between flex-grow group hover:shadow-glow-magenta-lg transition-shadow duration-700">
+          
+            <!-- Glow effects -->
+            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-accent-runestone/15 via-transparent to-transparent pointer-events-none group-hover:from-accent-runestone/25 transition-colors duration-700 rounded-[2.5rem]"></div>
+            
+            <div id="runestone-status" class="text-[0.65rem] uppercase tracking-[0.2em] font-bold text-text-primary bg-surface-1 px-5 py-1.5 rounded-full border border-accent-runestone/30 backdrop-blur-md z-10 mt-2 shadow-[0_0_15px_rgba(255,0,127,0.3)]" data-i18n="nodes.runestoneInactive">
+              Inactivo
+            </div>
+
+            <div class="relative w-full flex-grow flex items-center justify-center min-h-[260px]">
+              <div class="runestone-core-container">
+                <!-- Nodos Satélite -->
+                <div class="satellite-node satellite-node-1 text-white">
+                  <div id="visual-dot-1" class="w-1.5 h-1.5 rounded-full bg-text-muted"></div>
+                  COMPROMISO
+                </div>
+                <div class="satellite-node satellite-node-2 text-white">
+                  <div id="visual-dot-2" class="w-1.5 h-1.5 rounded-full bg-text-muted"></div>
+                  CONVICCIÓN
+                </div>
+                <div class="satellite-node satellite-node-3 text-white">
+                  <div id="visual-dot-3" class="w-1.5 h-1.5 rounded-full bg-text-muted"></div>
+                  LEGADO
+                </div>
+
+                <!-- Estructura Central Absoluta (Garantiza Z-Index) -->
+                <div class="relative w-[140px] h-[160px] mx-auto mt-8 flex flex-col items-center justify-end">
+                  
+                  <!-- Botón GM como Pedestal Interactivo (Nivel 0) -->
+                  <button id="btn-gm" class="gm-pedestal group pointer-events-auto" style="z-index: 0;" disabled>
+                    <!-- Tooltip informativo GM -->
+                    <div class="absolute bottom-[100%] mb-4 w-48 p-2 bg-surface-2 border border-border-color rounded shadow-xl text-[0.65rem] text-text-muted opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 text-left font-normal normal-case tracking-normal" data-i18n="dashboard.dailyGmDesc">
+                      Envía tu señal diaria a Arc Testnet. Ventana: 00:00–23:59 UTC. +1 punto (+2 con Runestone).
+                    </div>
+                    
+                    <span id="btn-gm-text" class="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-white transition-opacity">
+                      GM
+                    </span>
+                  </button>
+
+                  <!-- SVG Cristal (Runestone) - (Nivel 50) -->
+                  <div class="absolute bottom-[20px] pointer-events-none" style="z-index: 50;">
+                    <svg class="crystal-svg w-16 h-28 drop-shadow-2xl" viewBox="0 0 100 180" xmlns="http://www.w3.org/2000/svg">
+                      <defs>
+                        <linearGradient id="crystalMain" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stop-color="#ff1493" />
+                          <stop offset="50%" stop-color="#b800e6" />
+                          <stop offset="100%" stop-color="#800080" />
+                        </linearGradient>
+                        <linearGradient id="crystalLight" x1="0%" y1="0%" x2="50%" y2="50%">
+                          <stop offset="0%" stop-color="#ff80df" />
+                          <stop offset="100%" stop-color="#ff1493" />
+                        </linearGradient>
+                        <linearGradient id="crystalDark" x1="100%" y1="100%" x2="0%" y2="0%">
+                          <stop offset="0%" stop-color="#4d004d" />
+                          <stop offset="100%" stop-color="#b800e6" />
+                        </linearGradient>
+                        <linearGradient id="silverCrack" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stop-color="#e0e0e0" />
+                          <stop offset="50%" stop-color="#a0a0a0" />
+                          <stop offset="100%" stop-color="#ffffff" />
+                        </linearGradient>
+                      </defs>
+                      
+                      <polygon points="50,5 20,40 10,100 35,170 50,175 70,165 90,90 85,30" fill="url(#crystalDark)" />
+                      <polygon points="50,15 25,45 20,110 50,165 75,100 80,40" fill="url(#crystalMain)" />
+                      <polygon points="50,5 20,40 25,45 50,15" fill="url(#crystalLight)" />
+                      <polygon points="20,110 10,100 35,170 50,165" fill="#e600ac" />
+                      <polygon points="50,5 85,30 80,40 50,15" fill="#cc00cc" />
+                      <polygon points="50,165 70,165 90,90 75,100" fill="#990099" />
+                      <path d="M 22,45 L 30,55 L 25,80 L 35,120 L 25,140 L 45,170" fill="none" stroke="url(#silverCrack)" stroke-width="2.5" stroke-linejoin="bevel" stroke-linecap="round" />
+                      <path d="M 50,10 L 65,30 L 60,45 L 85,75" fill="none" stroke="url(#silverCrack)" stroke-width="2" stroke-linejoin="bevel" stroke-linecap="round" />
+                      <path d="M 20,110 L 30,115 L 45,160" fill="none" stroke="url(#silverCrack)" stroke-width="1.5" stroke-linejoin="bevel" />
+                      <path d="M 50,15 L 25,45 M 50,15 L 80,40 M 25,45 L 20,110 M 80,40 L 75,100 M 20,110 L 50,165 M 75,100 L 50,165" fill="none" stroke="#ffb3ff" stroke-width="0.5" opacity="0.6" />
+                      <polygon points="50,5 45,20 55,20" fill="#ffffff" opacity="0.8" />
+                    </svg>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+            
+            <!-- Agente IA COMPACTO -->
+            <div id="agent-panel" class="w-full mt-auto pt-4 border-t border-border-color/30 relative z-10">
+              <div class="flex items-center justify-between">
+                <h3 class="text-[0.65rem] font-bold text-text-muted uppercase tracking-wider flex items-center gap-1.5">
+                  🤖 AI Agent
+                  <span class="text-xs cursor-help relative group/tt">
+                    ℹ️
+                    <div class="absolute bottom-full left-0 mb-2 w-48 p-2 bg-surface-2 border border-border-color rounded shadow-xl text-[0.65rem] text-text-muted opacity-0 group-hover/tt:opacity-100 pointer-events-none transition-opacity z-50 text-left font-normal normal-case tracking-normal" data-i18n="dashboard.agentDesc">
+                      Agente ERC-8004 autónomo.
+                    </div>
+                  </span>
+                </h3>
+                <div id="agent-ui-container" class="text-xs font-mono text-text-muted">
+                  <span data-i18n="dashboard.agentEmpty" class="bg-surface/50 rounded px-2 py-1 border border-border-color/50">Inactivo</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- LIVE SIGNAL VIEWER -->
+            <div class="w-full mt-4 h-64 shrink-0 flex flex-col bg-black/60 rounded-xl border border-accent-primary/20 p-3 overflow-hidden relative z-10 shadow-[inset_0_0_20px_rgba(0,229,255,0.05)]">
+              <div class="text-[0.55rem] font-bold text-accent-primary uppercase tracking-widest mb-2 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-accent-primary animate-pulse shadow-glow-cyan"></span>
+                Live Signals
+              </div>
+              <div id="signal-viewer-content" class="flex-grow w-full font-mono text-[0.6rem] text-accent-primary/80 overflow-y-hidden flex flex-col justify-end relative mask-image-fade-top gap-1.5">
+                <!-- Se inyectarán dinámicamente los logs aquí -->
+              </div>
+            </div>
+
+          </div> <!-- Cierra Tarjeta Principal (Runestone) -->
         </div>
 
-        <!-- NODO 3: LEGADO -->
-        <div class="card node-card" id="node3-card">
-          <div class="node-header">
-            <span class="node-icon">🏛️</span>
-            <div class="node-title" data-i18n="nodes.node3.title">Nodo 3 — Legado</div>
-            <div id="node3-status" class="node-status-dot inactive" title="Inactivo"></div>
-          </div>
-          <p class="node-description" data-i18n="nodes.node3.desc">
-            Analiza el timestamp de tu primera y última transacción en Arc Testnet.
-            Cuanto más antiguo seas en la red, mayor será tu multiplicador de legado.
-          </p>
-          <div id="node3-streak-needed" class="node-streak-info" data-i18n="nodes.node3.req">Requiere racha día 25</div>
-          <div class="node-actions">
-            <button id="btn-node3-streak"  class="btn btn-secondary btn-small" data-i18n="nodes.node3.streakBtn">🔥 Activar por Racha</button>
-            <button id="btn-node3-instant" class="btn btn-primary btn-small" data-i18n="nodes.node3.instantBtn">⚡ Activar Ahora (5.01 USDC)</button>
-          </div>
-          <div id="node3-data" class="node-data">
-            <p class="loading-text" data-i18n="nodes.loadingData">Carga los datos para analizar.</p>
-          </div>
-        </div>
+      </div> <!-- Cierra grid superior -->
 
-      </div>
-
-      <!-- Botón cargar datos analíticos -->
-      <div style="margin-top: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-        <button id="btn-load-nodes" class="btn btn-secondary" data-i18n="nodes.btnLoad">
-          📊 Cargar Datos de Nodos (desde Blockscout)
-        </button>
-        <span style="font-size: 0.82rem; color: var(--color-text-muted);" data-i18n="nodes.loadWarning">
-          Consume ~60 créditos API. Resultado se cachea 1 hora.
-        </span>
-      </div>
-
-      <!-- Info de bifurcación y nodos -->
-      <div class="card" style="margin-top: 16px;">
-        <div class="card-title" data-i18n="nodes.howItWorksTitle">ℹ️ Cómo funcionan los nodos</div>
-        <div style="font-size: 0.88rem; color: var(--color-text-muted); line-height: 1.8;" data-i18n-html data-i18n="nodes.howItWorksLines">
-          <p>• <strong style="color: var(--color-text);">VIP (B1):</strong> Activa por racha (gratis excepto 0.01 base) o pagando tarifa premium al instante.</p>
-          <p>• <strong style="color: var(--color-fork);">Bifurcación B2+:</strong> Sin tarifas premium. Activas nodos instantáneamente o por racha pagando solo el costo base.</p>
-          <p>• <strong style="color: var(--color-runestone);">Runestone:</strong> Se activa automáticamente al tener los 3 nodos. Duplica tus puntos por GM.</p>
-          <p>• Si pierdes la racha, los nodos se desactivan y debes reactivarlos.</p>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- ─── SECCIÓN: RANKING ─── -->
-    <section id="ranking-section" class="section">
-      <h2 class="section-title" data-i18n="ranking.title">📊 Tabla de Señales</h2>
-
-      <div class="card" style="margin-bottom: 16px;">
-        <p style="font-size: 0.88rem; color: var(--color-text-muted);" data-i18n-html data-i18n="ranking.desc">
-          El ranking está ordenado por <strong style="color: var(--color-text);">puntaje acumulado total</strong>, no por racha activa.
-          Cualquier wallet puede ser TOP 1 con suficientes puntos, independientemente de su bifurcación.
-        </p>
-      </div>
-
-      <div id="ranking-container" class="card">
-        <p class="loading-text" data-i18n="ranking.loading">⏳ Cargando ranking...</p>
-      </div>
-
-
-    </section>
-
-    <!-- ─── SECCIÓN: RED ─── -->
-    <section id="network-section" class="section">
-      <h2 class="section-title" data-i18n="network.title">🌐 Análisis de Red — Arc Testnet</h2>
-
-      <div class="card" style="margin-bottom: 16px;">
-        <p style="font-size: 0.88rem; color: var(--color-text-muted);" data-i18n="network.desc">
-          Métricas en tiempo real obtenidas desde Blockscout PRO API.
-          Se actualiza automáticamente cada 30 segundos con caché local de 2 minutos.
-        </p>
-      </div>
-
-      <div id="network-container">
-        <p class="loading-text" data-i18n="network.loading">⏳ Conectando con Arc Testnet...</p>
-      </div>
-    </section>
+    </div> <!-- Cierra main-app-section -->
 
   </main>
 
@@ -255,6 +327,5 @@
 </div><!-- /app-wrapper -->
 
 <!-- ══════════ Módulo principal (ES Modules) ══════════ -->
-
 </body>
 </html>
