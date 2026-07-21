@@ -117,13 +117,52 @@ function setupWalletListeners() {
 }
 
 function setupGlobalButtons() {
-  // Language Switcher
-  const langSwitcher = document.getElementById('lang-switcher');
-  if (langSwitcher) {
-    langSwitcher.value = getLanguage();
-    langSwitcher.addEventListener('change', (e) => {
-      setLanguage(e.target.value);
+  // Custom Language Switcher
+  const langOptions = document.querySelectorAll('.custom-lang-option');
+  if (langOptions.length > 0) {
+    const updateDisplay = () => {
+      const disp = document.getElementById('lang-display');
+      const currentLang = getLanguage();
+      if (disp) {
+        disp.textContent = currentLang === 'en' ? '🇺🇸 EN' : '🇪🇸 ES';
+      }
+    };
+    updateDisplay();
+
+    langOptions.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const lang = e.currentTarget.getAttribute('data-value');
+        setLanguage(lang);
+        updateDisplay();
+        
+        // Volver al menu principal automáticamente
+        const viewMain = document.getElementById('dropdown-view-main');
+        const viewLang = document.getElementById('dropdown-view-lang');
+        if (viewMain && viewLang) {
+          viewLang.classList.add('hidden');
+          viewMain.classList.remove('hidden');
+        }
+      });
     });
+
+    // Lógica para alternar vistas del dropdown
+    const btnOpenLang = document.getElementById('btn-open-lang');
+    const btnBackMain = document.getElementById('btn-back-main');
+    const viewMain = document.getElementById('dropdown-view-main');
+    const viewLang = document.getElementById('dropdown-view-lang');
+
+    if (btnOpenLang && btnBackMain && viewMain && viewLang) {
+      btnOpenLang.addEventListener('click', (e) => {
+        e.stopPropagation();
+        viewMain.classList.add('hidden');
+        viewLang.classList.remove('hidden');
+      });
+      btnBackMain.addEventListener('click', (e) => {
+        e.stopPropagation();
+        viewLang.classList.add('hidden');
+        viewMain.classList.remove('hidden');
+      });
+    }
   }
   // Botón conectar wallet
   document.getElementById('btn-connect-wallet')?.addEventListener('click', handleConnect);
@@ -142,6 +181,14 @@ function setupGlobalButtons() {
     if (dropdown && !dropdown.classList.contains('hidden')) {
       if (e.target !== btnConnect && !btnConnect.contains(e.target) && !dropdown.contains(e.target)) {
         dropdown.classList.add('hidden');
+        
+        // Resetear vista al cerrar
+        const viewMain = document.getElementById('dropdown-view-main');
+        const viewLang = document.getElementById('dropdown-view-lang');
+        if (viewMain && viewLang) {
+          viewLang.classList.add('hidden');
+          viewMain.classList.remove('hidden');
+        }
       }
     }
   });
@@ -189,7 +236,12 @@ async function handleConnect() {
   } finally {
     const address = getAddress();
     if (address) {
-      setButtonLoading('btn-connect-wallet', false, shortAddress(address));
+      const hexColor = address.substring(2, 8) || '00e5ff';
+      const btnHtml = `
+        <img src="https://api.dicebear.com/7.x/identicon/svg?seed=${address}&backgroundColor=${hexColor}" alt="Avatar" class="w-4 h-4 rounded-full shadow-[0_0_5px_rgba(0,229,255,0.5)] border border-accent-primary/50">
+        <span>${shortAddress(address)}</span>
+      `;
+      setButtonLoading('btn-connect-wallet', false, btnHtml);
       setButtonLoading('btn-connect-wallet-hero', false, '🔗 Conectar Wallet');
     } else {
       setButtonLoading('btn-connect-wallet', false, '🔗 Conectar');
@@ -203,14 +255,21 @@ function updateWalletUI(address) {
   const heroEl    = document.getElementById('hero-connect-section');
   const mainEl    = document.getElementById('main-app-section');
   const btnConnect = document.getElementById('btn-connect-wallet');
+  const networkBadge = document.getElementById('navbar-network-badge');
 
   if (address) {
     if (btnConnect) {
+      const hexColor = address.substring(2, 8) || '00e5ff';
       btnConnect.removeAttribute('data-i18n'); // Proteger de traducciones
-      btnConnect.textContent = shortAddress(address);
-      btnConnect.classList.remove('btn-primary');
-      btnConnect.classList.add('btn-secondary');
+      btnConnect.innerHTML = `
+        <img src="https://api.dicebear.com/7.x/identicon/svg?seed=${address}&backgroundColor=${hexColor}" alt="Avatar" class="w-4 h-4 rounded-full shadow-[0_0_5px_rgba(0,229,255,0.5)] border border-accent-primary/50">
+        <span>${shortAddress(address)}</span>
+      `;
+      btnConnect.classList.remove('bg-accent-primary', 'hover:bg-accent-primary-dim', 'text-bg-primary', 'shadow-glow-cyan');
+      btnConnect.classList.add('bg-surface-1', 'border', 'border-border-light', 'text-text-primary', 'hover:bg-surface-2');
     }
+    if (networkBadge) networkBadge.classList.remove('hidden');
+    if (networkBadge) networkBadge.classList.add('flex');
     if (statusEl) statusEl.classList.add('connected');
     if (heroEl)   heroEl.classList.add('hidden');
     if (mainEl)   mainEl.classList.remove('hidden');
@@ -221,9 +280,11 @@ function updateWalletUI(address) {
     if (btnConnect) {
       btnConnect.setAttribute('data-i18n', 'header.connect');
       btnConnect.textContent = t('header.connect');
-      btnConnect.classList.remove('btn-secondary');
-      btnConnect.classList.add('btn-primary');
+      btnConnect.classList.remove('bg-surface-1', 'border', 'border-border-light', 'text-text-primary', 'hover:bg-surface-2');
+      btnConnect.classList.add('bg-accent-primary', 'hover:bg-accent-primary-dim', 'text-bg-primary', 'shadow-glow-cyan');
     }
+    if (networkBadge) networkBadge.classList.add('hidden');
+    if (networkBadge) networkBadge.classList.remove('flex');
     if (statusEl) statusEl.classList.remove('connected');
     if (heroEl)   heroEl.classList.remove('hidden');
     if (mainEl)   mainEl.classList.add('hidden');
@@ -284,34 +345,41 @@ function renderUserPanel(userData, gmCost, gmDoneToday) {
   const container = document.getElementById('user-data-container');
   if (!container) return;
 
+  // Actualizar Header Wallet y Avatar
+  if (appState.address) {
+    const minifiedWallet = `${appState.address.substring(0,6)}...${appState.address.substring(appState.address.length-4)}`;
+    const headerWallet = document.getElementById('header-wallet');
+    const headerAvatar = document.getElementById('header-avatar');
+    if (headerWallet) headerWallet.textContent = minifiedWallet;
+    if (headerAvatar) {
+      const hexColor = appState.address.substring(2, 8) || '00e5ff';
+      headerAvatar.src = `https://api.dicebear.com/7.x/identicon/svg?seed=${appState.address}&backgroundColor=${hexColor}`;
+    }
+  }
+
   const forkLabel = userData.forkLevel <= 1
-    ? '<span class="badge badge-vip">⭐ VIP</span>'
+    ? '<span class="px-3 py-1 bg-surface-2 rounded-full text-[0.65rem] font-bold uppercase text-[#a78bfa] border border-[#a78bfa]/30 shadow-[0_0_10px_rgba(167,139,250,0.15)] flex items-center gap-1"><span>👑</span> VIP</span>'
     : `<span class="badge badge-fork">⚡ B${userData.forkLevel}</span>`;
 
   const streakDays = userData.currentStreak;
-  const runestone  = userData.nodeCommitment && userData.nodeConviction && userData.nodeLegacy;
-
-  const totalCostWei = gmCost.total;
-  const costDisplay  = weiToUSDC(totalCostWei, 4);
-  const debtDisplay  = gmCost.debtCost > BigInt(0) ? `<span class="debt-warn">+ ${weiToUSDC(gmCost.debtCost, 4)} ${t('dashboard.debt')}</span>` : '';
 
   container.innerHTML = `
     <div class="grid grid-cols-4 gap-2">
-      <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
-        <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate"><span>🎖️</span> <span>${t('dashboard.statStatus')}</span></div>
-        <div class="text-xs font-bold flex items-center h-5 truncate">${forkLabel}</div>
+      <div class="flex flex-col items-center bg-surface-1 hover:bg-surface-2 transition-colors py-3 px-2 rounded-xl border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
+        <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-2 flex items-center justify-center gap-1.5 w-full"><span>🎖️</span> <span>${t('dashboard.statStatus')}</span></div>
+        <div class="text-sm font-bold flex items-center justify-center h-6 w-full">${forkLabel}</div>
       </div>
-      <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
-        <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate"><span>🔥</span> <span>${t('dashboard.statStreak')}</span></div>
-        <div class="text-xs font-mono font-bold text-white h-5 flex items-center truncate">${streakDays}</div>
+      <div class="flex flex-col items-center bg-surface-1 hover:bg-surface-2 transition-colors py-3 px-2 rounded-xl border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
+        <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-2 flex items-center justify-center gap-1.5 w-full"><span>🔥</span> <span>${t('dashboard.statStreak')}</span></div>
+        <div class="text-lg font-mono font-bold text-white h-6 flex items-center justify-center w-full">${streakDays}</div>
       </div>
-      <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
-        <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate"><span>⚡</span> <span>${t('dashboard.statPoints')}</span></div>
-        <div class="text-xs font-mono font-bold text-white h-5 flex items-center truncate">${userData.totalPoints.toLocaleString()}</div>
+      <div class="flex flex-col items-center bg-surface-1 hover:bg-surface-2 transition-colors py-3 px-2 rounded-xl border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
+        <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-2 flex items-center justify-center gap-1.5 w-full"><span>⚡</span> <span>${t('dashboard.statPoints')}</span></div>
+        <div class="text-lg font-mono font-bold text-white h-6 flex items-center justify-center w-full">${userData.totalPoints.toLocaleString()}</div>
       </div>
-      <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
-        <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate"><span>📡</span> <span title="${t('dashboard.statGms')}">${t('dashboard.statGms')}</span></div>
-        <div class="text-xs font-mono font-bold text-white h-5 flex items-center truncate">${userData.gmCount}</div>
+      <div class="flex flex-col items-center bg-surface-1 hover:bg-surface-2 transition-colors py-3 px-2 rounded-xl border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
+        <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-2 flex items-center justify-center gap-1.5 w-full"><span>📡</span> <span title="${t('dashboard.statGms')}">${t('dashboard.statGms')}</span></div>
+        <div class="text-lg font-mono font-bold text-white h-6 flex items-center justify-center w-full">${userData.gmCount}</div>
       </div>
     </div>
     ${userData.forkLevel > 1 ? `
@@ -323,7 +391,23 @@ function renderUserPanel(userData, gmCost, gmDoneToday) {
   `;
 
   // Re-registrar el botón de reset si fue renderizado dinámicamente
-  document.getElementById('btn-reset-vip')?.addEventListener('click', handleResetVIP);
+  const btnReset = document.getElementById('btn-reset-vip');
+  if (btnReset) {
+    btnReset.addEventListener('click', async () => {
+      await handleResetVIP();
+    });
+  }
+
+  // Configurar botón copiar
+  const btnCopy = document.getElementById('btn-copy-wallet');
+  if (btnCopy && appState.address) {
+    const newBtn = btnCopy.cloneNode(true);
+    btnCopy.parentNode.replaceChild(newBtn, btnCopy);
+    newBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(appState.address);
+      showToast('Wallet copiada', 'success');
+    });
+  }
 }
 
 // ─── Botón GM ──────────────────────────────────────────────────────────────

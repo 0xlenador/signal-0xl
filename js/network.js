@@ -72,32 +72,26 @@ export async function renderNetworkStats(containerId) {
     const totalBlocks = Number(stats.totalBlocks).toLocaleString();
     const gasAvg = Number(stats.gasAverage).toFixed(2);
     container.innerHTML = `
-      <div class="flex flex-col gap-4 h-full">
-        <div class="grid grid-cols-4 gap-2">
-          <!-- Gas -->
-          <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
-            <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate" title="GAS"><span>⛽</span> <span>GAS</span></div>
-            <div class="font-mono text-white text-xs font-bold flex items-center h-5 truncate">${gasAvg} <span class="text-[0.65rem] text-text-muted font-sans font-normal ml-1">Gwei</span></div>
-          </div>
-          <!-- Block Time -->
-          <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
-            <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate" title="BLK TIME"><span>⏱️</span> <span>BLK TIME</span></div>
-            <div class="font-mono text-white text-xs font-bold flex items-center h-5 truncate">${blockTimeSec} <span class="text-[0.65rem] text-text-muted font-sans font-normal ml-1">s</span></div>
-          </div>
-          <!-- Total Blocks -->
-          <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
-            <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate" title="BLOCKS"><span>📦</span> <span>BLOCKS</span></div>
-            <div class="font-mono text-white text-xs font-bold flex items-center h-5 truncate">${totalBlocks}</div>
-          </div>
-          <!-- Tx Today -->
-          <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
-            <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate" title="TXs"><span>🔄</span> <span>TXs</span></div>
-            <div class="font-mono text-white text-xs font-bold flex items-center h-5 truncate">${txToday}</div>
-          </div>
+      <div class="grid grid-cols-4 gap-2 h-full">
+        <!-- Gas -->
+        <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
+          <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate" title="GAS"><span>⛽</span> <span>GAS</span></div>
+          <div class="font-mono text-white text-xs font-bold flex items-center h-5 truncate">${gasAvg} <span class="text-[0.65rem] text-text-muted font-sans font-normal ml-1">Gwei</span></div>
         </div>
-        <!-- Espacio reservado para gráficas (Network) -->
-        <div id="network-graphs-container" class="flex-grow bg-surface-1/30 border border-white/5 rounded-xl min-h-[100px] flex items-center justify-center border-dashed">
-          <span class="text-text-muted text-xs font-light tracking-wide opacity-50">Reservado para gráficas</span>
+        <!-- Block Time -->
+        <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
+          <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate" title="BLK TIME"><span>⏱️</span> <span>BLK TIME</span></div>
+          <div class="font-mono text-white text-xs font-bold flex items-center h-5 truncate">${blockTimeSec} <span class="text-[0.65rem] text-text-muted font-sans font-normal ml-1">s</span></div>
+        </div>
+        <!-- Total Blocks -->
+        <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
+          <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate" title="BLOCKS"><span>📦</span> <span>BLOCKS</span></div>
+          <div class="font-mono text-white text-xs font-bold flex items-center h-5 truncate">${totalBlocks}</div>
+        </div>
+        <!-- Tx Today -->
+        <div class="flex flex-col bg-surface-1 hover:bg-surface-2 transition-colors p-2 rounded-lg border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
+          <div class="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5 truncate" title="TXs"><span>🔄</span> <span>TXs</span></div>
+          <div class="font-mono text-white text-xs font-bold flex items-center h-5 truncate">${txToday}</div>
         </div>
       </div>
     `;

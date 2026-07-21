@@ -19,18 +19,45 @@
   <header class="app-header w-full flex items-center justify-between p-4 px-6 bg-surface-1/95 backdrop-blur-2xl border-b border-border-light sticky top-0 z-50 transition-all shadow-lg">
     <div class="app-logo text-xl font-bold tracking-tight text-white">Signal <span class="text-accent-primary drop-shadow-[0_0_10px_rgba(0,229,255,0.5)]">0xL</span></div>
     
-    <div class="flex gap-4 items-center">
-      <!-- Language Switcher -->
-      <select id="lang-switcher" class="bg-bg-primary/50 border border-border-color text-text-primary text-xs px-3 py-1.5 rounded-full cursor-pointer hover:border-accent-primary transition-colors focus:outline-none focus:border-accent-primary">
-        <option value="en">🇺🇸 EN</option>
-        <option value="es">🇪🇸 ES</option>
-      </select>
+    <div class="flex items-center gap-3">
+      <!-- Network Badge -->
+      <div id="navbar-network-badge" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-1 border border-border-light text-[0.65rem] font-bold text-text-muted transition-opacity">
+        <img src="assets/arc-logo.jpg" alt="Arc" class="w-4 h-4 rounded-full object-cover">
+        Arc Testnet
+      </div>
+
       <div id="wallet-status" class="wallet-status relative flex items-center gap-2">
-        <div class="wallet-dot w-2 h-2 rounded-full bg-text-muted transition-colors duration-300"></div>
-        <button id="btn-connect-wallet" class="bg-accent-primary hover:bg-accent-primary-dim text-bg-primary font-bold text-sm px-5 py-1.5 rounded-full transition-all shadow-glow-cyan" data-i18n="header.connect">🔗 Conectar</button>
+        <button id="btn-connect-wallet" class="bg-accent-primary hover:bg-accent-primary-dim text-bg-primary font-bold text-sm px-4 py-1.5 rounded-full transition-all shadow-glow-cyan flex items-center gap-2" data-i18n="header.connect">🔗 Conectar</button>
         <!-- Dropdown -->
-        <div id="wallet-dropdown" class="wallet-dropdown hidden absolute top-full right-0 mt-3 bg-surface-2/90 backdrop-blur-xl border border-border-light rounded-2xl shadow-xl min-w-[150px] z-50">
-          <button id="btn-disconnect-wallet" class="w-full text-left px-5 py-3 text-sm text-accent-error font-semibold hover:bg-white/5 transition-colors" data-i18n="header.disconnect">Cerrar Sesión</button>
+        <div id="wallet-dropdown" class="wallet-dropdown hidden absolute top-full right-0 mt-3 border border-border-light rounded-2xl shadow-[0_15px_50px_rgba(0,0,0,1)] min-w-[170px] z-50 overflow-hidden" style="background-color: #05050A; opacity: 1 !important; backdrop-filter: none !important;">
+          
+          <!-- View 1: Main Menu -->
+          <div id="dropdown-view-main" class="flex flex-col p-1.5 w-full">
+            <div class="px-3 py-2 text-[0.65rem] text-text-muted uppercase tracking-wider font-bold border-b border-border-light/30 mb-1">Preferencias</div>
+            
+            <div id="btn-open-lang" class="flex items-center justify-between px-3 py-2 hover:bg-surface-1 rounded-xl transition-colors cursor-pointer">
+              <span class="text-xs font-semibold text-text-primary">Idioma</span>
+              <div class="flex items-center gap-1">
+                <span id="lang-display" class="text-xs font-bold text-text-primary">🇪🇸 ES</span>
+                <span class="text-[0.6rem] opacity-50">▶</span>
+              </div>
+            </div>
+
+            <button id="btn-disconnect-wallet" class="w-full text-left px-3 py-2.5 mt-1 rounded-xl text-xs text-accent-error font-bold hover:bg-accent-error/10 transition-colors flex items-center gap-2" data-i18n="header.disconnect">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+              Cerrar Sesión
+            </button>
+          </div>
+
+          <!-- View 2: Lang Menu -->
+          <div id="dropdown-view-lang" class="hidden flex-col p-1.5 w-full">
+            <div id="btn-back-main" class="flex items-center gap-2 px-3 py-2 text-[0.65rem] text-text-muted hover:text-text-primary uppercase tracking-wider font-bold border-b border-border-light/30 mb-1 cursor-pointer transition-colors">
+              <span class="text-[0.6rem]">◀</span> Volver
+            </div>
+            <button class="custom-lang-option w-full text-left px-3 py-2 hover:bg-surface-1 rounded-xl text-xs font-bold transition-colors text-text-primary" data-value="en">🇺🇸 EN</button>
+            <button class="custom-lang-option w-full text-left px-3 py-2 hover:bg-surface-1 rounded-xl text-xs font-bold transition-colors text-text-primary" data-value="es">🇪🇸 ES</button>
+          </div>
+
         </div>
       </div>
     </div>
@@ -53,157 +80,40 @@
     <!-- DASHBOARD PRINCIPAL (Conectado) -->
     <div id="main-app-section" class="hidden flex-col gap-4">
 
-      <!-- ================= SECCIÓN SUPERIOR (Filas 1 y 2 + Runestone) ================= -->
-      <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
+            <!-- ================= SECCIÓN SUPERIOR ================= -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
         
-        <!-- ================= COLUMNA IZQUIERDA (Span 8) ================= -->
-        <div class="xl:col-span-8 flex flex-col gap-4">
-          
-          <!-- Fila 1: Tu Señal & Network Stats -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- ================= COLUMNA IZQUIERDA (Span 4) ================= -->
+        <div class="xl:col-span-4 flex flex-col gap-4">
+          <!-- Tarjeta Unificada (Tu Señal + Runestone) -->
+          <div class="bg-bg-primary rounded-[2.5rem] border border-border-light shadow-glow-magenta relative flex flex-col p-6 justify-between flex-grow group hover:shadow-glow-magenta-lg transition-shadow duration-700">
+            <!-- Glow effects -->
+            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-accent-runestone/15 via-transparent to-transparent pointer-events-none group-hover:from-accent-runestone/25 transition-colors duration-700 rounded-[2.5rem]"></div>
             
             <!-- Tu Señal -->
-            <div class="glass-panel rounded-3xl p-5 shadow-lg relative flex flex-col group hover:shadow-glow-cyan transition-shadow duration-500">
+            <div class="relative z-10 w-full mb-8">
               <h3 class="text-sm font-bold text-text-muted uppercase tracking-wider mb-4 flex items-center justify-between">
                 <span data-i18n="dashboard.yourSignal" class="group-hover:text-accent-primary transition-colors">Tu Señal</span>
-                <span class="text-lg opacity-80 group-hover:opacity-100 transition-opacity">👤</span>
+                <div class="flex items-center gap-2 bg-surface-1/80 px-2 py-1 rounded-full border border-border-light/50 hover:border-accent-primary/50 transition-colors shadow-sm">
+                  <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-accent-primary to-accent-runestone flex items-center justify-center overflow-hidden shadow-[0_0_8px_rgba(0,229,255,0.4)]">
+                    <img id="header-avatar" src="https://api.dicebear.com/7.x/identicon/svg?seed=0x0" alt="Avatar" class="w-full h-full opacity-90">
+                  </div>
+                  <span id="header-wallet" class="text-xs font-mono font-bold text-white tracking-wider cursor-default pt-0.5">0x...</span>
+                  <button id="btn-copy-wallet" class="text-text-muted hover:text-accent-primary transition-colors cursor-pointer ml-1" title="Copiar Wallet">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                  </button>
+                </div>
               </h3>
-              <div id="user-data-container" class="text-sm flex-grow">
+              <div id="user-data-container" class="text-sm w-full">
                 <p class="text-text-muted animate-pulse font-light" data-i18n="dashboard.loadingContract">Cargando datos...</p>
               </div>
             </div>
 
-            <!-- Network Stats (Arc Testnet) -->
-            <div class="glass-panel rounded-3xl p-5 shadow-lg relative flex flex-col justify-between group hover:shadow-glow-cyan transition-shadow duration-500">
-              <div class="absolute inset-0 bg-gradient-to-br from-accent-primary/5 to-transparent pointer-events-none rounded-3xl group-hover:from-accent-primary/10 transition-colors"></div>
-              <h3 class="text-sm font-bold text-text-muted uppercase tracking-wider mb-4 flex items-center justify-between relative z-10">
-                <span class="group-hover:text-accent-primary transition-colors">Arc Testnet <span class="text-[0.6rem] ml-1 bg-accent-success/10 text-accent-success px-2 py-0.5 rounded-full border border-accent-success/20">En Línea</span></span>
-                <span class="text-lg cursor-help relative group/tt opacity-80 group-hover:opacity-100 transition-opacity">
-                  🌐
-                  <div class="absolute bottom-full right-0 mb-2 w-48 p-2 bg-surface-2/90 backdrop-blur-xl border border-border-light rounded-xl shadow-xl text-[0.65rem] text-text-primary opacity-0 group-hover/tt:opacity-100 pointer-events-none transition-opacity z-50 text-left font-normal normal-case tracking-normal">
-                    Estado en tiempo real de la red Arc Testnet consumido vía Blockscout API.
-                  </div>
-                </span>
-              </h3>
-              <div id="dashboard-network-stats" class="flex-grow w-full relative z-10">
-                <p class="text-text-muted animate-pulse text-sm font-light">Sincronizando con Arc Testnet...</p>
+            <!-- Runestone Section -->
+            <div class="flex flex-col items-center w-full relative z-10 flex-grow justify-center">
+              <div id="runestone-status" class="text-[0.65rem] uppercase tracking-[0.2em] font-bold text-text-primary bg-surface-1 px-5 py-1.5 rounded-full border border-accent-runestone/30 backdrop-blur-md z-10 shadow-[0_0_15px_rgba(255,0,127,0.3)]" data-i18n="nodes.runestoneInactive">
+                Inactivo
               </div>
-            </div>
-
-
-
-          </div>
-
-          <!-- Fila 3: Nodos (Súper compactos) -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            
-            <!-- NODO 1 -->
-            <div class="glass-panel rounded-2xl p-3 flex flex-col glow-cyan-hover transition-all duration-300 relative group" id="node1-card">
-              <div class="absolute top-0 right-0 w-16 h-16 bg-accent-primary/5 rounded-bl-full rounded-tr-2xl pointer-events-none group-hover:bg-accent-primary/10 transition-colors"></div>
-              <div class="flex items-center justify-between mb-2 relative z-10">
-                <div class="flex items-center gap-2 font-bold text-white text-sm">
-                  <span class="text-lg drop-shadow-md">🔬</span> <span data-i18n="nodes.node1.title" class="group-hover:text-accent-primary transition-colors">Compromiso</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="text-sm cursor-help relative group/tt opacity-80 group-hover:opacity-100 transition-opacity">
-                    ℹ️
-                    <div class="absolute bottom-full right-0 mb-2 w-48 p-2 bg-surface-2/90 backdrop-blur-xl border border-border-light rounded-xl shadow-xl text-[0.65rem] text-text-primary opacity-0 group-hover/tt:opacity-100 pointer-events-none transition-opacity z-50 text-left font-normal normal-case tracking-normal" data-i18n="nodes.node1.desc">Analiza transacciones y gas consumido. Calcula tu tier de actividad.</div>
-                  </span>
-                  <div id="node1-status" class="w-2.5 h-2.5 rounded-full bg-accent-error shadow-[0_0_8px_rgba(255,23,68,0.6)]"></div>
-                </div>
-              </div>
-              <div id="node1-streak-needed" class="text-[0.6rem] font-mono text-accent-warning bg-accent-warning/10 px-2 py-0.5 rounded-md w-max border border-accent-warning/20 mb-1" data-i18n="nodes.node1.req">Día 3</div>
-              <div id="node1-data" class="text-[0.65rem] text-text-muted mb-2 flex-grow font-light"><p class="animate-pulse" data-i18n="nodes.loadingData">Esperando datos...</p></div>
-              <div class="grid grid-cols-2 gap-2 mt-auto relative z-10">
-                <button id="btn-node1-streak" class="bg-surface-2 hover:bg-surface-1 border border-border-light text-[0.65rem] font-semibold text-white py-1.5 rounded-lg transition-colors hover:border-accent-primary/50" data-i18n="nodes.node1.streakBtn">🔥 Racha</button>
-                <button id="btn-node1-instant" class="bg-accent-primary/10 hover:bg-accent-primary/20 border border-accent-primary/30 hover:border-accent-primary text-accent-primary font-bold text-[0.65rem] py-1.5 rounded-lg transition-all shadow-glow-cyan" data-i18n="nodes.node1.instantBtn">⚡ 0.51</button>
-              </div>
-            </div>
-
-            <!-- NODO 2 -->
-            <div class="glass-panel rounded-2xl p-3 flex flex-col glow-cyan-hover transition-all duration-300 relative group" id="node2-card">
-              <div class="absolute top-0 right-0 w-16 h-16 bg-accent-primary/5 rounded-bl-full rounded-tr-2xl pointer-events-none group-hover:bg-accent-primary/10 transition-colors"></div>
-              <div class="flex items-center justify-between mb-2 relative z-10">
-                <div class="flex items-center gap-2 font-bold text-white text-sm">
-                  <span class="text-lg drop-shadow-md">💎</span> <span data-i18n="nodes.node2.title" class="group-hover:text-accent-primary transition-colors">Convicción</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="text-sm cursor-help relative group/tt opacity-80 group-hover:opacity-100 transition-opacity">
-                    ℹ️
-                    <div class="absolute bottom-full right-0 mb-2 w-48 p-2 bg-surface-2/90 backdrop-blur-xl border border-border-light rounded-xl shadow-xl text-[0.65rem] text-text-primary opacity-0 group-hover/tt:opacity-100 pointer-events-none transition-opacity z-50 text-left font-normal normal-case tracking-normal" data-i18n="nodes.node2.desc">Calcula % del supply total de USDC nativo. Mide tu peso económico.</div>
-                  </span>
-                  <div id="node2-status" class="w-2.5 h-2.5 rounded-full bg-accent-error shadow-[0_0_8px_rgba(255,23,68,0.6)]"></div>
-                </div>
-              </div>
-              <div id="node2-streak-needed" class="text-[0.6rem] font-mono text-accent-warning bg-accent-warning/10 px-2 py-0.5 rounded-md w-max border border-accent-warning/20 mb-1" data-i18n="nodes.node2.req">Día 12</div>
-              <div id="node2-data" class="text-[0.65rem] text-text-muted mb-2 flex-grow font-light"><p class="animate-pulse" data-i18n="nodes.loadingData">Esperando datos...</p></div>
-              <div class="grid grid-cols-2 gap-2 mt-auto relative z-10">
-                <button id="btn-node2-streak" class="bg-surface-2 hover:bg-surface-1 border border-border-light text-[0.65rem] font-semibold text-white py-1.5 rounded-lg transition-colors hover:border-accent-primary/50" data-i18n="nodes.node2.streakBtn">🔥 Racha</button>
-                <button id="btn-node2-instant" class="bg-accent-primary/10 hover:bg-accent-primary/20 border border-accent-primary/30 hover:border-accent-primary text-accent-primary font-bold text-[0.65rem] py-1.5 rounded-lg transition-all shadow-glow-cyan" data-i18n="nodes.node2.instantBtn">⚡ 1.26</button>
-              </div>
-            </div>
-
-            <!-- NODO 3 -->
-            <div class="glass-panel rounded-2xl p-3 flex flex-col glow-cyan-hover transition-all duration-300 relative group" id="node3-card">
-              <div class="absolute top-0 right-0 w-16 h-16 bg-accent-primary/5 rounded-bl-full rounded-tr-2xl pointer-events-none group-hover:bg-accent-primary/10 transition-colors"></div>
-              <div class="flex items-center justify-between mb-2 relative z-10">
-                <div class="flex items-center gap-2 font-bold text-white text-sm">
-                  <span class="text-lg drop-shadow-md">🏛️</span> <span data-i18n="nodes.node3.title" class="group-hover:text-accent-primary transition-colors">Legado</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="text-sm cursor-help relative group/tt opacity-80 group-hover:opacity-100 transition-opacity">
-                    ℹ️
-                    <div class="absolute bottom-full right-0 mb-2 w-48 p-2 bg-surface-2/90 backdrop-blur-xl border border-border-light rounded-xl shadow-xl text-[0.65rem] text-text-primary opacity-0 group-hover/tt:opacity-100 pointer-events-none transition-opacity z-50 text-left font-normal normal-case tracking-normal" data-i18n="nodes.node3.desc">Analiza la antigüedad de tu wallet en Arc Testnet para el multiplicador.</div>
-                  </span>
-                  <div id="node3-status" class="w-2.5 h-2.5 rounded-full bg-accent-error shadow-[0_0_8px_rgba(255,23,68,0.6)]"></div>
-                </div>
-              </div>
-              <div id="node3-streak-needed" class="text-[0.6rem] font-mono text-accent-warning bg-accent-warning/10 px-2 py-0.5 rounded-md w-max border border-accent-warning/20 mb-1" data-i18n="nodes.node3.req">Día 25</div>
-              <div id="node3-data" class="text-[0.65rem] text-text-muted mb-2 flex-grow font-light"><p class="animate-pulse" data-i18n="nodes.loadingData">Esperando datos...</p></div>
-              <div class="grid grid-cols-2 gap-2 mt-auto relative z-10">
-                <button id="btn-node3-streak" class="bg-surface-2 hover:bg-surface-1 border border-border-light text-[0.65rem] font-semibold text-white py-1.5 rounded-lg transition-colors hover:border-accent-primary/50" data-i18n="nodes.node3.streakBtn">🔥 Racha</button>
-                <button id="btn-node3-instant" class="bg-accent-primary/10 hover:bg-accent-primary/20 border border-accent-primary/30 hover:border-accent-primary text-accent-primary font-bold text-[0.65rem] py-1.5 rounded-lg transition-all shadow-glow-cyan" data-i18n="nodes.node3.instantBtn">⚡ 5.01</button>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- ─── SECCIÓN: RANKING (Movida aquí) ─── -->
-          <section id="ranking-section" class="glass-panel rounded-3xl p-5 shadow-lg flex-grow flex flex-col relative group">
-            <div class="absolute inset-0 bg-gradient-to-t from-accent-primary/5 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-3xl"></div>
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2 border-b border-border-light pb-3 relative z-10">
-              <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                <span class="text-2xl drop-shadow-md">🏆</span> <span data-i18n="ranking.title" class="group-hover:text-accent-primary transition-colors">Tabla de Señales</span>
-                <span class="text-sm cursor-help relative group/tt ml-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                  ℹ️
-                  <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-surface-2/90 backdrop-blur-xl border border-border-light rounded-xl shadow-xl text-[0.65rem] text-text-primary opacity-0 group-hover/tt:opacity-100 pointer-events-none transition-opacity z-50 text-left font-normal normal-case tracking-normal whitespace-normal" data-i18n-html data-i18n="ranking.desc">
-                    Ordenado por puntaje total acumulado.
-                  </div>
-                </span>
-              </h2>
-              <div id="ranking-total-count" class="text-xs text-text-muted font-mono bg-surface-2 px-3 py-1 rounded-full border border-border-light"></div>
-            </div>
-
-            <!-- Ajustamos altura máxima para asegurar scroll interno si hay más de 3, o dejarlo flex-grow para que abrace todo el espacio. -->
-            <div id="ranking-container" class="w-full overflow-y-auto max-h-[300px] xl:max-h-full xl:flex-grow">
-              <p class="text-sm text-text-muted animate-pulse py-4 text-center" data-i18n="ranking.loading">⏳ Cargando ranking...</p>
-            </div>
-          </section>
-
-        </div>
-
-        <!-- ================= COLUMNA DERECHA SUPERIOR (Span 4) - RUNESTONE ================= -->
-        <div class="xl:col-span-4 flex flex-col h-full">
-          
-          <!-- Tarjeta Principal (Runestone & GM) -->
-          <div class="bg-bg-primary rounded-[2.5rem] border border-border-light shadow-glow-magenta relative flex flex-col items-center p-6 justify-between flex-grow group hover:shadow-glow-magenta-lg transition-shadow duration-700">
-          
-            <!-- Glow effects -->
-            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-accent-runestone/15 via-transparent to-transparent pointer-events-none group-hover:from-accent-runestone/25 transition-colors duration-700 rounded-[2.5rem]"></div>
-            
-            <div id="runestone-status" class="text-[0.65rem] uppercase tracking-[0.2em] font-bold text-text-primary bg-surface-1 px-5 py-1.5 rounded-full border border-accent-runestone/30 backdrop-blur-md z-10 mt-2 shadow-[0_0_15px_rgba(255,0,127,0.3)]" data-i18n="nodes.runestoneInactive">
-              Inactivo
-            </div>
 
             <div class="relative w-full flex-grow flex items-center justify-center min-h-[260px]">
               <div class="runestone-core-container">
@@ -280,6 +190,7 @@
 
               </div>
             </div>
+            </div>
             
             <!-- Agente IA COMPACTO -->
             <div id="agent-panel" class="w-full mt-auto pt-4 border-t border-border-color/30 relative z-10">
@@ -310,9 +221,124 @@
               </div>
             </div>
 
-          </div> <!-- Cierra Tarjeta Principal (Runestone) -->
+          </div>
         </div>
 
+        <!-- ================= COLUMNA DERECHA (Span 8) ================= -->
+        <div class="xl:col-span-8 flex flex-col gap-4">
+          <!-- Network Stats (Arc Testnet) -->
+          <div class="glass-panel rounded-3xl p-5 shadow-lg relative flex flex-col justify-between group hover:shadow-glow-cyan transition-shadow duration-500">
+              <div class="absolute inset-0 bg-gradient-to-br from-accent-primary/5 to-transparent pointer-events-none rounded-3xl group-hover:from-accent-primary/10 transition-colors"></div>
+              <h3 class="text-sm font-bold text-text-muted uppercase tracking-wider mb-4 flex items-center justify-between relative z-10">
+                <span class="group-hover:text-accent-primary transition-colors flex items-center gap-2"><img src="assets/arc-logo.jpg" alt="Arc" class="w-5 h-5 rounded-full object-cover">Arc Testnet <span class="text-[0.6rem] ml-1 bg-accent-success/10 text-accent-success px-2 py-0.5 rounded-full border border-accent-success/20">En Línea</span></span>
+                <span class="text-lg cursor-help relative group/tt opacity-80 group-hover:opacity-100 transition-opacity">
+                  🌐
+                  <div class="absolute bottom-full right-0 mb-2 w-48 p-2 bg-surface-2/90 backdrop-blur-xl border border-border-light rounded-xl shadow-xl text-[0.65rem] text-text-primary opacity-0 group-hover/tt:opacity-100 pointer-events-none transition-opacity z-50 text-left font-normal normal-case tracking-normal">
+                    Estado en tiempo real de la red Arc Testnet consumido vía Blockscout API.
+                  </div>
+                </span>
+              </h3>
+              <div id="dashboard-network-stats" class="flex-grow w-full relative z-10">
+                <p class="text-text-muted animate-pulse text-sm font-light">Sincronizando con Arc Testnet...</p>
+              </div>
+            </div>
+
+          <!-- Fila 3: Nodos (Súper compactos) -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <!-- NODO 1 -->
+            <div class="glass-panel rounded-2xl p-3 flex flex-col glow-cyan-hover transition-all duration-300 relative group" id="node1-card">
+              <div class="absolute top-0 right-0 w-16 h-16 bg-accent-primary/5 rounded-bl-full rounded-tr-2xl pointer-events-none group-hover:bg-accent-primary/10 transition-colors"></div>
+              <div class="flex items-center justify-between mb-2 relative z-10">
+                <div class="flex items-center gap-2 font-bold text-white text-sm">
+                  <span class="text-lg drop-shadow-md">🔬</span> <span data-i18n="nodes.node1.title" class="group-hover:text-accent-primary transition-colors">Compromiso</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm cursor-help relative group/tt opacity-80 group-hover:opacity-100 transition-opacity">
+                    ℹ️
+                    <div class="absolute bottom-full right-0 mb-2 w-48 p-2 bg-surface-2/90 backdrop-blur-xl border border-border-light rounded-xl shadow-xl text-[0.65rem] text-text-primary opacity-0 group-hover/tt:opacity-100 pointer-events-none transition-opacity z-50 text-left font-normal normal-case tracking-normal" data-i18n="nodes.node1.desc">Analiza transacciones y gas consumido. Calcula tu tier de actividad.</div>
+                  </span>
+                  <div id="node1-status" class="w-2.5 h-2.5 rounded-full bg-accent-error shadow-[0_0_8px_rgba(255,23,68,0.6)]"></div>
+                </div>
+              </div>
+              <div id="node1-streak-needed" class="text-[0.6rem] font-mono text-accent-warning bg-accent-warning/10 px-2 py-0.5 rounded-md w-max border border-accent-warning/20 mb-1" data-i18n="nodes.node1.req">Día 3</div>
+              <div id="node1-data" class="text-[0.65rem] text-text-muted mb-2 flex-grow font-light"><p class="animate-pulse" data-i18n="nodes.loadingData">Esperando datos...</p></div>
+              <div class="grid grid-cols-2 gap-2 mt-auto relative z-10">
+                <button id="btn-node1-streak" class="bg-surface-2 hover:bg-surface-1 border border-border-light text-[0.65rem] font-semibold text-white py-1.5 rounded-lg transition-colors hover:border-accent-primary/50" data-i18n="nodes.node1.streakBtn">🔥 Racha</button>
+                <button id="btn-node1-instant" class="bg-accent-primary/10 hover:bg-accent-primary/20 border border-accent-primary/30 hover:border-accent-primary text-accent-primary font-bold text-[0.65rem] py-1.5 rounded-lg transition-all shadow-glow-cyan" data-i18n="nodes.node1.instantBtn">⚡ 0.51</button>
+              </div>
+            </div>
+
+            <!-- NODO 2 -->
+            <div class="glass-panel rounded-2xl p-3 flex flex-col glow-cyan-hover transition-all duration-300 relative group" id="node2-card">
+              <div class="absolute top-0 right-0 w-16 h-16 bg-accent-primary/5 rounded-bl-full rounded-tr-2xl pointer-events-none group-hover:bg-accent-primary/10 transition-colors"></div>
+              <div class="flex items-center justify-between mb-2 relative z-10">
+                <div class="flex items-center gap-2 font-bold text-white text-sm">
+                  <span class="text-lg drop-shadow-md">💎</span> <span data-i18n="nodes.node2.title" class="group-hover:text-accent-primary transition-colors">Convicción</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm cursor-help relative group/tt opacity-80 group-hover:opacity-100 transition-opacity">
+                    ℹ️
+                    <div class="absolute bottom-full right-0 mb-2 w-48 p-2 bg-surface-2/90 backdrop-blur-xl border border-border-light rounded-xl shadow-xl text-[0.65rem] text-text-primary opacity-0 group-hover/tt:opacity-100 pointer-events-none transition-opacity z-50 text-left font-normal normal-case tracking-normal" data-i18n="nodes.node2.desc">Calcula % del supply total de USDC nativo. Mide tu peso económico.</div>
+                  </span>
+                  <div id="node2-status" class="w-2.5 h-2.5 rounded-full bg-accent-error shadow-[0_0_8px_rgba(255,23,68,0.6)]"></div>
+                </div>
+              </div>
+              <div id="node2-streak-needed" class="text-[0.6rem] font-mono text-accent-warning bg-accent-warning/10 px-2 py-0.5 rounded-md w-max border border-accent-warning/20 mb-1" data-i18n="nodes.node2.req">Día 12</div>
+              <div id="node2-data" class="text-[0.65rem] text-text-muted mb-2 flex-grow font-light"><p class="animate-pulse" data-i18n="nodes.loadingData">Esperando datos...</p></div>
+              <div class="grid grid-cols-2 gap-2 mt-auto relative z-10">
+                <button id="btn-node2-streak" class="bg-surface-2 hover:bg-surface-1 border border-border-light text-[0.65rem] font-semibold text-white py-1.5 rounded-lg transition-colors hover:border-accent-primary/50" data-i18n="nodes.node2.streakBtn">🔥 Racha</button>
+                <button id="btn-node2-instant" class="bg-accent-primary/10 hover:bg-accent-primary/20 border border-accent-primary/30 hover:border-accent-primary text-accent-primary font-bold text-[0.65rem] py-1.5 rounded-lg transition-all shadow-glow-cyan" data-i18n="nodes.node2.instantBtn">⚡ 1.26</button>
+              </div>
+            </div>
+
+            <!-- NODO 3 -->
+            <div class="glass-panel rounded-2xl p-3 flex flex-col glow-cyan-hover transition-all duration-300 relative group" id="node3-card">
+              <div class="absolute top-0 right-0 w-16 h-16 bg-accent-primary/5 rounded-bl-full rounded-tr-2xl pointer-events-none group-hover:bg-accent-primary/10 transition-colors"></div>
+              <div class="flex items-center justify-between mb-2 relative z-10">
+                <div class="flex items-center gap-2 font-bold text-white text-sm">
+                  <span class="text-lg drop-shadow-md">🏛️</span> <span data-i18n="nodes.node3.title" class="group-hover:text-accent-primary transition-colors">Legado</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm cursor-help relative group/tt opacity-80 group-hover:opacity-100 transition-opacity">
+                    ℹ️
+                    <div class="absolute bottom-full right-0 mb-2 w-48 p-2 bg-surface-2/90 backdrop-blur-xl border border-border-light rounded-xl shadow-xl text-[0.65rem] text-text-primary opacity-0 group-hover/tt:opacity-100 pointer-events-none transition-opacity z-50 text-left font-normal normal-case tracking-normal" data-i18n="nodes.node3.desc">Analiza la antigüedad de tu wallet en Arc Testnet para el multiplicador.</div>
+                  </span>
+                  <div id="node3-status" class="w-2.5 h-2.5 rounded-full bg-accent-error shadow-[0_0_8px_rgba(255,23,68,0.6)]"></div>
+                </div>
+              </div>
+              <div id="node3-streak-needed" class="text-[0.6rem] font-mono text-accent-warning bg-accent-warning/10 px-2 py-0.5 rounded-md w-max border border-accent-warning/20 mb-1" data-i18n="nodes.node3.req">Día 25</div>
+              <div id="node3-data" class="text-[0.65rem] text-text-muted mb-2 flex-grow font-light"><p class="animate-pulse" data-i18n="nodes.loadingData">Esperando datos...</p></div>
+              <div class="grid grid-cols-2 gap-2 mt-auto relative z-10">
+                <button id="btn-node3-streak" class="bg-surface-2 hover:bg-surface-1 border border-border-light text-[0.65rem] font-semibold text-white py-1.5 rounded-lg transition-colors hover:border-accent-primary/50" data-i18n="nodes.node3.streakBtn">🔥 Racha</button>
+                <button id="btn-node3-instant" class="bg-accent-primary/10 hover:bg-accent-primary/20 border border-accent-primary/30 hover:border-accent-primary text-accent-primary font-bold text-[0.65rem] py-1.5 rounded-lg transition-all shadow-glow-cyan" data-i18n="nodes.node3.instantBtn">⚡ 5.01</button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ─── SECCIÓN: RANKING ─── -->
+          <section id="ranking-section" class="glass-panel rounded-3xl p-5 shadow-lg flex-grow flex flex-col relative group">
+            <div class="absolute inset-0 bg-gradient-to-t from-accent-primary/5 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-3xl"></div>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2 border-b border-border-light pb-3 relative z-10">
+              <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                <span class="text-2xl drop-shadow-md">🏆</span> <span data-i18n="ranking.title" class="group-hover:text-accent-primary transition-colors">Tabla de Señales</span>
+                <span class="text-sm cursor-help relative group/tt ml-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                  ℹ️
+                  <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-surface-2/90 backdrop-blur-xl border border-border-light rounded-xl shadow-xl text-[0.65rem] text-text-primary opacity-0 group-hover/tt:opacity-100 pointer-events-none transition-opacity z-50 text-left font-normal normal-case tracking-normal whitespace-normal" data-i18n-html data-i18n="ranking.desc">
+                    Ordenado por puntaje total acumulado.
+                  </div>
+                </span>
+              </h2>
+              <div id="ranking-total-count" class="text-xs text-text-muted font-mono bg-surface-2 px-3 py-1 rounded-full border border-border-light"></div>
+            </div>
+
+            <!-- Ajustamos altura máxima para asegurar scroll interno si hay más de 3, o dejarlo flex-grow para que abrace todo el espacio. -->
+            <div id="ranking-container" class="w-full overflow-y-auto max-h-[300px] xl:max-h-full xl:flex-grow">
+              <p class="text-sm text-text-muted animate-pulse py-4 text-center" data-i18n="ranking.loading">⏳ Cargando ranking...</p>
+            </div>
+          </section>
+        </div>
       </div> <!-- Cierra grid superior -->
 
     </div> <!-- Cierra main-app-section -->
