@@ -1,6 +1,6 @@
 'use client';
 
-import { Copy, Info, Award, Flame, Zap, Radio } from 'lucide-react';
+import { Copy, Info, Crown, Flame, Zap, Radio } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/utils';
 import { useWeb3 } from '../Web3Provider';
 import { useSignalContract } from '@/hooks';
@@ -8,12 +8,55 @@ import { useEffect, useState } from 'react';
 
 export default function RunestonePanel() {
   const { address } = useWeb3();
-  const { fetchUserData, getGMCost, hasGMToday, doGM, loading } = useSignalContract();
+  const { fetchUserData, getGMCost, hasGMToday, doGM, resetToVIP, loading } = useSignalContract();
   
   const [userData, setUserData] = useState(null);
   const [gmCostInfo, setGmCostInfo] = useState(null);
   const [gmLoading, setGmLoading] = useState(false);
   const [gmDoneToday, setGmDoneToday] = useState(false);
+  const [countdown, setCountdown] = useState('');
+
+  useEffect(() => {
+    let interval;
+    if (gmDoneToday) {
+      const updateCountdown = () => {
+        const now = new Date();
+        const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+        const diff = tomorrow - now;
+        if (diff <= 0) {
+          setCountdown('');
+          setGmDoneToday(false);
+          return;
+        }
+        const h = Math.floor((diff / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
+        const m = Math.floor((diff / 1000 / 60) % 60).toString().padStart(2, '0');
+        const s = Math.floor((diff / 1000) % 60).toString().padStart(2, '0');
+        setCountdown(`${h}:${m}:${s}`);
+      };
+      updateCountdown();
+      interval = setInterval(updateCountdown, 1000);
+    } else {
+      setCountdown('');
+    }
+    return () => clearInterval(interval);
+  }, [gmDoneToday]);
+
+  const handleResetVIP = async () => {
+    if (!address || gmLoading) return;
+    const confirmed = window.confirm(
+      '⚠️ ¿Confirmas resetear a VIP?\n\nEsto reiniciará tu racha y desactivará todos los nodos. Tu puntaje acumulado se conserva.'
+    );
+    if (!confirmed) return;
+
+    setGmLoading(true);
+    const success = await resetToVIP();
+    if (success) {
+      fetchUserData(address).then(setUserData);
+      getGMCost(address).then(setGmCostInfo);
+      hasGMToday(address).then(setGmDoneToday);
+    }
+    setGmLoading(false);
+  };
 
   useEffect(() => {
     if (address) {
@@ -88,8 +131,16 @@ export default function RunestonePanel() {
         <div className="text-sm w-full">
           <div className="grid grid-cols-4 gap-2">
             <div className="flex flex-col items-center bg-surface-1 hover:bg-surface-2 transition-colors py-3 px-2 rounded-xl border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
-              <div className="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-2 flex items-center justify-center gap-1.5 w-full"><Award className="w-3.5 h-3.5" /> <span>STATUS</span></div>
-              <div className="text-sm font-bold flex items-center justify-center h-6 w-full"><span className="px-3 py-1 bg-surface-2 rounded-full text-[0.65rem] font-bold uppercase text-[#a78bfa] border border-[#a78bfa]/30 shadow-[0_0_10px_rgba(167,139,250,0.15)] flex items-center gap-1">VIP</span></div>
+              <div className="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-2 flex items-center justify-center gap-1.5 w-full"><Crown className="w-3.5 h-3.5" /> <span>STATUS</span></div>
+              <div className="text-sm font-bold flex items-center justify-center h-6 w-full">
+                {userData ? (
+                  userData.forkLevel <= 1 ? (
+                    <span className="px-3 py-1 bg-surface-2 rounded-full text-[0.65rem] font-bold uppercase text-[#a78bfa] border border-[#a78bfa]/30 shadow-[0_0_10px_rgba(167,139,250,0.15)] flex items-center gap-1">VIP</span>
+                  ) : (
+                    <span className="px-3 py-1 bg-surface-2 rounded-full text-[0.65rem] font-bold uppercase text-accent-warning border border-accent-warning/30 flex items-center gap-1">B{userData.forkLevel}</span>
+                  )
+                ) : '-'}
+              </div>
             </div>
             <div className="flex flex-col items-center bg-surface-1 hover:bg-surface-2 transition-colors py-3 px-2 rounded-xl border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
               <div className="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-2 flex items-center justify-center gap-1.5 w-full"><Flame className="w-3.5 h-3.5" /> <span>STREAK</span></div>
@@ -105,6 +156,18 @@ export default function RunestonePanel() {
             </div>
           </div>
         </div>
+
+        {userData?.forkLevel > 1 && (
+          <div className="mt-3 flex items-center justify-between bg-accent-warning/10 border border-accent-warning/30 p-2 rounded-xl text-xs">
+            <p className="text-accent-warning mb-0 font-bold">Estás en Bifurcación {userData.forkLevel}. El costo del GM es mayor.</p>
+            <button 
+              onClick={handleResetVIP} 
+              disabled={gmLoading}
+              className="bg-surface-2 hover:bg-surface-1 border border-border-light px-3 py-1.5 rounded-lg text-white transition-colors cursor-pointer disabled:opacity-50">
+              Resetear a VIP
+            </button>
+          </div>
+        )}
 
       </div>
 
@@ -186,16 +249,15 @@ export default function RunestonePanel() {
                   disabled={!address || gmLoading || gmDoneToday}
                   className="gm-pedestal w-full h-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                   <span className="text-xs font-bold uppercase tracking-[0.2em] text-white transition-opacity">
-                    {gmDoneToday ? 'HECHO' : (gmLoading ? 'SENDING...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'SUPER GM' : 'GM'))}
+                    {gmDoneToday ? 'GM (REFRESH)' : (gmLoading ? 'SENDING...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'SUPER GM' : 'GM'))}
                   </span>
                 </button>
               </div>
 
               {/* Contador GM Externo y Tooltip */}
               <div className="absolute top-[100%] mt-2 w-full flex items-center justify-center gap-2" style={{ transform: 'translateZ(10px)' }}>
-                <div className="text-lg font-bold font-mono text-white tracking-wider drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
-                  {/* Fake clock for UI aesthetics */}
-                  03:36:35
+                <div className={`text-lg font-bold font-mono text-white tracking-wider drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] empty:hidden ${gmDoneToday ? '' : 'hidden'}`}>
+                  {countdown}
                 </div>
                 {/* Tooltip informativo GM */}
                 <div className="relative cursor-help group/gmtt pointer-events-auto flex items-center">

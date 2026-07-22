@@ -49,17 +49,38 @@ export function useSignalContract() {
       return await withRetry(async () => {
         const contract = getReadContract();
         const data = await contract.users(walletAddress);
+        
+        let totalPoints = Number(data.totalPoints);
+        let lastGmDay = Number(data.lastGmDay);
+        let currentStreak = Number(data.currentStreak);
+        let forkLevel = Number(data.forkLevel);
+        let gmCount = Number(data.gmCount);
+        let nodeCommitment = data.nodeCommitment;
+        let nodeConviction = data.nodeConviction;
+        let nodeLegacy = data.nodeLegacy;
+        let exists = data.exists;
+
+        // Simular penalizaciones si perdió la racha (para UI y costos)
+        const today = Math.floor(Date.now() / 86400000);
+        if (lastGmDay > 0 && today > lastGmDay + 1) {
+            forkLevel += 1;
+            currentStreak = 0;
+            nodeCommitment = false;
+            nodeConviction = false;
+            nodeLegacy = false;
+        }
+
         return {
-          totalPoints: Number(data.totalPoints),
-          lastGmDay: Number(data.lastGmDay),
-          currentStreak: Number(data.currentStreak),
-          forkLevel: Number(data.forkLevel),
-          gmCount: Number(data.gmCount),
-          nodeCommitment: data.nodeCommitment,
-          nodeConviction: data.nodeConviction,
-          nodeLegacy: data.nodeLegacy,
-          exists: data.exists,
-          attachedAgentId: 0 // Hardcoded a 0 por compatibilidad con contrato actual de 9 campos
+          totalPoints,
+          lastGmDay,
+          currentStreak,
+          forkLevel,
+          gmCount,
+          nodeCommitment,
+          nodeConviction,
+          nodeLegacy,
+          exists,
+          attachedAgentId: 0
         };
       });
     } catch (err) {
@@ -130,11 +151,31 @@ export function useSignalContract() {
     }
   }, [getWriteContract]);
 
+  const resetToVIP = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const contract = getWriteContract();
+      if (!contract) throw new Error("No signer available");
+
+      const tx = await contract.resetToVIP();
+      await tx.wait();
+      return true;
+    } catch (err) {
+      console.error("resetToVIP error:", err);
+      setError(err.reason || err.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [getWriteContract]);
+
   return {
     fetchUserData,
     getGMCost,
     hasGMToday,
     doGM,
+    resetToVIP,
     loading,
     error
   };
