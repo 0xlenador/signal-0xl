@@ -10,12 +10,39 @@ export function Web3Provider({ children }) {
   const [chainId, setChainId] = useState(null);
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
+  const [error, setError] = useState(null);
+
+  const clearError = () => setError(null);
 
   useEffect(() => {
+    const checkConnection = async () => {
+      if (typeof window !== 'undefined' && window.ethereum) {
+        try {
+          // eth_accounts no abre el popup de MetaMask, solo devuelve las cuentas ya aprobadas
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          if (accounts.length > 0) {
+            const ethersProvider = new ethers.BrowserProvider(window.ethereum);
+            const ethersSigner = await ethersProvider.getSigner();
+            const addr = await ethersSigner.getAddress();
+            const net = await ethersProvider.getNetwork();
+            
+            setProvider(ethersProvider);
+            setSigner(ethersSigner);
+            setAddress(addr);
+            setChainId(Number(net.chainId));
+          }
+        } catch (err) {
+          console.error("Auto-connect failed:", err);
+        }
+      }
+    };
+
     if (typeof window !== 'undefined' && window.ethereum) {
+      checkConnection();
       window.ethereum.on('accountsChanged', handleAccountsChanged);
       window.ethereum.on('chainChanged', handleChainChanged);
     }
+    
     return () => {
       if (typeof window !== 'undefined' && window.ethereum) {
         window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
@@ -35,8 +62,9 @@ export function Web3Provider({ children }) {
   };
 
   const connect = async () => {
+    setError(null);
     if (typeof window === 'undefined' || typeof window.ethereum === 'undefined') {
-      alert('MetaMask no detectado.');
+      setError('MetaMask u otra wallet Web3 no detectada en el navegador.');
       return;
     }
     try {
@@ -56,6 +84,11 @@ export function Web3Provider({ children }) {
       }
     } catch (err) {
       console.error(err);
+      if (err.code === 4001) {
+        setError("Solicitud rechazada por el usuario.");
+      } else {
+        setError(err.message || "Error al intentar conectar la wallet.");
+      }
     }
   };
 
@@ -64,6 +97,7 @@ export function Web3Provider({ children }) {
     setChainId(null);
     setProvider(null);
     setSigner(null);
+    setError(null);
   };
 
   const switchToArcTestnet = async () => {
@@ -84,12 +118,14 @@ export function Web3Provider({ children }) {
             blockExplorerUrls: [NETWORK.blockExplorer],
           }],
         });
+      } else {
+        throw err;
       }
     }
   };
 
   return (
-    <Web3Context.Provider value={{ address, chainId, provider, signer, connect, disconnect }}>
+    <Web3Context.Provider value={{ address, chainId, provider, signer, connect, disconnect, error, clearError }}>
       {children}
     </Web3Context.Provider>
   );

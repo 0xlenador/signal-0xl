@@ -1,8 +1,11 @@
 'use client';
 
 import { Globe } from 'lucide-react';
+import { useNetworkStats } from '@/hooks';
 
 export default function NetworkStats() {
+  const stats = useNetworkStats();
+
   return (
     <div className="glass-panel rounded-3xl p-5 shadow-lg relative flex flex-col justify-between group hover:shadow-glow-cyan transition-shadow duration-500">
       <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/5 to-transparent pointer-events-none rounded-3xl group-hover:from-accent-primary/10 transition-colors"></div>
@@ -24,7 +27,7 @@ export default function NetworkStats() {
           <div className="bg-surface-1 border border-border-light rounded-xl p-3 flex flex-col justify-between">
             <span className="text-[0.6rem] text-text-muted uppercase tracking-wider flex items-center gap-1">⛽ GAS</span>
             <div className="mt-2 flex items-end justify-between">
-              <span className="text-sm font-bold text-white">22.56 <span className="text-[0.6rem] text-text-muted font-normal">Gwei</span></span>
+              <span className="text-sm font-bold text-white">{stats.gasPrice} <span className="text-[0.6rem] text-text-muted font-normal">Gwei</span></span>
               <div className="w-8 h-4 border-b-2 border-accent-primary"></div>
             </div>
           </div>
@@ -32,7 +35,7 @@ export default function NetworkStats() {
           <div className="bg-surface-1 border border-border-light rounded-xl p-3 flex flex-col justify-between">
             <span className="text-[0.6rem] text-text-muted uppercase tracking-wider flex items-center gap-1">⏱ BLK TIME</span>
             <div className="mt-2 flex items-end justify-between">
-              <span className="text-sm font-bold text-white">0.77 <span className="text-[0.6rem] text-text-muted font-normal">s</span></span>
+              <span className="text-sm font-bold text-white">{stats.blockTime} <span className="text-[0.6rem] text-text-muted font-normal">s</span></span>
               <div className="w-8 h-4 border-b-2 border-accent-runestone"></div>
             </div>
           </div>
@@ -40,7 +43,7 @@ export default function NetworkStats() {
           <div className="bg-surface-1 border border-border-light rounded-xl p-3 flex flex-col justify-between">
             <span className="text-[0.6rem] text-text-muted uppercase tracking-wider flex items-center gap-1">📦 BLOCKS</span>
             <div className="mt-2 flex items-end justify-between">
-              <span className="text-sm font-bold text-white">52,960,494</span>
+              <span className="text-sm font-bold text-white">{stats.totalBlocks}</span>
               <div className="w-8 h-4 border-b-2 border-accent-warning"></div>
             </div>
           </div>
@@ -48,7 +51,7 @@ export default function NetworkStats() {
           <div className="bg-surface-1 border border-border-light rounded-xl p-3 flex flex-col justify-between">
             <span className="text-[0.6rem] text-text-muted uppercase tracking-wider flex items-center gap-1">🔄 TXS</span>
             <div className="mt-2 flex items-end justify-between">
-              <span className="text-sm font-bold text-white">1,615,536</span>
+              <span className="text-sm font-bold text-white">{stats.totalTxs}</span>
               <div className="w-8 h-4 border-b-2 border-accent-success"></div>
             </div>
           </div>

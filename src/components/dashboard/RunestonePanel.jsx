@@ -1,10 +1,59 @@
 'use client';
 
 import { Copy, Info, Award, Flame, Zap, Radio } from 'lucide-react';
+import { getAvatarUrl } from '@/lib/utils';
 import { useWeb3 } from '../Web3Provider';
+import { useSignalContract } from '@/hooks';
+import { useEffect, useState } from 'react';
 
 export default function RunestonePanel() {
   const { address } = useWeb3();
+  const { fetchUserData, getGMCost, hasGMToday, doGM, loading } = useSignalContract();
+  
+  const [userData, setUserData] = useState(null);
+  const [gmCostInfo, setGmCostInfo] = useState(null);
+  const [gmLoading, setGmLoading] = useState(false);
+  const [gmDoneToday, setGmDoneToday] = useState(false);
+
+  useEffect(() => {
+    if (address) {
+      fetchUserData(address).then(setUserData);
+      getGMCost(address).then(setGmCostInfo);
+      hasGMToday(address).then(setGmDoneToday);
+    } else {
+      setUserData(null);
+      setGmCostInfo(null);
+      setGmDoneToday(false);
+    }
+  }, [address, fetchUserData, getGMCost, hasGMToday]);
+
+  const handleGM = async () => {
+    if (!address || gmLoading) return;
+    setGmLoading(true);
+    
+    // Fetch it fresh to ensure we have the absolute right cost before doing GM
+    let currentCost = gmCostInfo;
+    if (!currentCost) {
+      currentCost = await getGMCost(address);
+    }
+    
+    if (!currentCost) {
+      alert("No se pudo calcular el costo del GM debido a congestión de la red. Intenta de nuevo.");
+      setGmLoading(false);
+      return;
+    }
+
+    const totalCost = currentCost.gmCost + currentCost.debtCost;
+    const success = await doGM(totalCost);
+    if (success) {
+      // Refresh
+      fetchUserData(address).then(setUserData);
+      getGMCost(address).then(setGmCostInfo);
+      hasGMToday(address).then(setGmDoneToday);
+    }
+    setGmLoading(false);
+  };
+
 
   // Helper to format address
   const formattedAddress = address 
@@ -19,7 +68,7 @@ export default function RunestonePanel() {
           <span className="group-hover:text-accent-primary transition-colors">Your Signal</span>
           <div className="flex items-center gap-2 bg-surface-1/80 px-2 py-1 rounded-full border border-border-light/50 hover:border-accent-primary/50 transition-colors shadow-sm">
             <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-accent-primary to-accent-runestone flex items-center justify-center overflow-hidden shadow-[0_0_8px_rgba(0,229,255,0.4)]">
-              <img src={`https://api.dicebear.com/7.x/identicon/svg?seed=${address || '0x0'}`} alt="Avatar" className="w-full h-full opacity-90" />
+              <img src={getAvatarUrl(address)} alt="Avatar" className="w-full h-full opacity-90" />
             </div>
             <span className="text-xs font-mono font-bold text-white tracking-wider cursor-default pt-0.5">{formattedAddress}</span>
             <button className="text-text-muted hover:text-accent-primary transition-colors cursor-pointer ml-1" title="Copiar Wallet">
@@ -37,15 +86,15 @@ export default function RunestonePanel() {
             </div>
             <div className="flex flex-col items-center bg-surface-1 hover:bg-surface-2 transition-colors py-3 px-2 rounded-xl border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
               <div className="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-2 flex items-center justify-center gap-1.5 w-full"><Flame className="w-3.5 h-3.5" /> <span>STREAK</span></div>
-              <div className="text-lg font-mono font-bold text-white h-6 flex items-center justify-center w-full">4</div>
+              <div className="text-lg font-mono font-bold text-white h-6 flex items-center justify-center w-full">{userData ? userData.currentStreak : '-'}</div>
             </div>
             <div className="flex flex-col items-center bg-surface-1 hover:bg-surface-2 transition-colors py-3 px-2 rounded-xl border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
               <div className="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-2 flex items-center justify-center gap-1.5 w-full"><Zap className="w-3.5 h-3.5" /> <span>SCORE</span></div>
-              <div className="text-lg font-mono font-bold text-white h-6 flex items-center justify-center w-full">5</div>
+              <div className="text-lg font-mono font-bold text-white h-6 flex items-center justify-center w-full">{userData ? userData.totalPoints : '-'}</div>
             </div>
             <div className="flex flex-col items-center bg-surface-1 hover:bg-surface-2 transition-colors py-3 px-2 rounded-xl border border-border-light justify-center shadow-sm hover:shadow-glow-cyan">
               <div className="text-[0.55rem] text-text-muted font-semibold uppercase tracking-wider mb-2 flex items-center justify-center gap-1.5 w-full"><Radio className="w-3.5 h-3.5" /> <span>GMS SENT</span></div>
-              <div className="text-lg font-mono font-bold text-white h-6 flex items-center justify-center w-full">4</div>
+              <div className="text-lg font-mono font-bold text-white h-6 flex items-center justify-center w-full">{userData ? userData.gmCount : '-'}</div>
             </div>
           </div>
         </div>
@@ -54,25 +103,31 @@ export default function RunestonePanel() {
 
       {/* Runestone Section */}
       <div className="flex flex-col items-center w-full relative z-10 flex-grow justify-center mt-4">
-        <div className="relative text-[0.65rem] uppercase tracking-[0.2em] font-bold text-text-primary bg-surface-1 px-5 py-1.5 rounded-full border border-accent-runestone/80 backdrop-blur-md z-10 shadow-[0_0_15px_rgba(255,0,127,0.6)] flex items-center gap-2">
-          <Flame className="w-3 h-3 text-accent-runestone" />
-          RUNESTONE ACTIVE
-          <Flame className="w-3 h-3 text-accent-runestone" />
-        </div>
+        {userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? (
+          <div className="relative text-[0.65rem] uppercase tracking-[0.2em] font-bold text-text-primary bg-surface-1 px-5 py-1.5 rounded-full border border-accent-runestone/80 backdrop-blur-md z-10 shadow-[0_0_15px_rgba(255,0,127,0.6)] flex items-center gap-2">
+            <Flame className="w-3 h-3 text-accent-runestone" />
+            RUNESTONE ACTIVE
+            <Flame className="w-3 h-3 text-accent-runestone" />
+          </div>
+        ) : (
+          <div className="relative text-[0.65rem] uppercase tracking-[0.2em] font-bold text-text-muted bg-surface-1 px-5 py-1.5 rounded-full border border-border-light backdrop-blur-md z-10 flex items-center gap-2">
+            RUNESTONE INACTIVE
+          </div>
+        )}
 
         <div className="relative w-full flex-grow flex items-center justify-center min-h-[260px] mt-8">
           <div className="runestone-core-container">
             {/* Nodos Satélite */}
-            <div className="satellite-node satellite-node-1 text-white is-active">
-              <div className="w-1.5 h-1.5 rounded-full bg-accent-success shadow-glow-cyan"></div>
+            <div className={`satellite-node satellite-node-1 text-white ${userData?.nodeCommitment ? 'is-active' : ''}`}>
+              <div className={`w-1.5 h-1.5 rounded-full ${userData?.nodeCommitment ? 'bg-accent-success shadow-glow-cyan' : 'bg-text-muted'}`}></div>
               <span>COMMITMENT</span>
             </div>
-            <div className="satellite-node satellite-node-2 text-white is-active">
-              <div className="w-1.5 h-1.5 rounded-full bg-accent-success shadow-glow-cyan"></div>
+            <div className={`satellite-node satellite-node-2 text-white ${userData?.nodeConviction ? 'is-active' : ''}`}>
+              <div className={`w-1.5 h-1.5 rounded-full ${userData?.nodeConviction ? 'bg-accent-success shadow-glow-cyan' : 'bg-text-muted'}`}></div>
               <span>CONVICTION</span>
             </div>
-            <div className="satellite-node satellite-node-3 text-white is-active">
-              <div className="w-1.5 h-1.5 rounded-full bg-accent-success shadow-glow-cyan"></div>
+            <div className={`satellite-node satellite-node-3 text-white ${userData?.nodeLegacy ? 'is-active' : ''}`}>
+              <div className={`w-1.5 h-1.5 rounded-full ${userData?.nodeLegacy ? 'bg-accent-success shadow-glow-cyan' : 'bg-text-muted'}`}></div>
               <span>LEGACY</span>
             </div>
 
@@ -81,7 +136,7 @@ export default function RunestonePanel() {
               
               {/* SVG Cristal (Runestone) */}
               <div className="absolute bottom-[35px] pointer-events-none" style={{ zIndex: 1, transform: 'translateZ(-10px)' }}>
-                <svg className="crystal-svg w-24 h-40 drop-shadow-2xl" viewBox="0 0 100 180" xmlns="http://www.w3.org/2000/svg">
+                <svg className={`crystal-svg w-24 h-40 drop-shadow-2xl ${userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? '' : 'is-inactive'}`} viewBox="0 0 100 180" xmlns="http://www.w3.org/2000/svg">
                   <defs>
                     <linearGradient id="crystalMain" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#ff1493" />
@@ -119,16 +174,22 @@ export default function RunestonePanel() {
 
               {/* Botón GM como Pedestal Interactivo */}
               <div className="relative w-[170px] h-[44px] flex-shrink-0 mx-auto mb-2 pointer-events-auto" style={{ zIndex: 9999, transform: 'translateZ(10px)' }}>
-                <button className="gm-pedestal w-full h-full cursor-pointer">
+                <button 
+                  onClick={handleGM}
+                  disabled={!address || gmLoading || gmDoneToday}
+                  className="gm-pedestal w-full h-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                   <span className="text-xs font-bold uppercase tracking-[0.2em] text-white transition-opacity">
-                    SUPER GM
+                    {gmDoneToday ? 'GM DONE' : (gmLoading ? 'SENDING...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'SUPER GM' : 'GM'))}
                   </span>
                 </button>
               </div>
 
               {/* Contador GM Externo y Tooltip */}
               <div className="absolute top-[100%] mt-2 w-full flex items-center justify-center gap-2" style={{ transform: 'translateZ(10px)' }}>
-                <div className="text-lg font-bold font-mono text-white tracking-wider drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">03:36:35</div>
+                <div className="text-lg font-bold font-mono text-white tracking-wider drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+                  {/* Fake clock for UI aesthetics */}
+                  03:36:35
+                </div>
                 {/* Tooltip informativo GM */}
                 <div className="relative cursor-help group/gmtt pointer-events-auto flex items-center">
                   <Info className="w-4 h-4 text-text-muted hover:text-accent-primary transition-colors" />
