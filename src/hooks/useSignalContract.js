@@ -59,6 +59,7 @@ export function useSignalContract() {
         let nodeConviction = data.nodeConviction;
         let nodeLegacy = data.nodeLegacy;
         let exists = data.exists;
+        let attachedAgentId = Number(data.attachedAgentId || 0);
 
         // Simular penalizaciones si perdió la racha (para UI y costos)
         const today = Math.floor(Date.now() / 86400000);
@@ -80,7 +81,7 @@ export function useSignalContract() {
           nodeConviction,
           nodeLegacy,
           exists,
-          attachedAgentId: 0
+          attachedAgentId
         };
       });
     } catch (err) {

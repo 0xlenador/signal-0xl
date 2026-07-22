@@ -356,6 +356,36 @@ contract Signal0xL {
         return baseGMCost;
     }
 
+    /// @notice Retorna una lista paginada de usuarios (sin ordenar, para no exceder gas).
+    function getUsersPaginated(uint256 offset, uint256 limit) external view returns (
+        address[] memory addrs,
+        uint256[] memory points,
+        uint256[] memory forks
+    ) {
+        uint256 total = userList.length;
+        if (offset >= total) {
+            return (new address[](0), new uint256[](0), new uint256[](0));
+        }
+
+        uint256 end = offset + limit;
+        if (end > total) {
+            end = total;
+        }
+        uint256 resultCount = end - offset;
+
+        addrs  = new address[](resultCount);
+        points = new uint256[](resultCount);
+        forks  = new uint256[](resultCount);
+
+        for (uint256 i = 0; i < resultCount; i++) {
+            address userAddr = userList[offset + i];
+            addrs[i]  = userAddr;
+            points[i] = users[userAddr].totalPoints;
+            uint256 fl = users[userAddr].forkLevel;
+            forks[i]  = fl == 0 ? 1 : fl;
+        }
+    }
+
     /// @notice Verifica si el usuario ya hizo GM hoy (UTC).
     function hasGMToday(address _user) external view returns (bool) {
         return users[_user].lastGmDay == _currentDay();
@@ -396,6 +426,47 @@ contract Signal0xL {
         return userList.length;
     }
 
+    /**
+     * @notice Retorna las top `count` wallets por puntaje.
+     * @dev Bubble sort in-memory. No optimizado para listas grandes.
+     *      Para MVP es suficiente con hasta ~200 usuarios.
+     */
+    function getTopUsers(uint256 count) external view returns (
+        address[] memory addrs,
+        uint256[] memory points,
+        uint256[] memory forks
+    ) {
+        uint256 total = userList.length;
+        uint256 resultCount = count > total ? total : count;
+
+        // Copia local para ordenar
+        address[] memory sorted = new address[](total);
+        for (uint256 i = 0; i < total; i++) {
+            sorted[i] = userList[i];
+        }
+
+        // Bubble sort descendente por puntos
+        for (uint256 i = 0; i < total; i++) {
+            for (uint256 j = i + 1; j < total; j++) {
+                if (users[sorted[j]].totalPoints > users[sorted[i]].totalPoints) {
+                    address tmp = sorted[i];
+                    sorted[i] = sorted[j];
+                    sorted[j] = tmp;
+                }
+            }
+        }
+
+        addrs  = new address[](resultCount);
+        points = new uint256[](resultCount);
+        forks  = new uint256[](resultCount);
+
+        for (uint256 i = 0; i < resultCount; i++) {
+            addrs[i]  = sorted[i];
+            points[i] = users[sorted[i]].totalPoints;
+            uint256 fl = users[sorted[i]].forkLevel;
+            forks[i]  = fl == 0 ? 1 : fl;
+        }
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // ADMIN FUNCTIONS
