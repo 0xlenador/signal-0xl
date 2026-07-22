@@ -59,7 +59,7 @@ export function useSignalContract() {
           nodeConviction: data.nodeConviction,
           nodeLegacy: data.nodeLegacy,
           exists: data.exists,
-          attachedAgentId: Number(data.attachedAgentId)
+          attachedAgentId: 0 // Hardcoded a 0 por compatibilidad con contrato actual de 9 campos
         };
       });
     } catch (err) {
@@ -68,35 +68,48 @@ export function useSignalContract() {
     }
   }, [getReadContract]);
 
-  const getGMCost = useCallback(async (walletAddress) => {
+  const getGMCost = useCallback(async (walletAddress, preloadedData = null) => {
     if (!walletAddress) return null;
     try {
-      return await withRetry(async () => {
-        const contract = getReadContract();
-        const result = await contract.getGMCost(walletAddress);
-        return {
-          gmCost: result.gmCost,
-          debtCost: result.debtCost
-        };
-      });
+      // Computar localmente usando la lógica original de la Biblia
+      const data = preloadedData || await fetchUserData(walletAddress);
+      if (!data) return null;
+
+      const today = Math.floor(Date.now() / 86400000);
+      const fork = data.forkLevel === 0 ? 1 : data.forkLevel;
+      const baseCost = CONSTANTS.BASE_GM_COST_WEI;
+      
+      let gmCost = baseCost;
+      if (fork > 1) {
+          gmCost = baseCost + (BigInt(fork - 1) * (baseCost / 2n));
+      }
+      
+      let debtCost = 0n;
+      if (data.lastGmDay > 0 && today > data.lastGmDay + 1) {
+          const missed = BigInt(today - data.lastGmDay - 1);
+          debtCost = missed * baseCost;
+      }
+      
+      return { gmCost, debtCost };
     } catch (err) {
       console.error("Error fetching GM cost:", err);
       return null;
     }
-  }, [getReadContract]);
+  }, [fetchUserData]);
 
-  const hasGMToday = useCallback(async (walletAddress) => {
+  const hasGMToday = useCallback(async (walletAddress, preloadedData = null) => {
     if (!walletAddress) return false;
     try {
-      return await withRetry(async () => {
-        const contract = getReadContract();
-        return await contract.hasGMToday(walletAddress);
-      });
+      // Computar localmente
+      const data = preloadedData || await fetchUserData(walletAddress);
+      if (!data || !data.exists) return false;
+      const today = Math.floor(Date.now() / 86400000);
+      return data.lastGmDay === today;
     } catch (err) {
       console.error("Error checking GM today:", err);
       return false;
     }
-  }, [getReadContract]);
+  }, [fetchUserData]);
 
   const doGM = useCallback(async (payableAmount) => {
     setLoading(true);

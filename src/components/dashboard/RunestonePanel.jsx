@@ -17,9 +17,16 @@ export default function RunestonePanel() {
 
   useEffect(() => {
     if (address) {
-      fetchUserData(address).then(setUserData);
-      getGMCost(address).then(setGmCostInfo);
-      hasGMToday(address).then(setGmDoneToday);
+      fetchUserData(address).then(data => {
+        setUserData(data);
+        if (data) {
+          getGMCost(address, data).then(setGmCostInfo);
+          hasGMToday(address, data).then(setGmDoneToday);
+        } else {
+          setGmCostInfo(null);
+          setGmDoneToday(false);
+        }
+      });
     } else {
       setUserData(null);
       setGmCostInfo(null);
@@ -179,7 +186,7 @@ export default function RunestonePanel() {
                   disabled={!address || gmLoading || gmDoneToday}
                   className="gm-pedestal w-full h-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                   <span className="text-xs font-bold uppercase tracking-[0.2em] text-white transition-opacity">
-                    {gmDoneToday ? 'GM DONE' : (gmLoading ? 'SENDING...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'SUPER GM' : 'GM'))}
+                    {gmDoneToday ? 'HECHO' : (gmLoading ? 'SENDING...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'SUPER GM' : 'GM'))}
                   </span>
                 </button>
               </div>

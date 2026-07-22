@@ -85,7 +85,7 @@ export function useLeaderboard() {
             setIsLoading(false); // Una vez hay al menos 1, ya no estamos en "Loading" total
           }
           // Prevent RPC rate limits (max 2-5 req/s on free public RPCs)
-          await delay(300);
+          await delay(1000); // Incremental delay to 1 second to avoid 429
         } catch (iterErr) {
           console.warn(`Error fetching user ${userAddress}:`, iterErr);
         }
