@@ -15,4 +15,4 @@ CONTRACT_ADDRESS = "0x108E51F9af4aF2D8CAa1f41E81b91B84B1304d36"
 [[d1_databases]]
 binding = "RANKING_DB"
 database_name = "signal0xl-db"
-database_id = "reemplazar-con-id-real-luego"
+database_id = "8878bd59-8a2f-4a7a-9999-32a10251ec0d"

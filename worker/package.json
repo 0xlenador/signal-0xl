@@ -5,6 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "dev": "wrangler dev",
+    "dev:cron": "wrangler dev --test-scheduled",
     "deploy": "wrangler deploy",
     "db:init": "wrangler d1 execute RANKING_DB --local --file=./schema.sql",
     "db:deploy": "wrangler d1 execute RANKING_DB --remote --file=./schema.sql"

@@ -35,6 +35,9 @@ const getReadProvider = () => {
   return _publicProvider;
 };
 
+// URL del nuevo Worker (Indexador D1 en Cloudflare)
+const WORKER_URL = "https://signal0xl-ranking.ellenador-eth.workers.dev/api/leaderboard";
+
 export function useLeaderboard(): ILeaderboardHook {
   const [leaderboard, setLeaderboard] = useState<ILeaderboardUser[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -52,56 +55,33 @@ export function useLeaderboard(): ILeaderboardHook {
     try {
       setIsLoading(true);
       setIsScanning(true);
-      setLeaderboard([]); // Limpiar leaderboard viejo si lo hay
+      setLeaderboard([]); // Limpiar leaderboard viejo
+      
+      // 1. Obtener el Top 100 ordenado casi instantáneamente desde el Cloudflare Worker
+      const res = await fetch(WORKER_URL);
+      const top100Data = await res.json();
+      
+      if (!top100Data || top100Data.length === 0) {
+        if (isMountedRef.current) {
+          setIsLoading(false);
+          setIsScanning(false);
+        }
+        return;
+      }
 
+      // 2. Extraer solo las direcciones del Top 100
+      const topAddresses: string[] = top100Data.map((u: any) => u.address);
+
+      // 3. Enriquecer los datos (Traer medallas, rachas, etc) desde el contrato en lotes
+      // NOTA: Como ahora solo son máximo 100 usuarios, el RPC no sufrirá nada.
       const provider = getReadProvider();
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
 
-      const countBN = await contract.getUserCount();
-      const count = Number(countBN);
-      
-      if (count === 0) {
-        if (isMountedRef.current) {
-          setIsLoading(false);
-          setIsScanning(false);
-        }
-        return;
-      }
-
-      // Descargamos todos los usuarios crudos (sin ordenar) usando paginación
-      // Para MVP asumimos que caben en una sola llamada (ej. hasta 1000 usuarios)
-      const fetchLimit = count > 1000 ? 1000 : count;
-      const paginatedRes = await contract.getUsersPaginated(0, fetchLimit);
-      
-      const addrs: string[] = paginatedRes[0];
-      const points: bigint[] = paginatedRes[1];
-      const forks: bigint[] = paginatedRes[2];
-
-      if (!addrs || addrs.length === 0) {
-        if (isMountedRef.current) {
-          setIsLoading(false);
-          setIsScanning(false);
-        }
-        return;
-      }
-
-      // Mapear y ordenar en JavaScript (Costo de gas = 0)
-      type RawUser = { addr: string, pts: number };
-      const rawUsers: RawUser[] = addrs.map((a, i) => ({
-        addr: a,
-        pts: Number(points[i])
-      }));
-
-      // Ordenar por puntos (mayor a menor) y tomar el Top 50
-      rawUsers.sort((a, b) => b.pts - a.pts);
-      const top50 = rawUsers.slice(0, 50).map(u => u.addr);
-
-      // Procesar en lotes de 10 para obtener las medallas y racha (badges) sin saturar RPC
       const chunkSize = 10;
-      for (let i = 0; i < top50.length; i += chunkSize) {
+      for (let i = 0; i < topAddresses.length; i += chunkSize) {
         if (!isMountedRef.current) break;
         
-        const chunk = top50.slice(i, i + chunkSize);
+        const chunk = topAddresses.slice(i, i + chunkSize);
         
         const chunkPromises = chunk.map(async (userAddress) => {
           try {
@@ -135,6 +115,7 @@ export function useLeaderboard(): ILeaderboardHook {
             }
             
             const updated = Array.from(newMap.values());
+            // Mantener el orden exacto dictado por los puntos
             return updated.sort((a, b) => {
               if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
               if (b.currentStreak !== a.currentStreak) return b.currentStreak - a.currentStreak;
@@ -143,12 +124,10 @@ export function useLeaderboard(): ILeaderboardHook {
           });
           setIsLoading(false);
         }
-        
-        await new Promise(r => setTimeout(r, 200));
       }
       
       if (isMountedRef.current) {
-        setIsLoading(false); // Asegurarnos de apagar el loading si no hubo usuarios válidos
+        setIsLoading(false);
         setIsScanning(false);
       }
     } catch (err) {
