@@ -18,6 +18,8 @@ module.exports = {
         'accent-success': '#00E676',
         'accent-warning': '#FFD600',
         'accent-error': '#FF1744',
+        'accent-vip': '#a78bfa',
+        'accent-fork': '#fb923c',
         'text-primary': '#F8FAFC',
         'text-muted': '#94A3B8',
         'border-color': 'rgba(255, 255, 255, 0.08)',

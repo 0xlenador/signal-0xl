@@ -151,7 +151,7 @@ export default function RunestonePanel() {
               <div className="text-sm font-bold flex items-center justify-center h-6 w-full">
                 {userData ? (
                   userData.forkLevel <= 1 ? (
-                    <span className="px-3 py-1 bg-surface-2 rounded-full text-[0.65rem] font-bold uppercase text-[#a78bfa] border border-[#a78bfa]/30 shadow-[0_0_10px_rgba(167,139,250,0.15)] flex items-center gap-1">VIP</span>
+                    <span className="px-3 py-1 bg-surface-2 rounded-full text-[0.65rem] font-bold uppercase text-accent-vip border border-accent-vip/30 shadow-[0_0_10px_rgba(167,139,250,0.15)] flex items-center gap-1">VIP</span>
                   ) : (
                     <span className="px-3 py-1 bg-surface-2 rounded-full text-[0.65rem] font-bold uppercase text-accent-warning border border-accent-warning/30 flex items-center gap-1">B{userData.forkLevel}</span>
                   )

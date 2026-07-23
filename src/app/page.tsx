@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { NETWORK } from '@/lib/config';
 
 export default function HomePage() {
   return (
@@ -18,9 +19,9 @@ export default function HomePage() {
       {/* Network Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
         
-        {/* Arc Testnet Card */}
+        {/* Network Card */}
         <Link 
-          href="/arc-testnet"
+          href={`/${NETWORK.slug}`}
           className="glass-panel rounded-3xl p-8 shadow-lg relative flex flex-col items-center text-center group hover:shadow-glow-cyan transition-shadow duration-500 cursor-pointer overflow-hidden border border-border-light hover:border-accent-primary/50"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/10 to-transparent pointer-events-none group-hover:from-accent-primary/20 transition-colors"></div>

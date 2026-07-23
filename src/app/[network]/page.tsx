@@ -1,6 +1,7 @@
 'use client';
 import { useWeb3 } from '@/components/Web3Provider';
 import { use } from 'react';
+import { NETWORK } from '@/lib/config';
 
 interface NetworkPageProps {
   params: Promise<{ network: string }>;
@@ -24,7 +25,7 @@ export default function NetworkPage({ params }: NetworkPageProps) {
           Conectar Wallet
         </button>
         <p className="mt-8 text-sm text-text-muted font-mono bg-bg-primary/50 px-5 py-2 rounded-full border border-border-color">
-          Red: Arc Testnet · Chain ID: 5042002
+          Red: {NETWORK.name} · Chain ID: {NETWORK.chainId}
         </p>
       </section>
     </main>

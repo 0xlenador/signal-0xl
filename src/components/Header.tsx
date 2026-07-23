@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Link, LogOut, ChevronDown } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/utils';
+import { NETWORK, SUPPORTED_NETWORKS } from '@/lib/config';
 
 const GithubIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -56,10 +57,10 @@ export function Header({ networkParam }: { networkParam?: string }) {
         <div className="h-5 w-[1px] bg-border-light mx-1 hidden sm:block"></div>
 
         {/* Network Badge */}
-        {networkParam === 'arc-testnet' && (
+        {networkParam && SUPPORTED_NETWORKS.includes(networkParam) && (
           <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-1 border border-border-light text-[0.65rem] font-bold text-text-muted">
             <Image src="/assets/arc-logo.jpg" alt="Arc" width={16} height={16} className="rounded-full object-cover" />
-            Arc Testnet
+            {NETWORK.name}
           </div>
         )}
 
@@ -91,7 +92,7 @@ export function Header({ networkParam }: { networkParam?: string }) {
 
               {/* Dropdown Menu */}
               {dropdownOpen && (
-                <div className="absolute top-full right-0 mt-3 border border-border-light rounded-2xl shadow-[0_15px_50px_rgba(0,0,0,1)] min-w-[170px] z-50 overflow-hidden bg-[#05050A]">
+                <div className="absolute top-full right-0 mt-3 border border-border-light rounded-2xl shadow-[0_15px_50px_rgba(0,0,0,1)] min-w-[170px] z-50 overflow-hidden bg-bg-primary">
                   <div className="flex flex-col p-1.5 w-full">
                     <button 
                       onClick={() => {

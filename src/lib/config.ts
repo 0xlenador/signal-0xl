@@ -2,6 +2,7 @@ export const NETWORK = {
   chainId: 5042002,
   chainIdHex: '0x4cef52',
   name: 'Arc Testnet',
+  slug: 'arc-testnet',
   rpcUrls: ['https://rpc.testnet.arc.network'],
   nativeCurrency: {
     name: 'USDC',
@@ -10,6 +11,8 @@ export const NETWORK = {
   },
   blockExplorer: 'https://testnet.arcscan.app',
 } as const;
+
+export const SUPPORTED_NETWORKS: string[] = [NETWORK.slug];
 
 export const CONTRACT_ADDRESS = '0x108E51F9af4aF2D8CAa1f41E81b91B84B1304d36';
 
