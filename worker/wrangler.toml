@@ -1,12 +1,18 @@
 name = "signal0xl-ranking"
-main = "src/index.js"
+main = "src/index.ts"
 compatibility_date = "2024-03-20"
+compatibility_flags = ["nodejs_compat"]
 
-# El cron se ejecutará cada hora en el minuto 0
+# Cron de 1 minuto
 [triggers]
-crons = ["0 * * * *"]
+crons = ["* * * * *"]
 
-# Binding para la base de datos KV
-[[kv_namespaces]]
+[vars]
+RPC_URL = "https://rpc.testnet.arc.network"
+CONTRACT_ADDRESS = "0x108E51F9af4aF2D8CAa1f41E81b91B84B1304d36"
+
+# Binding de D1
+[[d1_databases]]
 binding = "RANKING_DB"
-id = "d0e8b85fd9f448769314af09300bb11d"
+database_name = "signal0xl-db"
+database_id = "reemplazar-con-id-real-luego"

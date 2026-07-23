@@ -1,15 +1,20 @@
 {
   "name": "signal0xl-ranking",
   "version": "1.0.0",
-  "main": "src/index.js",
-  "type": "module",
+  "private": true,
+  "main": "src/index.ts",
   "scripts": {
-    "deploy": "wrangler deploy"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 execute RANKING_DB --local --file=./schema.sql",
+    "db:deploy": "wrangler d1 execute RANKING_DB --remote --file=./schema.sql"
   },
   "dependencies": {
     "ethers": "^6.13.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240512.0",
+    "typescript": "^5.0.4",
     "wrangler": "^3.0.0"
   }
 }
