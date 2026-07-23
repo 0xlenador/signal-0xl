@@ -59,7 +59,7 @@ export function Header({ networkParam }: { networkParam?: string }) {
         {/* Network Badge */}
         {networkParam && SUPPORTED_NETWORKS.includes(networkParam) && (
           <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-1 border border-border-light text-[0.65rem] font-bold text-text-muted">
-            <Image src="/assets/arc-logo.jpg" alt="Arc" width={16} height={16} className="rounded-full object-cover" />
+            <Image src="/assets/arc-logo.jpg" alt="Logo de Arc (Circle)" width={16} height={16} className="rounded-full object-cover" />
             {NETWORK.name}
           </div>
         )}

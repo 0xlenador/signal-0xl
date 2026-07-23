@@ -16,12 +16,6 @@ const SkeletonRow = ({ index }: { index: number }) => (
         <div className="w-24 h-4 bg-surface-2 animate-pulse rounded"></div>
       </div>
     </td>
-    <td className="p-3 hidden sm:table-cell">
-      <div className="flex gap-1">
-        <div className="w-2 h-2 bg-surface-2 animate-pulse rounded-full"></div>
-        <div className="w-2 h-2 bg-surface-2 animate-pulse rounded-full"></div>
-      </div>
-    </td>
     <td className="p-3 text-right">
       <div className="w-8 h-4 bg-surface-2 animate-pulse rounded ml-auto"></div>
     </td>
@@ -59,7 +53,6 @@ export default function RankingTable() {
             <tr>
               <th className="p-3 text-[0.65rem] text-text-muted uppercase tracking-wider border-b border-border-light font-medium">Rank</th>
               <th className="p-3 text-[0.65rem] text-text-muted uppercase tracking-wider border-b border-border-light font-medium">Address</th>
-              <th className="p-3 text-[0.65rem] text-text-muted uppercase tracking-wider border-b border-border-light font-medium hidden sm:table-cell">Badges</th>
               <th className="p-3 text-[0.65rem] text-text-muted uppercase tracking-wider border-b border-border-light font-medium text-right">Score</th>
               <th className="p-3 text-[0.65rem] text-text-muted uppercase tracking-wider border-b border-border-light font-medium text-right">Fork</th>
             </tr>
@@ -69,7 +62,7 @@ export default function RankingTable() {
               // Modo de Carga Total: Mostrar 5 filas Skeleton puras
               Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={`skel-load-${i}`} index={i} />)
             ) : leaderboard.length === 0 && !isScanning ? (
-              <tr><td colSpan={5} className="p-4 text-center text-text-muted text-sm italic">Sin datos disponibles.</td></tr>
+              <tr><td colSpan={4} className="p-4 text-center text-text-muted text-sm italic">Sin datos disponibles.</td></tr>
             ) : (
               <>
                 {leaderboard.slice(0, 50).map((user, index) => {
@@ -83,13 +76,6 @@ export default function RankingTable() {
                         {index < 3 && <Trophy className={`w-3.5 h-3.5 ${index === 0 ? 'text-yellow-400' : index === 1 ? 'text-gray-300' : 'text-amber-600'}`} />}
                         {shortAddress(user.address)}
                         {isMe && <span className="ml-2 text-[0.55rem] font-bold bg-accent-primary/20 text-accent-primary px-1.5 py-0.5 rounded border border-accent-primary/50">YOU</span>}
-                      </td>
-                      <td className="p-3 hidden sm:table-cell">
-                        <div className="flex gap-1">
-                          {user.nodeCommitment && <span className="w-2 h-2 rounded-full bg-accent-success" title="Commitment Node"></span>}
-                          {user.nodeConviction && <span className="w-2 h-2 rounded-full bg-accent-warning" title="Conviction Node"></span>}
-                          {user.nodeLegacy && <span className="w-2 h-2 rounded-full bg-accent-runestone" title="Legacy Node"></span>}
-                        </div>
                       </td>
                       <td className="p-3 text-right text-xs font-bold text-accent-primary">{user.totalPoints}</td>
                       <td className="p-3 text-right">
