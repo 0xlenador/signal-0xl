@@ -1,4 +1,5 @@
 import { Outfit, Space_Grotesk } from 'next/font/google';
+import { ReactNode } from 'react';
 import './globals.css';
 
 const outfit = Outfit({
@@ -18,7 +19,7 @@ export const metadata = {
   description: 'Signal 0xL Platform',
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="es" className={`${outfit.variable} ${spaceGrotesk.variable}`}>
       <body className="antialiased bg-bg-primary text-text-primary min-h-screen flex flex-col font-sans">

@@ -2,26 +2,21 @@
 import { useWeb3 } from '@/components/Web3Provider';
 import { use } from 'react';
 
-export default function NetworkPage({ params }) {
+interface NetworkPageProps {
+  params: Promise<{ network: string }>;
+}
+
+export default function NetworkPage({ params }: NetworkPageProps) {
   const { connect } = useWeb3();
   const { network } = use(params);
-
-  if (network !== 'arc-testnet') {
-    return (
-      <main className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-        <h2 className="text-3xl font-bold text-white mb-4">Red no soportada</h2>
-        <p className="text-text-muted">Actualmente solo soportamos Arc Testnet.</p>
-      </main>
-    );
-  }
 
   return (
     <main className="app-content p-4 md:p-6 lg:p-8 w-full mx-auto flex flex-col gap-6 flex-1">
       <section className="flex flex-col items-center justify-center text-center py-24 glass-panel rounded-[2.5rem] shadow-glow-cyan-lg relative overflow-hidden my-8">
         <div className="absolute inset-0 bg-gradient-to-b from-accent-primary/5 to-transparent pointer-events-none"></div>
-        <h2 className="text-5xl md:text-7xl font-extrabold text-white mb-6 tracking-tight drop-shadow-md">
+        <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 tracking-tight drop-shadow-md">
           Signal <span className="text-accent-primary drop-shadow-[0_0_20px_rgba(0,229,255,0.6)]">0xL</span>
-        </h2>
+        </h1>
         <p className="text-text-muted max-w-lg mx-auto text-lg mb-10 font-light">
           Plataforma de señales en cadena para Arc Testnet. Deja tu huella diaria, analiza tu compromiso y escala en el ranking.
         </p>

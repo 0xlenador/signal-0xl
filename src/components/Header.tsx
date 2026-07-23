@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import { useWeb3 } from './Web3Provider';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Link, LogOut, ChevronDown } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/utils';
@@ -13,16 +13,21 @@ const GithubIcon = ({ className }: { className?: string }) => (
 );
 
 export function Header({ networkParam }: { networkParam?: string }) {
-  const { address, connect, disconnect } = useWeb3();
+  const { address, connect, disconnect, isInitializing } = useWeb3();
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const params = useParams();
+
   useEffect(() => {
-    if (address && networkParam) {
+    if (isInitializing) return; // Evitar parpadeos mientras lee la wallet de MetaMask
+
+    if (networkParam && address && !params.wallet) {
+      // Solo enviamos al usuario a su dashboard si se conecta desde la página de inicio (root network)
       router.push(`/${networkParam}/${address}`);
     }
-  }, [address, networkParam, router]);
+  }, [address, networkParam, router, params.wallet, isInitializing]);
 
   // Handle clicking outside to close dropdown
   useEffect(() => {

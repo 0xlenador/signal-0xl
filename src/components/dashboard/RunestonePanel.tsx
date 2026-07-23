@@ -7,9 +7,14 @@ import { getAvatarUrl } from '@/lib/utils';
 import { useWeb3 } from '../Web3Provider';
 import { useSignalContract, IUserData, IContractCost } from '@/hooks';
 import { useEffect, useState, useRef } from 'react';
+import { useParams } from 'next/navigation';
 
 export default function RunestonePanel() {
   const { address } = useWeb3();
+  const params = useParams();
+  const walletParam = params.wallet as string;
+  const isOwner = address?.toLowerCase() === walletParam?.toLowerCase();
+
   const { fetchUserData, getGMCost, hasGMToday, doGM, resetToVIP, loading } = useSignalContract();
   
   const [userData, setUserData] = useState<IUserData | null>(null);
@@ -69,12 +74,12 @@ export default function RunestonePanel() {
   };
 
   useEffect(() => {
-    if (address) {
-      fetchUserData(address).then(data => {
+    if (walletParam) {
+      fetchUserData(walletParam).then(data => {
         setUserData(data);
         if (data) {
-          getGMCost(address, data).then(setGmCostInfo);
-          hasGMToday(address, data).then(setGmDoneToday);
+          getGMCost(walletParam, data).then(setGmCostInfo);
+          hasGMToday(walletParam, data).then(setGmDoneToday);
         } else {
           setGmCostInfo(null);
           setGmDoneToday(false);
@@ -83,12 +88,10 @@ export default function RunestonePanel() {
     } else {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setUserData(null);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setGmCostInfo(null);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setGmDoneToday(false);
     }
-  }, [address, fetchUserData, getGMCost, hasGMToday]);
+  }, [walletParam, fetchUserData, getGMCost, hasGMToday]);
 
   const handleGM = async () => {
     if (!address || gmLoading) return;
@@ -119,8 +122,8 @@ export default function RunestonePanel() {
 
 
   // Helper to format address
-  const formattedAddress = address 
-    ? `${address.slice(0, 6)}...${address.slice(-4)}` 
+  const formattedAddress = walletParam 
+    ? `${walletParam.slice(0, 6)}...${walletParam.slice(-4)}` 
     : '0x...';
 
   return (
@@ -131,7 +134,7 @@ export default function RunestonePanel() {
           <span className="group-hover:text-accent-primary transition-colors">Your Signal</span>
           <div className="flex items-center gap-2 bg-surface-1/80 px-2 py-1 rounded-full border border-border-light/50 hover:border-accent-primary/50 transition-colors shadow-sm">
             <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-accent-primary to-accent-runestone flex items-center justify-center overflow-hidden shadow-[0_0_8px_rgba(0,229,255,0.4)]">
-              <Image unoptimized src={getAvatarUrl(address)} alt="Avatar" width={24} height={24} className="w-full h-full opacity-90" />
+              {walletParam && <Image unoptimized src={getAvatarUrl(walletParam)} alt="Avatar" width={24} height={24} className="w-full h-full opacity-90" />}
             </div>
             <span className="text-xs font-mono font-bold text-white tracking-wider cursor-default pt-0.5">{formattedAddress}</span>
             <button className="text-text-muted hover:text-accent-primary transition-colors cursor-pointer ml-1" title="Copiar Wallet">
@@ -174,10 +177,11 @@ export default function RunestonePanel() {
           <div className="mt-3 flex items-center justify-between bg-accent-warning/10 border border-accent-warning/30 p-2 rounded-xl text-xs">
             <p className="text-accent-warning mb-0 font-bold">Estás en Bifurcación {userData.forkLevel}. El costo del GM es mayor.</p>
             <button 
-              onClick={handleResetVIP} 
-              disabled={gmLoading}
-              className="bg-surface-2 hover:bg-surface-1 border border-border-light px-3 py-1.5 rounded-lg text-white transition-colors cursor-pointer disabled:opacity-50">
-              Resetear a VIP
+              onClick={handleResetVIP}
+              disabled={gmLoading || !isOwner}
+              className="bg-surface-2 hover:bg-surface-1 border border-border-light px-3 py-1.5 rounded-lg text-white transition-colors cursor-pointer disabled:opacity-50"
+            >
+              {!isOwner ? 'Solo Lectura' : 'Resetear a VIP'}
             </button>
           </div>
         )}
@@ -259,10 +263,10 @@ export default function RunestonePanel() {
               <div className="relative w-[170px] h-[44px] flex-shrink-0 mx-auto mb-2 pointer-events-auto" style={{ zIndex: 9999, transform: 'translateZ(10px)' }}>
                 <button 
                   onClick={handleGM}
-                  disabled={!address || gmLoading || gmDoneToday}
+                  disabled={!isOwner || gmLoading || gmDoneToday}
                   className="gm-pedestal w-full h-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                   <span className="text-xs font-bold uppercase tracking-[0.2em] text-white transition-opacity">
-                    {gmDoneToday ? 'GM (REFRESH)' : (gmLoading ? 'SENDING...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'SUPER GM' : 'GM'))}
+                    {!isOwner ? 'SOLO LECTURA' : gmDoneToday ? 'GM (REFRESH)' : (gmLoading ? 'SENDING...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'SUPER GM' : 'GM'))}
                   </span>
                 </button>
               </div>

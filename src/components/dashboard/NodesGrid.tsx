@@ -2,11 +2,16 @@
 
 import { Microscope, Gem, Landmark, Info } from 'lucide-react';
 import { useNodesData } from '@/hooks';
+import { useParams } from 'next/navigation';
 import { useWeb3 } from '../Web3Provider';
 
 export default function NodesGrid() {
   const { address } = useWeb3();
-  const data = useNodesData(address);
+  const params = useParams();
+  const walletParam = params.wallet as string;
+  const isOwner = address?.toLowerCase() === walletParam?.toLowerCase();
+
+  const data = useNodesData(walletParam);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

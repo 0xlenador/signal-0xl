@@ -10,7 +10,7 @@ const CONTRACT_ADDRESS = "0x108E51F9af4aF2D8CAa1f41E81b91B84B1304d36"; // Direcc
 const RPC_URL = "https://rpc-testnet.arc.network";
 const GENESIS_BLOCK = 52400000; // Un bloque seguro antes de tu despliegue
 
-export default {
+const worker = {
   // ─────────────────────────────────────────────────────────────────────────
   // 1. ENDPOINT HTTP (Para que el frontend descargue el ranking en ms)
   // ─────────────────────────────────────────────────────────────────────────
@@ -121,3 +121,5 @@ export default {
     }
   }
 };
+
+export default worker;

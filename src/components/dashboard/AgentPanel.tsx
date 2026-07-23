@@ -4,23 +4,29 @@ import { Bot, Info, AlertTriangle } from 'lucide-react';
 import { useSignalContract, IUserData } from '@/hooks';
 import { useWeb3 } from '../Web3Provider';
 import { useState, useEffect, useRef } from 'react';
+import { useParams } from 'next/navigation';
 
 export default function AgentPanel() {
   const { address } = useWeb3();
+  const params = useParams();
+  const walletParam = params.wallet as string;
+  const isOwner = address?.toLowerCase() === walletParam?.toLowerCase();
+
   const { fetchUserData } = useSignalContract();
   const [userData, setUserData] = useState<IUserData | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    if (address) {
-      fetchUserData(address).then(data => {
+    if (walletParam) {
+      fetchUserData(walletParam).then(data => {
         if (isMounted) setUserData(data);
       });
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUserData(null);
     }
     return () => { isMounted = false; };
-  }, [address, fetchUserData]);
+  }, [walletParam, fetchUserData]);
 
   return (
     <div className="w-full mt-4 h-14 shrink-0 relative z-10 bg-surface-1/50 border border-border-color/30 rounded-xl p-3 shadow-sm flex items-center justify-between gap-2">
@@ -48,11 +54,16 @@ export default function AgentPanel() {
             CONNECTED
           </button>
         ) : (
-          <button className="text-[0.65rem] text-text-muted uppercase tracking-wider font-bold border border-border-light bg-surface-2 hover:bg-surface-1 px-3 py-1 rounded transition-colors shadow-sm" title="Próximamente">
-            ATTACH AGENT
+          <button 
+            disabled={!isOwner}
+            className="text-[0.65rem] text-text-muted uppercase tracking-wider font-bold border border-border-light bg-surface-2 hover:bg-surface-1 px-3 py-1 rounded transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" 
+            title="Próximamente">
+            {!isOwner ? 'SOLO LECTURA' : 'ATTACH AGENT'}
           </button>
         )}
-        <button className="flex items-center gap-1.5 px-3 py-1 bg-surface-2 hover:bg-surface-1 border border-border-color rounded-lg text-[0.65rem] font-bold text-text-muted transition-colors">
+        <button 
+          disabled={!isOwner}
+          className="flex items-center gap-1.5 px-3 py-1 bg-surface-2 hover:bg-surface-1 border border-border-color rounded-lg text-[0.65rem] font-bold text-text-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           <AlertTriangle className="w-3 h-3" />
           Register an Agent (Arc)
         </button>

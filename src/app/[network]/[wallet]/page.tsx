@@ -1,6 +1,5 @@
 'use client';
 import { use } from 'react';
-import { useWeb3 } from '@/components/Web3Provider';
 import RunestonePanel from '@/components/dashboard/RunestonePanel';
 import AgentPanel from '@/components/dashboard/AgentPanel';
 import LiveSignals from '@/components/dashboard/LiveSignals';
@@ -8,10 +7,13 @@ import NetworkStats from '@/components/dashboard/NetworkStats';
 import NodesGrid from '@/components/dashboard/NodesGrid';
 import RankingTable from '@/components/dashboard/RankingTable';
 
-export default function DashboardPage({ params }) {
+interface DashboardPageProps {
+  params: Promise<{ network: string; wallet: string }>;
+}
+
+export default function DashboardPage({ params }: DashboardPageProps) {
   const { network, wallet } = use(params);
-  const { address } = useWeb3();
-  const isOwner = address?.toLowerCase() === wallet.toLowerCase();
+  // Address can be checked via useWeb3() inside child components if needed
 
   return (
     <main className="app-content p-4 md:p-6 lg:p-8 w-full mx-auto flex flex-col gap-6">

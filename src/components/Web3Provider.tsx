@@ -10,6 +10,7 @@ export interface IWeb3Context {
   provider: ethers.BrowserProvider | null;
   signer: ethers.JsonRpcSigner | null;
   error: string | null;
+  isInitializing: boolean;
   connect: () => Promise<void>;
   disconnect: () => void;
   clearError: () => void;
@@ -41,6 +42,7 @@ export function Web3Provider({ children }: Web3ProviderProps) {
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
   const [signer, setSigner] = useState<ethers.JsonRpcSigner | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isInitializing, setIsInitializing] = useState<boolean>(true);
 
   const clearError = useCallback(() => setError(null), []);
 
@@ -88,12 +90,16 @@ export function Web3Provider({ children }: Web3ProviderProps) {
           if (isMounted) console.error("Auto-connect failed:", error);
         }
       }
+      if (isMounted) setIsInitializing(false);
     };
 
     if (typeof window !== 'undefined' && window.ethereum) {
       checkConnection();
       window.ethereum.on('accountsChanged', (args: unknown) => handleAccountsChanged(args as string[]));
       window.ethereum.on('chainChanged', (args: unknown) => handleChainChanged(args as string));
+    } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (isMounted) setIsInitializing(false);
     }
     
     return () => {
@@ -172,8 +178,9 @@ export function Web3Provider({ children }: Web3ProviderProps) {
     connect,
     disconnect,
     error,
+    isInitializing,
     clearError
-  }), [address, chainId, provider, signer, connect, disconnect, error, clearError]);
+  }), [address, chainId, provider, signer, connect, disconnect, error, isInitializing, clearError]);
 
   return (
     <Web3Context.Provider value={contextValue}>
