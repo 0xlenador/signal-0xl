@@ -1,28 +1,37 @@
 'use client';
 
+import Image from 'next/image';
+
 import { Copy, Info, Crown, Flame, Zap, Radio } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/utils';
 import { useWeb3 } from '../Web3Provider';
-import { useSignalContract } from '@/hooks';
-import { useEffect, useState } from 'react';
+import { useSignalContract, IUserData, IContractCost } from '@/hooks';
+import { useEffect, useState, useRef } from 'react';
 
 export default function RunestonePanel() {
   const { address } = useWeb3();
   const { fetchUserData, getGMCost, hasGMToday, doGM, resetToVIP, loading } = useSignalContract();
   
-  const [userData, setUserData] = useState(null);
-  const [gmCostInfo, setGmCostInfo] = useState(null);
+  const [userData, setUserData] = useState<IUserData | null>(null);
+  const [gmCostInfo, setGmCostInfo] = useState<IContractCost | null>(null);
   const [gmLoading, setGmLoading] = useState(false);
   const [gmDoneToday, setGmDoneToday] = useState(false);
   const [countdown, setCountdown] = useState('');
+  
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
-    let interval;
+    let interval: NodeJS.Timeout;
     if (gmDoneToday) {
       const updateCountdown = () => {
         const now = new Date();
         const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
-        const diff = tomorrow - now;
+        const diff = tomorrow.getTime() - now.getTime();
         if (diff <= 0) {
           setCountdown('');
           setGmDoneToday(false);
@@ -36,6 +45,7 @@ export default function RunestonePanel() {
       updateCountdown();
       interval = setInterval(updateCountdown, 1000);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCountdown('');
     }
     return () => clearInterval(interval);
@@ -71,8 +81,11 @@ export default function RunestonePanel() {
         }
       });
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUserData(null);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setGmCostInfo(null);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setGmDoneToday(false);
     }
   }, [address, fetchUserData, getGMCost, hasGMToday]);
@@ -95,13 +108,13 @@ export default function RunestonePanel() {
 
     const totalCost = currentCost.gmCost + currentCost.debtCost;
     const success = await doGM(totalCost);
-    if (success) {
+    if (success && isMountedRef.current) {
       // Refresh
-      fetchUserData(address).then(setUserData);
-      getGMCost(address).then(setGmCostInfo);
-      hasGMToday(address).then(setGmDoneToday);
+      fetchUserData(address).then(res => { if (isMountedRef.current) setUserData(res); });
+      getGMCost(address).then(res => { if (isMountedRef.current) setGmCostInfo(res); });
+      hasGMToday(address).then(res => { if (isMountedRef.current) setGmDoneToday(res); });
     }
-    setGmLoading(false);
+    if (isMountedRef.current) setGmLoading(false);
   };
 
 
@@ -118,7 +131,7 @@ export default function RunestonePanel() {
           <span className="group-hover:text-accent-primary transition-colors">Your Signal</span>
           <div className="flex items-center gap-2 bg-surface-1/80 px-2 py-1 rounded-full border border-border-light/50 hover:border-accent-primary/50 transition-colors shadow-sm">
             <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-accent-primary to-accent-runestone flex items-center justify-center overflow-hidden shadow-[0_0_8px_rgba(0,229,255,0.4)]">
-              <img src={getAvatarUrl(address)} alt="Avatar" className="w-full h-full opacity-90" />
+              <Image unoptimized src={getAvatarUrl(address)} alt="Avatar" width={24} height={24} className="w-full h-full opacity-90" />
             </div>
             <span className="text-xs font-mono font-bold text-white tracking-wider cursor-default pt-0.5">{formattedAddress}</span>
             <button className="text-text-muted hover:text-accent-primary transition-colors cursor-pointer ml-1" title="Copiar Wallet">
@@ -157,7 +170,7 @@ export default function RunestonePanel() {
           </div>
         </div>
 
-        {userData?.forkLevel > 1 && (
+        {userData && userData.forkLevel > 1 && (
           <div className="mt-3 flex items-center justify-between bg-accent-warning/10 border border-accent-warning/30 p-2 rounded-xl text-xs">
             <p className="text-accent-warning mb-0 font-bold">Estás en Bifurcación {userData.forkLevel}. El costo del GM es mayor.</p>
             <button 

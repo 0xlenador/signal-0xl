@@ -1,21 +1,22 @@
 'use client';
+import Image from 'next/image';
 import { useWeb3 } from './Web3Provider';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Link, LogOut, ChevronDown } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/utils';
 
-const GithubIcon = ({ className }) => (
+const GithubIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.02c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A4.8 4.8 0 0 0 8 18v4"></path>
   </svg>
 );
 
-export function Header({ networkParam }) {
+export function Header({ networkParam }: { networkParam?: string }) {
   const { address, connect, disconnect } = useWeb3();
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (address && networkParam) {
@@ -25,8 +26,8 @@ export function Header({ networkParam }) {
 
   // Handle clicking outside to close dropdown
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
       }
     }
@@ -52,7 +53,7 @@ export function Header({ networkParam }) {
         {/* Network Badge */}
         {networkParam === 'arc-testnet' && (
           <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-1 border border-border-light text-[0.65rem] font-bold text-text-muted">
-            <img src="/assets/arc-logo.jpg" alt="Arc" className="w-4 h-4 rounded-full object-cover" />
+            <Image src="/assets/arc-logo.jpg" alt="Arc" width={16} height={16} className="rounded-full object-cover" />
             Arc Testnet
           </div>
         )}
@@ -72,7 +73,7 @@ export function Header({ networkParam }) {
                 
                 {/* Mini Avatar */}
                 <div className="w-5 h-5 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-tr from-accent-primary to-accent-runestone shadow-[0_0_5px_rgba(0,229,255,0.3)]">
-                  <img src={getAvatarUrl(address)} alt="Avatar" className="w-full h-full opacity-90" />
+                  <Image unoptimized src={getAvatarUrl(address)} alt="Avatar" width={20} height={20} className="w-full h-full opacity-90" />
                 </div>
                 
                 {/* Address */}

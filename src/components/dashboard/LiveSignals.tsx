@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function LiveSignals() {
-  const containerRef = useRef(null);
+  const [signals, setSignals] = useState<{ id: number; text: string; type: string }[]>([]);
 
   useEffect(() => {
-    if (!containerRef.current) return;
-    
+    let idCounter = 0;
     const events = [
       () => `> [NETWORK] Syncing block: 52788${Math.floor(Math.random() * 900 + 100)}... OK`,
       () => `> [GAS] Network average adjusted: ${(24 + Math.random() * 2).toFixed(2)} Gwei`,
@@ -20,30 +19,21 @@ export default function LiveSignals() {
     ];
 
     const addSignal = () => {
-      const container = containerRef.current;
-      if (!container) return;
-      
       const eventText = events[Math.floor(Math.random() * events.length)]();
-      const line = document.createElement('div');
-      line.className = 'signal-line flex items-center gap-1.5 whitespace-nowrap';
+      let typeClass = 'text-accent-primary';
       
       if (eventText.includes('NETWORK') || eventText.includes('SYSTEM')) {
-        line.classList.add('text-text-muted');
+        typeClass = 'text-text-muted';
       } else if (eventText.includes('GM') || eventText.includes('joined')) {
-        line.classList.add('text-accent-success');
+        typeClass = 'text-accent-success';
       } else if (eventText.includes('GAS')) {
-        line.classList.add('text-accent-warning');
-      } else {
-        line.classList.add('text-accent-primary');
+        typeClass = 'text-accent-warning';
       }
 
-      line.textContent = eventText;
-      container.appendChild(line);
-
-      const currentLines = container.querySelectorAll('.signal-line');
-      if (currentLines.length > 10) {
-        container.removeChild(currentLines[0]);
-      }
+      setSignals(prev => {
+        const next = [...prev, { id: idCounter++, text: eventText, type: typeClass }];
+        return next.length > 10 ? next.slice(next.length - 10) : next;
+      });
     };
 
     const interval = setInterval(addSignal, 2000);
@@ -56,11 +46,12 @@ export default function LiveSignals() {
         <span className="w-2 h-2 rounded-full bg-accent-primary animate-pulse shadow-glow-cyan"></span>
         <span>Live Signals</span>
       </div>
-      <div 
-        ref={containerRef}
-        className="flex-grow w-full font-mono text-[0.6rem] text-accent-primary/80 overflow-y-hidden flex flex-col justify-end relative mask-image-fade-top gap-1.5"
-      >
-        {/* Dynamic logs are injected here */}
+      <div className="flex-grow w-full font-mono text-[0.6rem] text-accent-primary/80 overflow-y-hidden flex flex-col justify-end relative mask-image-fade-top gap-1.5">
+        {signals.map(signal => (
+          <div key={signal.id} className={`signal-line flex items-center gap-1.5 whitespace-nowrap ${signal.type}`}>
+            {signal.text}
+          </div>
+        ))}
       </div>
     </div>
   );

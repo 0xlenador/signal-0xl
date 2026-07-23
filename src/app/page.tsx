@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function HomePage() {
   return (
@@ -25,7 +26,7 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/10 to-transparent pointer-events-none group-hover:from-accent-primary/20 transition-colors"></div>
           
           <div className="w-20 h-20 mb-6 rounded-full overflow-hidden border-2 border-accent-primary shadow-glow-cyan">
-            <img src="/assets/arc-logo.jpg" alt="Arc Testnet" className="w-full h-full object-cover" />
+            <Image src="/assets/arc-logo.jpg" alt="Arc Testnet" width={80} height={80} className="w-full h-full object-cover" />
           </div>
           
           <h2 className="text-2xl font-bold text-white mb-2 group-hover:text-accent-primary transition-colors">
@@ -46,7 +47,7 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none"></div>
           
           <div className="w-20 h-20 mb-6 rounded-full overflow-hidden border-2 border-border-light grayscale">
-            <img src="/assets/arc-logo.jpg" alt="Arc Mainnet" className="w-full h-full object-cover opacity-50" />
+            <Image src="/assets/arc-logo.jpg" alt="Arc Mainnet" width={80} height={80} className="w-full h-full object-cover opacity-50" />
           </div>
           
           <h2 className="text-2xl font-bold text-white mb-2">

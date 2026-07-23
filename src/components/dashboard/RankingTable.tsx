@@ -5,7 +5,7 @@ import { useLeaderboard } from '@/hooks';
 import { useWeb3 } from '../Web3Provider';
 
 // Skeleton Row Component
-const SkeletonRow = ({ index }) => (
+const SkeletonRow = ({ index }: { index: number }) => (
   <tr className="border-b border-border-light/10">
     <td className="p-3">
       <div className="w-6 h-4 bg-surface-2 animate-pulse rounded mx-auto"></div>
@@ -35,7 +35,7 @@ export default function RankingTable() {
   const { leaderboard, isLoading, isScanning } = useLeaderboard();
   const { address } = useWeb3();
 
-  const shortAddress = (addr) => addr ? `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}` : '';
+  const shortAddress = (addr: string | null) => addr ? `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}` : '';
 
   return (
     <section className="glass-panel rounded-3xl p-5 shadow-lg flex-grow flex flex-col relative group">
@@ -69,7 +69,7 @@ export default function RankingTable() {
               // Modo de Carga Total: Mostrar 5 filas Skeleton puras
               Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={`skel-load-${i}`} index={i} />)
             ) : leaderboard.length === 0 && !isScanning ? (
-              <tr><td colSpan="5" className="p-4 text-center text-text-muted text-sm italic">Sin datos disponibles.</td></tr>
+              <tr><td colSpan={5} className="p-4 text-center text-text-muted text-sm italic">Sin datos disponibles.</td></tr>
             ) : (
               <>
                 {leaderboard.slice(0, 50).map((user, index) => {

@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 
 import { Globe } from 'lucide-react';
 import { useNetworkStats } from '@/hooks';
@@ -11,7 +12,7 @@ export default function NetworkStats() {
       <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/5 to-transparent pointer-events-none rounded-3xl group-hover:from-accent-primary/10 transition-colors"></div>
       <h3 className="text-sm font-bold text-text-muted uppercase tracking-wider mb-4 flex items-center justify-between relative z-10">
         <span className="group-hover:text-accent-primary transition-colors flex items-center gap-2">
-          <img src="/assets/arc-logo.jpg" alt="Arc" className="w-5 h-5 rounded-full object-cover" />
+          <Image src="/assets/arc-logo.jpg" alt="Arc" width={20} height={20} className="rounded-full object-cover" />
           ARC TESTNET 
           <span className="text-[0.6rem] ml-1 bg-accent-success/10 text-accent-success px-2 py-0.5 rounded-full border border-accent-success/20">ONLINE</span>
         </span>

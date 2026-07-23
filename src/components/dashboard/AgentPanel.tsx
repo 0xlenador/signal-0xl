@@ -1,17 +1,25 @@
 'use client';
 
 import { Bot, Info, AlertTriangle } from 'lucide-react';
-import { useSignalContract } from '@/hooks';
+import { useSignalContract, IUserData } from '@/hooks';
 import { useWeb3 } from '../Web3Provider';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export default function AgentPanel() {
   const { address } = useWeb3();
   const { fetchUserData } = useSignalContract();
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState<IUserData | null>(null);
 
   useEffect(() => {
-    if (address) fetchUserData(address).then(setUserData);
+    let isMounted = true;
+    if (address) {
+      fetchUserData(address).then(data => {
+        if (isMounted) setUserData(data);
+      });
+    } else {
+      setUserData(null);
+    }
+    return () => { isMounted = false; };
   }, [address, fetchUserData]);
 
   return (
