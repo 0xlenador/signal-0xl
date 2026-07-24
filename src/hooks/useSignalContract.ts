@@ -14,6 +14,7 @@ export interface IUserData {
   nodeLegacy: boolean;
   exists: boolean;
   attachedAgentId: number;
+  onChainForkLevel: number;
 }
 
 export interface IContractCost {
@@ -27,6 +28,9 @@ export interface ISignalContractHook {
   hasGMToday: (walletAddress: string | null | undefined, preloadedData?: IUserData | null) => Promise<boolean>;
   doGM: (payableAmount: bigint) => Promise<boolean>;
   resetToVIP: () => Promise<boolean>;
+  activateNodeInstant: (nodeId: number, costWei: bigint) => Promise<boolean>;
+  activateNodeByStreak: (nodeId: number) => Promise<boolean>;
+  getNodeInstantCost: (nodeId: number, walletAddress: string) => Promise<bigint | null>;
   loading: boolean;
   error: string | null;
 }
@@ -58,6 +62,9 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 1000): 
   throw new Error("Unreachable");
 }
 
+// Caché para evitar peticiones duplicadas simultáneas al RPC
+const requestCache = new Map<string, { promise: Promise<IUserData | null>, timestamp: number }>();
+
 export function useSignalContract(): ISignalContractHook {
   const { signer } = useWeb3();
   const [loading, setLoading] = useState<boolean>(false);
@@ -79,15 +86,25 @@ export function useSignalContract(): ISignalContractHook {
 
   const fetchUserData = useCallback(async (walletAddress: string | null | undefined): Promise<IUserData | null> => {
     if (!walletAddress) return null;
-    try {
-      return await withRetry(async () => {
+
+    const now = Date.now();
+    const cached = requestCache.get(walletAddress);
+    // Reutilizar la promesa si tiene menos de 3 segundos de antigüedad (deduplicación)
+    if (cached && (now - cached.timestamp < 3000)) {
+      return cached.promise;
+    }
+
+    const promise = (async () => {
+      try {
+        return await withRetry(async () => {
         const contract = getReadContract();
         const data = await contract.users(walletAddress);
         
         let totalPoints = Number(data.totalPoints);
         let lastGmDay = Number(data.lastGmDay);
         let currentStreak = Number(data.currentStreak);
-        let forkLevel = Number(data.forkLevel);
+        let forkLevel = Number(data[3] === 0n ? 1n : data[3]);
+        const onChainForkLevel = forkLevel;
         let gmCount = Number(data.gmCount);
         let nodeCommitment = Boolean(data.nodeCommitment);
         let nodeConviction = Boolean(data.nodeConviction);
@@ -114,13 +131,18 @@ export function useSignalContract(): ISignalContractHook {
           nodeConviction,
           nodeLegacy,
           exists,
-          attachedAgentId
+          attachedAgentId,
+          onChainForkLevel
         };
       });
     } catch (err) {
       console.error("Error fetching user data:", err);
       return null;
     }
+    })(); // Execute the async IIFE to create the promise
+
+    requestCache.set(walletAddress, { promise, timestamp: now });
+    return promise;
   }, [getReadContract]);
 
   const getGMCost = useCallback(async (walletAddress: string | null | undefined, preloadedData: IUserData | null = null): Promise<IContractCost | null> => {
@@ -208,12 +230,78 @@ export function useSignalContract(): ISignalContractHook {
     }
   }, [getWriteContract]);
 
+  const activateNodeInstant = useCallback(async (nodeId: number, costWei: bigint): Promise<boolean> => {
+    if (isMountedRef.current) {
+      setLoading(true);
+      setError(null);
+    }
+    try {
+      const contract = getWriteContract();
+      if (!contract) throw new Error("No signer available");
+      
+      const tx = await contract.activateNodeInstant(nodeId, { value: costWei });
+      await tx.wait();
+      return true;
+    } catch (error) {
+      const err = error as { reason?: string; message?: string };
+      console.error("activateNodeInstant error:", err);
+      if (isMountedRef.current) setError(err.reason || err.message || "Error desconocido");
+      return false;
+    } finally {
+      if (isMountedRef.current) setLoading(false);
+    }
+  }, [getWriteContract]);
+
+  const activateNodeByStreak = useCallback(async (nodeId: number): Promise<boolean> => {
+    if (isMountedRef.current) {
+      setLoading(true);
+      setError(null);
+    }
+    try {
+      const contract = getWriteContract();
+      if (!contract) throw new Error("No signer available");
+      
+      const tx = await contract.activateNodeByStreak(nodeId, { value: CONSTANTS.BASE_GM_COST_WEI });
+      await tx.wait();
+      return true;
+    } catch (error) {
+      const err = error as { reason?: string; message?: string };
+      console.error("activateNodeByStreak error:", err);
+      if (isMountedRef.current) setError(err.reason || err.message || "Error desconocido");
+      return false;
+    } finally {
+      if (isMountedRef.current) setLoading(false);
+    }
+  }, [getWriteContract]);
+
+  const getNodeInstantCost = useCallback(async (nodeId: number, walletAddress: string): Promise<bigint | null> => {
+    try {
+      const data = await fetchUserData(walletAddress);
+      const baseCost = CONSTANTS.BASE_GM_COST_WEI;
+      
+      if (data && data.onChainForkLevel > 1) return baseCost; // B2+ paga solo el costo base
+      
+      // Costo base (0.01 USDC) + costo especifico del nodo
+      if (nodeId === 1) return baseCost + ethers.parseUnits("0.5", 18);
+      if (nodeId === 2) return baseCost + ethers.parseUnits("1.25", 18);
+      if (nodeId === 3) return baseCost + ethers.parseUnits("5", 18);
+      
+      return baseCost;
+    } catch (err) {
+      console.error("Error calculating node instant cost:", err);
+      return null;
+    }
+  }, [fetchUserData]);
+
   return {
     fetchUserData,
     getGMCost,
     hasGMToday,
     doGM,
     resetToVIP,
+    activateNodeInstant,
+    activateNodeByStreak,
+    getNodeInstantCost,
     loading,
     error
   };

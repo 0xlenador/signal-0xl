@@ -3,6 +3,7 @@
 import { Trophy, Info, Loader2 } from 'lucide-react';
 import { useLeaderboard } from '@/hooks';
 import { useWeb3 } from '../Web3Provider';
+import { CONSTANTS } from '@/lib/config';
 
 // Skeleton Row Component
 const SkeletonRow = ({ index }: { index: number }) => (
@@ -65,7 +66,7 @@ export default function RankingTable() {
               <tr><td colSpan={4} className="p-4 text-center text-text-muted text-sm italic">Sin datos disponibles.</td></tr>
             ) : (
               <>
-                {leaderboard.slice(0, 50).map((user, index) => {
+                {leaderboard.slice(0, CONSTANTS.LEADERBOARD_DISPLAY_LIMIT).map((user, index) => {
                   const isMe = address && user.address.toLowerCase() === address.toLowerCase();
                   return (
                     <tr key={user.address} className={`border-b border-border-light/20 hover:bg-surface-2/50 transition-colors ${isMe ? 'bg-accent-primary/10' : ''}`}>

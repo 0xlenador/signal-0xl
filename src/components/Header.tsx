@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { useWeb3 } from './Web3Provider';
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
-import { Link, LogOut, ChevronDown } from 'lucide-react';
+import { Link, LogOut, ChevronDown, LayoutDashboard } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/utils';
 import { NETWORK, SUPPORTED_NETWORKS } from '@/lib/config';
 
@@ -20,6 +20,7 @@ export function Header({ networkParam }: { networkParam?: string }) {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const params = useParams();
+  const isOnOwnDashboard = address && params.wallet && (params.wallet as string).toLowerCase() === address.toLowerCase();
 
   useEffect(() => {
     if (isInitializing) return; // Evitar parpadeos mientras lee la wallet de MetaMask
@@ -43,8 +44,24 @@ export function Header({ networkParam }: { networkParam?: string }) {
 
   return (
     <header className="app-header w-full flex items-center justify-between p-4 px-6 bg-surface-1/95 backdrop-blur-2xl border-b border-border-light sticky top-0 z-50 shadow-lg transition-all">
-      <div className="app-logo text-xl font-bold tracking-tight text-white cursor-pointer" onClick={() => router.push('/')}>
-        Signal <span className="text-accent-primary drop-shadow-[0_0_10px_rgba(0,229,255,0.5)]">0xL</span>
+      <div className="flex items-center gap-4">
+        <div className="app-logo text-xl font-bold tracking-tight text-white cursor-pointer" onClick={() => router.push('/')}>
+          Signal <span className="text-accent-primary drop-shadow-[0_0_10px_rgba(0,229,255,0.5)]">0xL</span>
+        </div>
+
+        <button 
+          onClick={() => {
+            if (!address) {
+              connect();
+            } else if (!isOnOwnDashboard) {
+              router.push(`/${networkParam || 'arc-testnet'}/${address}`);
+            }
+          }}
+          className={`bg-surface-2 border border-border-light text-white font-bold text-xs px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${!isOnOwnDashboard ? 'hover:bg-surface-1 hover:border-accent-primary/50 cursor-pointer' : 'cursor-default'}`}
+        >
+          <LayoutDashboard className="w-3.5 h-3.5 text-accent-primary" />
+          <span className="hidden sm:inline">My Dashboard</span>
+        </button>
       </div>
       
       <div className="flex items-center gap-3">

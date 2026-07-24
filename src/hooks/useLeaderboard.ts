@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ethers } from 'ethers';
-import { CONTRACT_ABI, CONTRACT_ADDRESS, NETWORK } from '@/lib/config';
+import { CONTRACT_ABI, CONTRACT_ADDRESS, NETWORK, INDEXER } from '@/lib/config';
 
 export interface ILeaderboardUser {
   address: string;
@@ -35,8 +35,7 @@ const getReadProvider = () => {
   return _publicProvider;
 };
 
-// URL del nuevo Worker (Indexador D1 en Cloudflare)
-const WORKER_URL = "https://signal0xl-ranking.ellenador-eth.workers.dev/api/leaderboard";
+// Eliminamos la constante WORKER_URL quemada
 
 export function useLeaderboard(): ILeaderboardHook {
   const [leaderboard, setLeaderboard] = useState<ILeaderboardUser[]>([]);
@@ -45,6 +44,7 @@ export function useLeaderboard(): ILeaderboardHook {
 
   const isMountedRef = useRef(true);
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
     };
@@ -58,7 +58,7 @@ export function useLeaderboard(): ILeaderboardHook {
       setLeaderboard([]); // Limpiar leaderboard viejo
       
       // 1. Obtener el Top 100 ordenado casi instantáneamente desde el Cloudflare Worker
-      const res = await fetch(WORKER_URL);
+      const res = await fetch(`${INDEXER.baseUrl}/api/leaderboard`);
       const top100Data = await res.json();
       
       if (!top100Data || top100Data.length === 0) {
@@ -97,13 +97,24 @@ export function useLeaderboard(): ILeaderboardHook {
   }, []);
 
   useEffect(() => {
+    // Primera carga con un ligero retraso de UI
     const timer = setTimeout(() => {
       if (isMountedRef.current) {
         void fetchLeaderboard();
       }
     }, 1200);
 
-    return () => clearTimeout(timer);
+    // Polling automático cada 60 segundos
+    const interval = setInterval(() => {
+      if (isMountedRef.current) {
+        void fetchLeaderboard();
+      }
+    }, 60000);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, [fetchLeaderboard]);
 
   return { leaderboard, isLoading, isScanning, refresh: fetchLeaderboard };

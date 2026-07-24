@@ -4,6 +4,8 @@ export interface Env {
   RANKING_DB: D1Database;
   RPC_URL: string;
   CONTRACT_ADDRESS: string;
+  GENESIS_BLOCK: string;
+  CHAIN_ID: string;
 }
 
 const corsHeaders = {
@@ -86,15 +88,17 @@ export default {
     console.log("Iniciando Cron Job de Sincronización...");
     
     // Configuración Segura de Ingeniería (Resilient Batching)
-    const MAX_ITERATIONS = 5;
-    const CHUNK_SIZE = 1000; // Reducido a 1000 para evitar Rate Limits estrictos en nodos públicos
+    const MAX_ITERATIONS = 5;  // De vuelta a la normalidad para proteger el CPU de Cloudflare
+    const CHUNK_SIZE = 1000;   // Tamaño de bloque seguro para RPC público
     const CONFIRMATION_DELAY = 10;
-    const GENESIS_BLOCK = 53000000; // Aprox 16 de Julio de 2026 (Seguro para contrato del 18 de Julio)
+    // CORRECCIÓN CRÍTICA: Arc Testnet tiene bloques de 0.5s. 300,000 bloques son solo 1.7 días.
+    // El contrato es del 18 de Julio. Leemos el bloque inicial dinámicamente desde wrangler.toml
+    const GENESIS_BLOCK = Number(env.GENESIS_BLOCK) || 52000000;
     
     try {
-      // Usamos staticNetwork y pasamos el Chain ID explícito (5042002) para evitar que
+      // Usamos staticNetwork y pasamos el Chain ID explícito desde env para evitar que
       // ethers haga peticiones extra de 'eth_chainId' que saturan el Rate Limit.
-      const provider = new ethers.JsonRpcProvider(env.RPC_URL, 5042002, { staticNetwork: true });
+      const provider = new ethers.JsonRpcProvider(env.RPC_URL, Number(env.CHAIN_ID) || 5042002, { staticNetwork: true });
       
       // ABI mínimo para leer el evento GMDone
       const SIGNAL_ABI = [

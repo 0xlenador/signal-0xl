@@ -10,6 +10,8 @@ crons = ["* * * * *"]
 [vars]
 RPC_URL = "https://rpc.testnet.arc.network"
 CONTRACT_ADDRESS = "0x108E51F9af4aF2D8CAa1f41E81b91B84B1304d36"
+GENESIS_BLOCK = "52000000"
+CHAIN_ID = "5042002"
 
 # Binding de D1
 [[d1_databases]]

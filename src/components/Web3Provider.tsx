@@ -55,9 +55,18 @@ export function Web3Provider({ children }: Web3ProviderProps) {
   }, []);
 
   // 3. Resolución de Linter: Declarar funciones antes de usarlas y con useCallback
-  const handleAccountsChanged = useCallback((accounts: string[]) => {
-    if (accounts.length === 0) disconnect();
-    else setAddress(accounts[0]);
+  const handleAccountsChanged = useCallback(async (accounts: string[]) => {
+    if (accounts.length === 0) {
+      disconnect();
+    } else {
+      setAddress(accounts[0]);
+      if (typeof window !== 'undefined' && window.ethereum) {
+        const ethersProvider = new ethers.BrowserProvider(window.ethereum);
+        const ethersSigner = await ethersProvider.getSigner();
+        setProvider(ethersProvider);
+        setSigner(ethersSigner);
+      }
+    }
   }, [disconnect]);
 
   const handleChainChanged = useCallback((newChainIdHex: string) => {

@@ -74,22 +74,19 @@ export default function RunestonePanel() {
   };
 
   useEffect(() => {
+    // Prevenir datos 'fantasma' y cobros erróneos al cambiar de perfil
+    setUserData(null);
+    setGmCostInfo(null);
+    setGmDoneToday(false);
+
     if (walletParam) {
       fetchUserData(walletParam).then(data => {
         setUserData(data);
         if (data) {
           getGMCost(walletParam, data).then(setGmCostInfo);
           hasGMToday(walletParam, data).then(setGmDoneToday);
-        } else {
-          setGmCostInfo(null);
-          setGmDoneToday(false);
         }
       });
-    } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setUserData(null);
-      setGmCostInfo(null);
-      setGmDoneToday(false);
     }
   }, [walletParam, fetchUserData, getGMCost, hasGMToday]);
 
@@ -97,11 +94,9 @@ export default function RunestonePanel() {
     if (!address || gmLoading) return;
     setGmLoading(true);
     
-    // Fetch it fresh to ensure we have the absolute right cost before doing GM
-    let currentCost = gmCostInfo;
-    if (!currentCost) {
-      currentCost = await getGMCost(address);
-    }
+    // Fetch it fresh ALWAYS to ensure we have the absolute right cost before doing GM
+    // Esto evita el error de "insufficient payment" por usar el costo de la wallet anterior
+    const currentCost = await getGMCost(address);
     
     if (!currentCost) {
       alert("No se pudo calcular el costo del GM debido a congestión de la red. Intenta de nuevo.");

@@ -22,10 +22,15 @@ export const BLOCKSCOUT = {
   baseUrl: `https://testnet.arcscan.app/api/v2`,
 } as const;
 
+export const INDEXER = {
+  baseUrl: process.env.NEXT_PUBLIC_WORKER_URL || "https://signal0xl-ranking.ellenador-eth.workers.dev",
+} as const;
+
 export const CONSTANTS = {
   DECIMALS: 18,
   BASE_GM_COST_WEI: 10000000000000000n,
   TOTAL_SUPPLY: 100000000,
   NODE_STREAK_REQUIREMENTS: { 1: 3, 2: 12, 3: 25 },
   NODE_INSTANT_MULTIPLIERS: { 1: 51, 2: 126, 3: 501 },
+  LEADERBOARD_DISPLAY_LIMIT: 50,
 } as const;

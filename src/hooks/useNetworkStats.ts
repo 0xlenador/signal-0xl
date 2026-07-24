@@ -50,7 +50,7 @@ export function useNetworkStats(): INetworkStats {
       if (!document.hidden) {
         void fetchStats();
       }
-    }, 30000);
+    }, 120000); // Aumentado a 2 minutos para evitar baneos de IP de Arcscan
 
     return () => {
       isMounted = false;
