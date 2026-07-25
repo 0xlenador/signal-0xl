@@ -78,7 +78,7 @@ export default function NodesGrid() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* NODO 1: Compromiso */}
-      <div className="glass-panel rounded-2xl p-3 flex flex-col glow-cyan-hover transition-all duration-300 relative group" id="node1-card">
+      <div className="glass-panel rounded-2xl p-3 flex flex-col glow-cyan-hover transition-all duration-300 relative group hover:z-50" id="node1-card">
         <div className="absolute top-0 right-0 w-16 h-16 bg-accent-primary/5 rounded-bl-full rounded-tr-2xl pointer-events-none group-hover:bg-accent-primary/10 transition-colors"></div>
         <div className="flex items-center justify-between mb-2 relative z-10">
           <div className="flex items-center gap-2 font-bold text-white text-sm">
@@ -86,9 +86,12 @@ export default function NodesGrid() {
             <span className="group-hover:text-accent-primary transition-colors">Node 1 — Commitment</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="cursor-help relative group/tt opacity-80 group-hover:opacity-100 transition-opacity flex items-center">
-              <Info className="w-3.5 h-3.5" />
-            </span>
+            <div className="relative cursor-help group/ntt pointer-events-auto flex items-center">
+              <Info className="w-3.5 h-3.5 opacity-80 group-hover/ntt:opacity-100 transition-opacity" />
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 bg-black/95 backdrop-blur-md border border-border-light rounded shadow-glow-cyan/20 text-[0.65rem] text-gray-200 opacity-0 group-hover/ntt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case tracking-normal">
+                Texto explicativo del Nodo 1. Puedes editar esto luego.
+              </div>
+            </div>
             {userData?.nodeCommitment ? (
               <div className="w-2.5 h-2.5 rounded-full bg-accent-success shadow-[0_0_8px_rgba(0,230,118,0.6)]"></div>
             ) : (
@@ -146,7 +149,7 @@ export default function NodesGrid() {
       </div>
 
       {/* NODO 2: Convicción */}
-      <div className="glass-panel rounded-2xl p-3 flex flex-col glow-cyan-hover transition-all duration-300 relative group" id="node2-card">
+      <div className="glass-panel rounded-2xl p-3 flex flex-col glow-cyan-hover transition-all duration-300 relative group hover:z-50" id="node2-card">
         <div className="absolute top-0 right-0 w-16 h-16 bg-accent-primary/5 rounded-bl-full rounded-tr-2xl pointer-events-none group-hover:bg-accent-primary/10 transition-colors"></div>
         <div className="flex items-center justify-between mb-2 relative z-10">
           <div className="flex items-center gap-2 font-bold text-white text-sm">
@@ -154,9 +157,12 @@ export default function NodesGrid() {
             <span className="group-hover:text-accent-primary transition-colors">Node 2 — Conviction</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="cursor-help relative group/tt opacity-80 group-hover:opacity-100 transition-opacity flex items-center">
-              <Info className="w-3.5 h-3.5" />
-            </span>
+            <div className="relative cursor-help group/ntt pointer-events-auto flex items-center">
+              <Info className="w-3.5 h-3.5 opacity-80 group-hover/ntt:opacity-100 transition-opacity" />
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 bg-black/95 backdrop-blur-md border border-border-light rounded shadow-glow-cyan/20 text-[0.65rem] text-gray-200 opacity-0 group-hover/ntt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case tracking-normal">
+                Texto explicativo del Nodo 2. Puedes editar esto luego.
+              </div>
+            </div>
             {userData?.nodeConviction ? (
               <div className="w-2.5 h-2.5 rounded-full bg-accent-success shadow-[0_0_8px_rgba(0,230,118,0.6)]"></div>
             ) : (
@@ -214,7 +220,7 @@ export default function NodesGrid() {
       </div>
 
       {/* NODO 3: Legado */}
-      <div className="glass-panel rounded-2xl p-3 flex flex-col glow-cyan-hover transition-all duration-300 relative group" id="node3-card">
+      <div className="glass-panel rounded-2xl p-3 flex flex-col glow-cyan-hover transition-all duration-300 relative group hover:z-50" id="node3-card">
         <div className="absolute top-0 right-0 w-16 h-16 bg-accent-primary/5 rounded-bl-full rounded-tr-2xl pointer-events-none group-hover:bg-accent-primary/10 transition-colors"></div>
         <div className="flex items-center justify-between mb-2 relative z-10">
           <div className="flex items-center gap-2 font-bold text-white text-sm">
@@ -222,9 +228,12 @@ export default function NodesGrid() {
             <span className="group-hover:text-accent-primary transition-colors">Node 3 — Legacy</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="cursor-help relative group/tt opacity-80 group-hover:opacity-100 transition-opacity flex items-center">
-              <Info className="w-3.5 h-3.5" />
-            </span>
+            <div className="relative cursor-help group/ntt pointer-events-auto flex items-center">
+              <Info className="w-3.5 h-3.5 opacity-80 group-hover/ntt:opacity-100 transition-opacity" />
+              <div className="absolute bottom-full right-0 mb-2 w-56 p-3 bg-black/95 backdrop-blur-md border border-border-light rounded shadow-glow-cyan/20 text-[0.65rem] text-gray-200 opacity-0 group-hover/ntt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case tracking-normal">
+                Texto explicativo del Nodo 3. Puedes editar esto luego.
+              </div>
+            </div>
             {userData?.nodeLegacy ? (
               <div className="w-2.5 h-2.5 rounded-full bg-accent-success shadow-[0_0_8px_rgba(0,230,118,0.6)]"></div>
             ) : (

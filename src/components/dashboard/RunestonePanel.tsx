@@ -224,7 +224,7 @@ export default function RunestonePanel() {
             </div>
 
             {/* Estructura Central Absoluta */}
-            <div className="relative w-[180px] h-[220px] mx-auto flex flex-col items-center justify-end" style={{ transformStyle: 'preserve-3d' }}>
+            <div className="relative w-[180px] h-[220px] mx-auto flex flex-col items-center justify-end" style={{ zIndex: 50, transformStyle: 'preserve-3d' }}>
               
               {/* SVG Cristal (Runestone) */}
               <div className="absolute bottom-[35px] pointer-events-none" style={{ zIndex: 1, transform: 'translateZ(-10px)' }}>
@@ -277,14 +277,14 @@ export default function RunestonePanel() {
               </div>
 
               {/* Contador GM Externo y Tooltip */}
-              <div className="absolute top-[100%] mt-2 w-full flex items-center justify-center gap-2" style={{ transform: 'translateZ(10px)' }}>
+              <div className="absolute top-[100%] mt-2 w-full flex items-center justify-center gap-2" style={{ zIndex: 10000, transform: 'translateZ(10px)' }}>
                 <div className={`text-lg font-bold font-mono text-white tracking-wider drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] empty:hidden ${gmDoneToday ? '' : 'hidden'}`}>
                   {countdown}
                 </div>
                 {/* Tooltip informativo GM */}
                 <div className="relative cursor-help group/gmtt pointer-events-auto flex items-center">
                   <Info className="w-4 h-4 text-text-muted hover:text-accent-primary transition-colors" />
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 bg-surface-2/95 backdrop-blur-md border border-border-color rounded shadow-xl text-[0.65rem] text-text-muted opacity-0 group-hover/gmtt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case tracking-normal">
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 bg-black/95 backdrop-blur-md border border-border-light rounded shadow-glow-cyan/20 text-[0.65rem] text-gray-200 opacity-0 group-hover/gmtt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case tracking-normal">
                     Envía tu señal diaria a Arc Testnet. Ventana: 00:00–23:59 UTC. +1 punto (+2 con Runestone).
                   </div>
                 </div>
