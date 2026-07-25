@@ -80,15 +80,24 @@ export default function RunestonePanel() {
     setGmCostInfo(null);
     setGmDoneToday(false);
 
-    if (walletParam) {
-      fetchUserData(walletParam).then(data => {
-        setUserData(data);
-        if (data) {
-          getGMCost(walletParam, data).then(setGmCostInfo);
-          hasGMToday(walletParam, data).then(setGmDoneToday);
-        }
-      });
-    }
+    const loadData = () => {
+      if (walletParam) {
+        fetchUserData(walletParam).then(data => {
+          if (isMountedRef.current) setUserData(data);
+          if (data && isMountedRef.current) {
+            getGMCost(walletParam, data).then(c => { if (isMountedRef.current) setGmCostInfo(c) });
+            hasGMToday(walletParam, data).then(d => { if (isMountedRef.current) setGmDoneToday(d) });
+          }
+        });
+      }
+    };
+
+    loadData();
+
+    window.addEventListener('signal-data-refresh', loadData);
+    return () => {
+      window.removeEventListener('signal-data-refresh', loadData);
+    };
   }, [walletParam, fetchUserData, getGMCost, hasGMToday]);
 
   const handleGM = async () => {

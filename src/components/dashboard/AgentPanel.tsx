@@ -17,15 +17,24 @@ export default function AgentPanel() {
 
   useEffect(() => {
     let isMounted = true;
-    if (walletParam) {
-      fetchUserData(walletParam).then(data => {
-        if (isMounted) setUserData(data);
-      });
-    } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setUserData(null);
-    }
-    return () => { isMounted = false; };
+    
+    const loadData = () => {
+      if (walletParam) {
+        fetchUserData(walletParam).then(data => {
+          if (isMounted) setUserData(data);
+        });
+      } else {
+        setUserData(null);
+      }
+    };
+
+    loadData();
+
+    window.addEventListener('signal-data-refresh', loadData);
+    return () => { 
+      isMounted = false; 
+      window.removeEventListener('signal-data-refresh', loadData);
+    };
   }, [walletParam, fetchUserData]);
 
   return (

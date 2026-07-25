@@ -46,6 +46,11 @@ export default function NodesGrid() {
 
   useEffect(() => {
     refreshData();
+    
+    window.addEventListener('signal-data-refresh', refreshData);
+    return () => {
+      window.removeEventListener('signal-data-refresh', refreshData);
+    };
   }, [walletParam, fetchUserData]);
 
   const handleActivateInstant = async (nodeId: number, setLoader: (l: boolean) => void) => {

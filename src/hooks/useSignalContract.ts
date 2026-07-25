@@ -187,6 +187,8 @@ export function useSignalContract(): ISignalContractHook {
         value: payableAmount,
       });
       await publicClient.waitForTransactionReceipt({ hash });
+      requestCache.clear();
+      window.dispatchEvent(new CustomEvent('signal-data-refresh'));
       return true;
     } catch (error) {
       const err = error as { shortMessage?: string; message?: string };
@@ -210,6 +212,8 @@ export function useSignalContract(): ISignalContractHook {
         functionName: 'resetToVIP',
       });
       await publicClient.waitForTransactionReceipt({ hash });
+      requestCache.clear();
+      window.dispatchEvent(new CustomEvent('signal-data-refresh'));
       return true;
     } catch (error) {
       const err = error as { shortMessage?: string; message?: string };
@@ -235,6 +239,8 @@ export function useSignalContract(): ISignalContractHook {
         value: costWei,
       });
       await publicClient.waitForTransactionReceipt({ hash });
+      requestCache.clear();
+      window.dispatchEvent(new CustomEvent('signal-data-refresh'));
       return true;
     } catch (error) {
       const err = error as { shortMessage?: string; message?: string };
@@ -260,6 +266,8 @@ export function useSignalContract(): ISignalContractHook {
         value: CONSTANTS.BASE_GM_COST_WEI,
       });
       await publicClient.waitForTransactionReceipt({ hash });
+      requestCache.clear();
+      window.dispatchEvent(new CustomEvent('signal-data-refresh'));
       return true;
     } catch (error) {
       const err = error as { shortMessage?: string; message?: string };

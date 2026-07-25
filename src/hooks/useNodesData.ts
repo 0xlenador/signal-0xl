@@ -148,6 +148,11 @@ export function useNodesData(address: string | null | undefined): INodesData {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchNodesData();
+    
+    window.addEventListener('signal-data-refresh', fetchNodesData);
+    return () => {
+      window.removeEventListener('signal-data-refresh', fetchNodesData);
+    };
   }, [fetchNodesData]);
 
   return nodesData;
