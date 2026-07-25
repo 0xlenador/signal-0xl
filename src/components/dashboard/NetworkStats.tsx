@@ -25,7 +25,7 @@ export default function NetworkStats() {
     <div className="glass-panel rounded-3xl p-5 shadow-lg relative flex flex-col justify-between group hover:shadow-glow-cyan transition-shadow duration-500">
       <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/5 to-transparent pointer-events-none rounded-3xl group-hover:from-accent-primary/10 transition-colors"></div>
       
-      <div className="flex items-center justify-between mb-4 relative z-10 border-b border-border-light pb-3">
+      <div className="flex items-center justify-between mb-4 relative z-10 pb-3">
         <h3 className="text-sm font-bold text-text-muted uppercase tracking-wider flex items-center gap-2">
           <span className="group-hover:text-accent-primary transition-colors flex items-center gap-2">
             <Image src="/assets/arc-logo.jpg" alt="Arc" width={22} height={22} className="rounded-full object-cover shadow-[0_0_8px_rgba(0,229,255,0.3)]" />
@@ -39,22 +39,22 @@ export default function NetworkStats() {
         
         {/* Quick Links Section */}
         <div className="flex items-center gap-4 text-text-muted">
-          <a href="https://faucet.circle.com/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-accent-primary transition-colors group/link text-[0.65rem] font-medium tracking-wide">
+          <a href="https://faucet.circle.com/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-accent-primary transition-colors group/link text-[0.80rem] font-medium tracking-wide">
             <Droplets className="w-3.5 h-3.5" />
             <span>Faucet</span>
             <ExternalLink className="w-2 h-2 opacity-50 -ml-0.5 group-hover/link:opacity-100 transition-opacity" />
           </a>
-          <a href="https://docs.arc.io/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-accent-primary transition-colors group/link text-[0.65rem] font-medium tracking-wide">
+          <a href="https://docs.arc.io/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-accent-primary transition-colors group/link text-[0.80rem] font-medium tracking-wide">
             <BookOpen className="w-3.5 h-3.5" />
             <span>Docs</span>
             <ExternalLink className="w-2 h-2 opacity-50 -ml-0.5 group-hover/link:opacity-100 transition-opacity" />
           </a>
-          <a href="https://www.arc.io/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-accent-primary transition-colors group/link text-[0.65rem] font-medium tracking-wide">
+          <a href="https://www.arc.io/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-accent-primary transition-colors group/link text-[0.80rem] font-medium tracking-wide">
             <Globe className="w-3.5 h-3.5" />
             <span>Website</span>
             <ExternalLink className="w-2 h-2 opacity-50 -ml-0.5 group-hover/link:opacity-100 transition-opacity" />
           </a>
-          <a href="https://testnet.arcscan.app/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-accent-primary transition-colors group/link text-[0.65rem] font-medium tracking-wide">
+          <a href="https://testnet.arcscan.app/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-accent-primary transition-colors group/link text-[0.80rem] font-medium tracking-wide">
             <Search className="w-3.5 h-3.5" />
             <span>Explorer</span>
             <ExternalLink className="w-2 h-2 opacity-50 -ml-0.5 group-hover/link:opacity-100 transition-opacity" />

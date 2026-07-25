@@ -285,7 +285,7 @@ export default function RunestonePanel() {
                 <div className="relative cursor-help group/gmtt pointer-events-auto flex items-center">
                   <Info className="w-4 h-4 text-text-muted hover:text-accent-primary transition-colors" />
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 bg-black/95 backdrop-blur-md border border-border-light rounded shadow-glow-cyan/20 text-[0.65rem] text-gray-200 opacity-0 group-hover/gmtt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case tracking-normal">
-                    Envía tu señal diaria a Arc Testnet. Ventana: 00:00–23:59 UTC. +1 punto (+2 con Runestone).
+                    Send your daily signal to Arc Testnet. Window: 00:00–23:59 UTC. +1 point (+2 with Runestone).
                   </div>
                 </div>
               </div>

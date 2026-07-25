@@ -89,7 +89,7 @@ export default function NodesGrid() {
             <div className="relative cursor-help group/ntt pointer-events-auto flex items-center">
               <Info className="w-3.5 h-3.5 opacity-80 group-hover/ntt:opacity-100 transition-opacity" />
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 bg-black/95 backdrop-blur-md border border-border-light rounded shadow-glow-cyan/20 text-[0.65rem] text-gray-200 opacity-0 group-hover/ntt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case tracking-normal">
-                Texto explicativo del Nodo 1. Puedes editar esto luego.
+                Analyzes historical transaction volume and gas spent on Arc Testnet. Calculates your activity tier and score multiplier.
               </div>
             </div>
             {userData?.nodeCommitment ? (
@@ -160,7 +160,7 @@ export default function NodesGrid() {
             <div className="relative cursor-help group/ntt pointer-events-auto flex items-center">
               <Info className="w-3.5 h-3.5 opacity-80 group-hover/ntt:opacity-100 transition-opacity" />
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 bg-black/95 backdrop-blur-md border border-border-light rounded shadow-glow-cyan/20 text-[0.65rem] text-gray-200 opacity-0 group-hover/ntt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case tracking-normal">
-                Texto explicativo del Nodo 2. Puedes editar esto luego.
+                Calculates the percentage of the total native USDC supply held in your wallet. Measures your economic weight on the network.
               </div>
             </div>
             {userData?.nodeConviction ? (
@@ -231,7 +231,7 @@ export default function NodesGrid() {
             <div className="relative cursor-help group/ntt pointer-events-auto flex items-center">
               <Info className="w-3.5 h-3.5 opacity-80 group-hover/ntt:opacity-100 transition-opacity" />
               <div className="absolute bottom-full right-0 mb-2 w-56 p-3 bg-black/95 backdrop-blur-md border border-border-light rounded shadow-glow-cyan/20 text-[0.65rem] text-gray-200 opacity-0 group-hover/ntt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case tracking-normal">
-                Texto explicativo del Nodo 3. Puedes editar esto luego.
+                Analyzes the timestamp of your first and last transaction on Arc Testnet. The older you are on the network, the higher your legacy multiplier.
               </div>
             </div>
             {userData?.nodeLegacy ? (
