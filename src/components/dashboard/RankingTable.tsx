@@ -8,20 +8,20 @@ import { CONSTANTS } from '@/lib/config';
 // Skeleton Row Component
 const SkeletonRow = ({ index }: { index: number }) => (
   <tr className="border-b border-border-light/10">
-    <td className="p-3">
+    <td className="p-3 w-16">
       <div className="w-6 h-4 bg-surface-2 animate-pulse rounded mx-auto"></div>
     </td>
-    <td className="p-3">
-      <div className="flex items-center gap-2">
-        <div className="w-3.5 h-3.5 bg-surface-2 animate-pulse rounded-full"></div>
+    <td className="p-3 w-full">
+      <div className="flex items-center gap-3">
+        <div className="w-4 h-4 bg-surface-2 animate-pulse rounded-full flex-shrink-0"></div>
         <div className="w-24 h-4 bg-surface-2 animate-pulse rounded"></div>
       </div>
     </td>
-    <td className="p-3 text-right">
-      <div className="w-8 h-4 bg-surface-2 animate-pulse rounded ml-auto"></div>
+    <td className="p-3 w-24 text-center">
+      <div className="w-8 h-4 bg-surface-2 animate-pulse rounded mx-auto"></div>
     </td>
-    <td className="p-3 text-right">
-      <div className="w-10 h-4 bg-surface-2 animate-pulse rounded ml-auto"></div>
+    <td className="p-3 w-24 text-center">
+      <div className="w-10 h-4 bg-surface-2 animate-pulse rounded mx-auto"></div>
     </td>
   </tr>
 );
@@ -52,10 +52,10 @@ export default function RankingTable() {
         <table className="ranking-table w-full text-left border-collapse text-sm">
           <thead className="sticky top-0 bg-surface-1/90 backdrop-blur-md z-20">
             <tr>
-              <th className="p-3 text-[0.65rem] text-text-muted uppercase tracking-wider border-b border-border-light font-medium">Rank</th>
-              <th className="p-3 text-[0.65rem] text-text-muted uppercase tracking-wider border-b border-border-light font-medium">Address</th>
-              <th className="p-3 text-[0.65rem] text-text-muted uppercase tracking-wider border-b border-border-light font-medium text-right">Score</th>
-              <th className="p-3 text-[0.65rem] text-text-muted uppercase tracking-wider border-b border-border-light font-medium text-right">Fork</th>
+              <th className="p-3 text-[0.65rem] text-text-muted uppercase tracking-wider border-b border-border-light font-medium text-center w-16">Rank</th>
+              <th className="p-3 text-[0.65rem] text-text-muted uppercase tracking-wider border-b border-border-light font-medium text-left w-full">Address</th>
+              <th className="p-3 text-[0.65rem] text-text-muted uppercase tracking-wider border-b border-border-light font-medium text-center w-24">Score</th>
+              <th className="p-3 text-[0.65rem] text-text-muted uppercase tracking-wider border-b border-border-light font-medium text-center w-24">Fork</th>
             </tr>
           </thead>
           <tbody>
@@ -69,18 +69,22 @@ export default function RankingTable() {
                 {leaderboard.slice(0, CONSTANTS.LEADERBOARD_DISPLAY_LIMIT).map((user, index) => {
                   const isMe = address && user.address.toLowerCase() === address.toLowerCase();
                   return (
-                    <tr key={user.address} className={`border-b border-border-light/20 hover:bg-surface-2/50 transition-colors ${isMe ? 'bg-accent-primary/10' : ''}`}>
-                      <td className="p-3">
-                        <span className="text-xs font-bold w-6 inline-block text-center text-text-muted">{index + 1}</span>
+                    <tr key={user.address} className={`border-b border-border-light/20 hover:bg-surface-2/70 transition-colors ${isMe ? 'bg-accent-primary/10' : ''}`}>
+                      <td className="p-3 text-center w-16">
+                        <span className="text-xs font-bold text-text-muted">{index + 1}</span>
                       </td>
-                      <td className="p-3 font-mono text-[0.75rem] text-white flex items-center gap-2">
-                        {index < 3 && <Trophy className={`w-3.5 h-3.5 ${index === 0 ? 'text-yellow-400' : index === 1 ? 'text-gray-300' : 'text-amber-600'}`} />}
-                        {shortAddress(user.address)}
-                        {isMe && <span className="ml-2 text-[0.55rem] font-bold bg-accent-primary/20 text-accent-primary px-1.5 py-0.5 rounded border border-accent-primary/50">YOU</span>}
+                      <td className="p-3 w-full">
+                        <div className="font-mono text-[0.75rem] text-white flex items-center gap-3">
+                          <div className="w-4 flex items-center justify-center flex-shrink-0">
+                            {index < 3 && <Trophy className={`w-4 h-4 ${index === 0 ? 'text-yellow-400 drop-shadow-sm' : index === 1 ? 'text-gray-300' : 'text-amber-600'}`} />}
+                          </div>
+                          <span className="tracking-wide">{shortAddress(user.address)}</span>
+                          {isMe && <span className="text-[0.55rem] font-bold bg-accent-primary/20 text-accent-primary px-1.5 py-0.5 rounded border border-accent-primary/50">YOU</span>}
+                        </div>
                       </td>
-                      <td className="p-3 text-right text-xs font-bold text-accent-primary">{user.totalPoints}</td>
-                      <td className="p-3 text-right">
-                        <span className="text-[0.6rem] font-bold bg-accent-warning/20 text-accent-warning px-1.5 py-0.5 rounded border border-accent-warning/30">Lv {user.forkLevel}</span>
+                      <td className="p-3 text-center w-24 text-xs font-bold text-accent-primary">{user.totalPoints}</td>
+                      <td className="p-3 text-center w-24">
+                        <span className="text-[0.6rem] font-bold bg-accent-warning/20 text-accent-warning px-1.5 py-0.5 rounded border border-accent-warning/30 whitespace-nowrap">Lv {user.forkLevel}</span>
                       </td>
                     </tr>
                   );
