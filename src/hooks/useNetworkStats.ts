@@ -73,8 +73,12 @@ export function useNetworkStats(): INetworkStats {
     const localNow = performance.now();
     const prev = prevTimestampRef.current;
     
-    // Si es el primer bloque, asumimos el tiempo ideal de la red (500ms) para evitar un pico irreal
-    const finalityMs = prev !== null ? (localNow - prev) : 500;
+    // Si es el primer bloque, o si hubo un salto irreal por inactividad de pestaña (> 5s), asumimos 500ms
+    let finalityMs = 500;
+    if (prev !== null) {
+      const delta = localNow - prev;
+      finalityMs = delta > 5000 ? 500 : delta;
+    }
     prevTimestampRef.current = localNow;
 
     const updatedBuffer = [...finalityBufferRef.current, finalityMs];
@@ -86,21 +90,28 @@ export function useNetworkStats(): INetworkStats {
     const avgFinalityMs = updatedBuffer.reduce((a, b) => a + b, 0) / updatedBuffer.length;
     const blockTimeMs = Math.round(avgFinalityMs).toString();
 
-    // Actualizamos las métricas instantáneas y el historial (excepto txs)
-    setStats(prevStats => ({
-      ...prevStats,
-      gasPrice: gasCostStr,
-      blockTime: blockTimeMs,
-      totalBlocks: blockNumber.toLocaleString(),
-      isLoading: false,
-      isError: false,
-      history: {
-        gas: [...prevStats.history.gas, gasCost].slice(-MAX_HISTORY),
-        time: [...prevStats.history.time, Math.round(avgFinalityMs)].slice(-MAX_HISTORY),
-        blocks: [...prevStats.history.blocks, blockNumber].slice(-MAX_HISTORY),
-        txs: prevStats.history.txs,
-      }
-    }));
+    // Actualizamos las métricas instantáneas y el historial
+    setStats(prevStats => {
+      // Usamos el último valor de txs conocido como "placeholder" para no perder sincronía de longitud
+      const lastTxCount = prevStats.history.txs.length > 0 
+        ? prevStats.history.txs[prevStats.history.txs.length - 1] 
+        : 0;
+
+      return {
+        ...prevStats,
+        gasPrice: gasCostStr,
+        blockTime: blockTimeMs,
+        totalBlocks: blockNumber.toLocaleString(),
+        isLoading: false,
+        isError: false,
+        history: {
+          gas: [...prevStats.history.gas, gasCost].slice(-MAX_HISTORY),
+          time: [...prevStats.history.time, Math.round(avgFinalityMs)].slice(-MAX_HISTORY),
+          blocks: [...prevStats.history.blocks, blockNumber].slice(-MAX_HISTORY),
+          txs: [...prevStats.history.txs, lastTxCount].slice(-MAX_HISTORY),
+        }
+      };
+    });
 
     // Solicitamos la cantidad de TXS por el MISMO WebSocket
     if (ws.readyState === WebSocket.OPEN) {
@@ -162,14 +173,22 @@ export function useNetworkStats(): INetworkStats {
           
           if (blockNumber >= latestProcessedBlockRef.current) {
             const txCount = data.result ? hexToNumber(data.result) : 0;
-            setStats(prev => ({ 
-              ...prev, 
-              totalTxs: txCount.toString(),
-              history: {
-                ...prev.history,
-                txs: [...prev.history.txs, txCount].slice(-MAX_HISTORY)
+            setStats(prev => {
+              const txsCopy = [...prev.history.txs];
+              const blockIndex = prev.history.blocks.indexOf(blockNumber);
+              if (blockIndex !== -1) {
+                txsCopy[blockIndex] = txCount;
               }
-            }));
+              
+              return { 
+                ...prev, 
+                totalTxs: txCount.toString(),
+                history: {
+                  ...prev.history,
+                  txs: txsCopy
+                }
+              };
+            });
           }
         }
       } catch { /* ignore */ }

@@ -22,10 +22,12 @@ export function Header({ networkParam }: { networkParam?: string }) {
   const isOnOwnDashboard = address && params.wallet && (params.wallet as string).toLowerCase() === address.toLowerCase();
 
   useEffect(() => {
+    // No hacer nada mientras se inicializa o reconecta
     if (isInitializing) return;
 
+    // Solo redirigir al dashboard cuando el usuario se conecta manualmente
+    // (no durante reconexión silenciosa), y solo si no está ya en un dashboard
     if (networkParam && address && !params.wallet) {
-      // Regla estricta: Redirección ÚNICAMENTE si no es una reconexión silenciosa
       if (!isReconnecting && status === 'connected') {
         router.push(`/${networkParam}/${address}`);
       }

@@ -57,17 +57,23 @@ function Web3ContextManager({ children }: { children: ReactNode }) {
     }
   }, [openConnectModal]);
 
+  // Preservar la dirección durante la reconexión para evitar parpadeos de null
+  // que rompen el botón de wallet, el dashboard y los componentes hijos.
+  // Durante el 'reconnecting', wagmi ya tiene el address del localStorage,
+  // así que es seguro exponerlo mientras se restaura la sesión completa.
+  const isConnectedOrReconnecting = status === 'connected' || status === 'reconnecting';
+
   const contextValue = useMemo<IWeb3Context>(() => ({
-    address: mounted && status === 'connected' && address ? address : null,
+    address: mounted && isConnectedOrReconnecting && address ? address : null,
     chainId: mounted ? chainId : null,
     status,
     isReconnecting,
     connect,
     disconnect,
     error,
-    isInitializing: !mounted || isConnecting,
+    isInitializing: !mounted || isConnecting || isReconnecting,
     clearError
-  }), [mounted, status, address, chainId, isReconnecting, connect, disconnect, error, isConnecting, clearError]);
+  }), [mounted, isConnectedOrReconnecting, status, address, chainId, isReconnecting, connect, disconnect, error, isConnecting, clearError]);
 
   return (
     <Web3Context.Provider value={contextValue}>

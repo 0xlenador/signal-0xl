@@ -12,21 +12,26 @@ const Sparkline = ({ color, data, glowColor }: { color: string, data: number[], 
   let points = `0,${height} ${width},${height}`;
   
   if (data && data.length > 0) {
-    const min = Math.min(...data);
-    const max = Math.max(...data);
-    const range = max - min || 1;
-    const stepX = width / Math.max(data.length - 1, 1);
-    
-    points = data.map((val, i) => {
-      const x = i * stepX;
-      let y;
-      if (min === max) {
-        y = height / 2;
-      } else {
-        y = 2 + (height - 4) * (1 - (val - min) / range);
-      }
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    }).join(' ');
+    if (data.length === 1) {
+      const y = height / 2;
+      points = `0,${y} ${width},${y}`;
+    } else {
+      const min = Math.min(...data);
+      const max = Math.max(...data);
+      const range = max - min || 1;
+      const stepX = width / Math.max(data.length - 1, 1);
+      
+      points = data.map((val, i) => {
+        const x = i * stepX;
+        let y;
+        if (min === max) {
+          y = height / 2;
+        } else {
+          y = 2 + (height - 4) * (1 - (val - min) / range);
+        }
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      }).join(' ');
+    }
   }
 
   return (
