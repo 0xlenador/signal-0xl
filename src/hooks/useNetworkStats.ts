@@ -7,6 +7,7 @@ export interface INetworkStats {
   totalBlocks: string;
   totalTxs: string;
   isLoading: boolean;
+  isError: boolean;
 }
 
 export function useNetworkStats(): INetworkStats {
@@ -15,7 +16,8 @@ export function useNetworkStats(): INetworkStats {
     blockTime: '...',
     totalBlocks: '...',
     totalTxs: '...',
-    isLoading: true
+    isLoading: true,
+    isError: false
   });
 
   useEffect(() => {
@@ -33,13 +35,14 @@ export function useNetworkStats(): INetworkStats {
             blockTime: data.average_block_time ? (data.average_block_time / 1000).toFixed(2) : '0.00',
             totalBlocks: data.total_blocks ? parseInt(data.total_blocks).toLocaleString() : '0',
             totalTxs: data.total_transactions ? parseInt(data.total_transactions).toLocaleString() : '0',
-            isLoading: false
+            isLoading: false,
+            isError: false
           });
         }
       } catch (error) {
         console.error("Error fetching network stats:", error);
         if (isMounted) {
-          setStats(prev => ({ ...prev, isLoading: false }));
+          setStats(prev => ({ ...prev, isLoading: false, isError: true }));
         }
       }
     };

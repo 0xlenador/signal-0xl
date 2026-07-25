@@ -31,9 +31,17 @@ export default function NetworkStats() {
             <Image src="/assets/arc-logo.jpg" alt="Arc" width={22} height={22} className="rounded-full object-cover shadow-[0_0_8px_rgba(0,229,255,0.3)]" />
             ARC TESTNET 
           </span>
-          <span className="text-[0.6rem] bg-accent-success/10 text-accent-success px-2 py-0.5 rounded-full border border-accent-success/30 flex items-center gap-1.5 shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-accent-success animate-pulse"></span>
-            ONLINE
+          <span className={`text-[0.6rem] px-2 py-0.5 rounded-full border flex items-center gap-1.5 shadow-sm ${
+            stats.isLoading ? 'bg-accent-warning/10 text-accent-warning border-accent-warning/30' :
+            stats.isError ? 'bg-accent-error/10 text-accent-error border-accent-error/30' :
+            'bg-accent-success/10 text-accent-success border-accent-success/30'
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${stats.isError ? '' : 'animate-pulse'} ${
+              stats.isLoading ? 'bg-accent-warning' :
+              stats.isError ? 'bg-accent-error' :
+              'bg-accent-success'
+            }`}></span>
+            {stats.isLoading ? 'CONNECTING' : stats.isError ? 'ISSUES' : 'ONLINE'}
           </span>
         </h3>
         

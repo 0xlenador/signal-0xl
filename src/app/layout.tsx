@@ -17,11 +17,6 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata = {
   title: 'Signal 0xL',
   description: 'Signal 0xL Platform',
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
-  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
