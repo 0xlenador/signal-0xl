@@ -51,13 +51,39 @@ export function useNodesData(address: string | null | undefined): INodesData {
     if (!address) return;
     
     try {
+      // 1. Intentamos obtener datos del Blockscout (con .catch para no crashear Promise.all)
       const [addressRes, countersRes, txsRes] = await Promise.all([
-        fetch(`${BLOCKSCOUT.baseUrl}/addresses/${address}`).then(res => res.ok ? res.json() : null),
-        fetch(`${BLOCKSCOUT.baseUrl}/addresses/${address}/counters`).then(res => res.ok ? res.json() : null),
-        fetch(`${BLOCKSCOUT.baseUrl}/addresses/${address}/transactions`).then(res => res.ok ? res.json() : null)
+        fetch(`${BLOCKSCOUT.baseUrl}/addresses/${address}`).then(res => res.ok ? res.json() : null).catch(() => null),
+        fetch(`${BLOCKSCOUT.baseUrl}/addresses/${address}/counters`).then(res => res.ok ? res.json() : null).catch(() => null),
+        fetch(`${BLOCKSCOUT.baseUrl}/addresses/${address}/transactions`).then(res => res.ok ? res.json() : null).catch(() => null)
       ]);
 
-      let totalTxs = countersRes?.transactions_count || 0;
+      // 2. Fallback a RPC si el Blockscout falló
+      let rpcBalance = "0";
+      let rpcNonce = 0;
+      if (!addressRes || !countersRes) {
+        try {
+          const HTTP_RPC_URL = 'https://rpc.testnet.arc.network';
+          const [balRes, nonceRes] = await Promise.all([
+            fetch(HTTP_RPC_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [address, 'latest'] })
+            }).then(r => r.json()),
+            fetch(HTTP_RPC_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'eth_getTransactionCount', params: [address, 'latest'] })
+            }).then(r => r.json())
+          ]);
+          rpcBalance = balRes.result ? BigInt(balRes.result).toString() : "0";
+          rpcNonce = nonceRes.result ? parseInt(nonceRes.result, 16) : 0;
+        } catch { /* ignore fallback errors */ }
+      }
+
+      // --- COMMITMENT NODE ---
+      // Si countersRes falla, usamos el nonce del RPC como aproximación de totalTxs
+      let totalTxs = countersRes?.transactions_count ?? rpcNonce;
       let totalGasUsed = countersRes?.gas_usage_count || 0;
       
       if (addressRes?.gas_used) {
@@ -78,7 +104,9 @@ export function useNodesData(address: string | null | undefined): INodesData {
         multiplier: cMultiplier
       };
 
-      let balanceStr = addressRes?.coin_balance || "0";
+      // --- CONVICTION NODE ---
+      // Si addressRes falla, usamos el balance del RPC
+      let balanceStr = addressRes?.coin_balance ?? rpcBalance;
       let balanceUSDC = parseFloat(formatUnits(BigInt(balanceStr), CONSTANTS.DECIMALS));
       
       let percentageOfSupply = (balanceUSDC / CONSTANTS.TOTAL_SUPPLY) * 100;
@@ -94,6 +122,7 @@ export function useNodesData(address: string | null | undefined): INodesData {
         tier: convictionTier
       };
 
+      // --- LEGACY NODE ---
       let firstTxDate: Date | null = null;
       let lastTxDate: Date | null = null;
       let daysSinceGenesis = 0;

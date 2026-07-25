@@ -5,18 +5,62 @@ import { Globe, Droplets, BookOpen, ExternalLink, Search } from 'lucide-react';
 import { useNetworkStats } from '@/hooks';
 
 // Helper component for mini aesthetic charts (Sparklines)
-const Sparkline = ({ color, points, glowColor }: { color: string, points: string, glowColor: string }) => (
-  <svg width="48" height="20" viewBox="0 0 48 20" className="opacity-90">
-    <defs>
-      <linearGradient id={`grad-${color.replace('#', '')}`} x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stopColor={glowColor} stopOpacity={0.4} />
-        <stop offset="100%" stopColor={glowColor} stopOpacity={0} />
-      </linearGradient>
-    </defs>
-    <path d={`M 0 20 L ${points} L 48 20 Z`} fill={`url(#grad-${color.replace('#', '')})`} stroke="none" />
-    <polyline points={points} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
+const Sparkline = ({ color, data, glowColor }: { color: string, data: number[], glowColor: string }) => {
+  const width = 48;
+  const height = 20;
+  
+  let points = `0,${height} ${width},${height}`;
+  
+  if (data && data.length > 0) {
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const range = max - min || 1;
+    const stepX = width / Math.max(data.length - 1, 1);
+    
+    points = data.map((val, i) => {
+      const x = i * stepX;
+      let y;
+      if (min === max) {
+        y = height / 2;
+      } else {
+        y = 2 + (height - 4) * (1 - (val - min) / range);
+      }
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+  }
+
+  return (
+    <div className="relative group/sparkline flex items-center justify-center">
+      <svg width="48" height="20" viewBox="0 0 48 20" className="opacity-90 overflow-visible transition-all duration-300 group-hover/stat:drop-shadow-[0_0_6px_var(--glow)]" style={{ '--glow': glowColor } as React.CSSProperties}>
+        <defs>
+          <linearGradient id={`grad-${color.replace('#', '')}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={glowColor} stopOpacity={0.4} />
+            <stop offset="100%" stopColor={glowColor} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        {data && data.length > 0 && (
+          <>
+            <path 
+              d={`M 0 ${height} L ${points} L ${width} ${height} Z`} 
+              fill={`url(#grad-${color.replace('#', '')})`} 
+              stroke="none" 
+              className="transition-all duration-300 ease-in-out"
+            />
+            <polyline 
+              points={points} 
+              fill="none" 
+              stroke={color} 
+              strokeWidth="1.5" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              className="transition-all duration-300 ease-in-out"
+            />
+          </>
+        )}
+      </svg>
+    </div>
+  );
+};
 
 export default function NetworkStats() {
   const stats = useNetworkStats();
@@ -75,18 +119,18 @@ export default function NetworkStats() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {/* GAS */}
           <div className="bg-surface-1/50 border border-border-light/50 rounded-xl p-3 flex flex-col justify-between hover:bg-surface-1 transition-colors group/stat shadow-sm">
-            <span className="text-[0.6rem] text-text-muted uppercase tracking-wider flex items-center gap-1 font-bold">⛽ GAS</span>
+            <span className="text-[0.6rem] text-text-muted uppercase tracking-wider flex items-center gap-1 font-bold">⛽ GAS COST</span>
             <div className="mt-2 flex items-end justify-between">
-              <span className="text-sm font-bold text-white tracking-tight">{stats.gasPrice} <span className="text-[0.6rem] text-text-muted font-normal">Gwei</span></span>
-              <Sparkline color="#00e5ff" glowColor="#00e5ff" points="0,15 12,18 24,10 36,14 48,8" />
+              <span className="text-sm font-bold text-white tracking-tight">{stats.gasPrice} <span className="text-[0.6rem] text-text-muted font-normal">USDC</span></span>
+              <Sparkline color="#00e5ff" glowColor="#00e5ff" data={stats.history.gas} />
             </div>
           </div>
           {/* BLK TIME */}
           <div className="bg-surface-1/50 border border-border-light/50 rounded-xl p-3 flex flex-col justify-between hover:bg-surface-1 transition-colors group/stat shadow-sm">
-            <span className="text-[0.6rem] text-text-muted uppercase tracking-wider flex items-center gap-1 font-bold">⏱ BLK TIME</span>
+            <span className="text-[0.6rem] text-text-muted uppercase tracking-wider flex items-center gap-1 font-bold">⏱ AVG BLK TIME</span>
             <div className="mt-2 flex items-end justify-between">
-              <span className="text-sm font-bold text-white tracking-tight">{stats.blockTime} <span className="text-[0.6rem] text-text-muted font-normal">s</span></span>
-              <Sparkline color="#ff007f" glowColor="#ff007f" points="0,10 12,12 24,10 36,11 48,10" />
+              <span className="text-sm font-bold text-white tracking-tight">{stats.blockTime} <span className="text-[0.6rem] text-text-muted font-normal">ms</span></span>
+              <Sparkline color="#ff007f" glowColor="#ff007f" data={stats.history.time} />
             </div>
           </div>
           {/* BLOCKS */}
@@ -94,15 +138,15 @@ export default function NetworkStats() {
             <span className="text-[0.6rem] text-text-muted uppercase tracking-wider flex items-center gap-1 font-bold">📦 BLOCKS</span>
             <div className="mt-2 flex items-end justify-between">
               <span className="text-sm font-bold text-white tracking-tight">{stats.totalBlocks}</span>
-              <Sparkline color="#ffaa00" glowColor="#ffaa00" points="0,18 12,14 24,10 36,6 48,2" />
+              <Sparkline color="#ffaa00" glowColor="#ffaa00" data={stats.history.blocks} />
             </div>
           </div>
           {/* TXS */}
           <div className="bg-surface-1/50 border border-border-light/50 rounded-xl p-3 flex flex-col justify-between hover:bg-surface-1 transition-colors group/stat shadow-sm">
-            <span className="text-[0.6rem] text-text-muted uppercase tracking-wider flex items-center gap-1 font-bold">🔄 TXS</span>
+            <span className="text-[0.6rem] text-text-muted uppercase tracking-wider flex items-center gap-1 font-bold">🔄 TXS / BLK</span>
             <div className="mt-2 flex items-end justify-between">
               <span className="text-sm font-bold text-white tracking-tight">{stats.totalTxs}</span>
-              <Sparkline color="#00e676" glowColor="#00e676" points="0,16 12,8 24,12 36,4 48,2" />
+              <Sparkline color="#00e676" glowColor="#00e676" data={stats.history.txs} />
             </div>
           </div>
         </div>
