@@ -5,7 +5,7 @@ import { Microscope, Gem, Landmark, Info, Loader2 } from 'lucide-react';
 import { useNodesData, useSignalContract, IUserData } from '@/hooks';
 import { useParams } from 'next/navigation';
 import { useWeb3 } from '../Web3Provider';
-import { ethers } from 'ethers';
+import { formatUnits } from 'viem';
 
 export default function NodesGrid() {
   const { address } = useWeb3();
@@ -46,9 +46,9 @@ export default function NodesGrid() {
     refreshData();
     // Fetch instant costs
     if (walletParam) {
-      getNodeInstantCost(1, walletParam).then(c => { if (c && isMounted.current) setCost1(parseFloat(ethers.formatUnits(c, 18)).toFixed(2)) });
-      getNodeInstantCost(2, walletParam).then(c => { if (c && isMounted.current) setCost2(parseFloat(ethers.formatUnits(c, 18)).toFixed(2)) });
-      getNodeInstantCost(3, walletParam).then(c => { if (c && isMounted.current) setCost3(parseFloat(ethers.formatUnits(c, 18)).toFixed(2)) });
+      getNodeInstantCost(1, walletParam).then(c => { if (c && isMounted.current) setCost1(parseFloat(formatUnits(c, 18)).toFixed(2)) });
+      getNodeInstantCost(2, walletParam).then(c => { if (c && isMounted.current) setCost2(parseFloat(formatUnits(c, 18)).toFixed(2)) });
+      getNodeInstantCost(3, walletParam).then(c => { if (c && isMounted.current) setCost3(parseFloat(formatUnits(c, 18)).toFixed(2)) });
     }
   }, [walletParam, fetchUserData, getNodeInstantCost]);
 

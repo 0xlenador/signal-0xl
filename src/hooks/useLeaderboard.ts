@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ethers } from 'ethers';
-import { CONTRACT_ABI, CONTRACT_ADDRESS, NETWORK, INDEXER } from '@/lib/config';
+import { INDEXER } from '@/lib/config';
 
 export interface ILeaderboardUser {
   address: string;
@@ -19,21 +18,6 @@ export interface ILeaderboardHook {
   isScanning: boolean;
   refresh: () => Promise<void>;
 }
-
-const staticNetwork = ethers.Network.from({
-  chainId: NETWORK.chainId,
-  name: NETWORK.name
-});
-
-let _publicProvider: ethers.JsonRpcProvider | null = null;
-const getReadProvider = () => {
-  if (!_publicProvider) {
-    _publicProvider = new ethers.JsonRpcProvider(NETWORK.rpcUrls[0], staticNetwork, {
-      staticNetwork: staticNetwork
-    });
-  }
-  return _publicProvider;
-};
 
 // Eliminamos la constante WORKER_URL quemada
 

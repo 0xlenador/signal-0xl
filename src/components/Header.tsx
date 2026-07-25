@@ -2,10 +2,11 @@
 import Image from 'next/image';
 import { useWeb3 } from './Web3Provider';
 import { useRouter, useParams } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
-import { Link, LogOut, ChevronDown, LayoutDashboard } from 'lucide-react';
+import { useEffect } from 'react';
+import { Link, ChevronDown, LayoutDashboard } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/utils';
 import { NETWORK, SUPPORTED_NETWORKS } from '@/lib/config';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 const GithubIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -14,33 +15,22 @@ const GithubIcon = ({ className }: { className?: string }) => (
 );
 
 export function Header({ networkParam }: { networkParam?: string }) {
-  const { address, connect, disconnect, isInitializing } = useWeb3();
+  const { address, connect, isInitializing, status, isReconnecting } = useWeb3();
   const router = useRouter();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const params = useParams();
   const isOnOwnDashboard = address && params.wallet && (params.wallet as string).toLowerCase() === address.toLowerCase();
 
   useEffect(() => {
-    if (isInitializing) return; // Evitar parpadeos mientras lee la wallet de MetaMask
+    if (isInitializing) return;
 
     if (networkParam && address && !params.wallet) {
-      // Solo enviamos al usuario a su dashboard si se conecta desde la página de inicio (root network)
-      router.push(`/${networkParam}/${address}`);
-    }
-  }, [address, networkParam, router, params.wallet, isInitializing]);
-
-  // Handle clicking outside to close dropdown
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDropdownOpen(false);
+      // Regla estricta: Redirección ÚNICAMENTE si no es una reconexión silenciosa
+      if (!isReconnecting && status === 'connected') {
+        router.push(`/${networkParam}/${address}`);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [dropdownRef]);
+  }, [address, networkParam, router, params.wallet, isInitializing, isReconnecting, status]);
 
   return (
     <header className="app-header w-full flex items-center justify-between p-4 px-6 bg-surface-1/95 backdrop-blur-2xl border-b border-border-light sticky top-0 z-50 shadow-lg transition-all">
@@ -81,50 +71,78 @@ export function Header({ networkParam }: { networkParam?: string }) {
           </div>
         )}
 
-        <div className="relative flex items-center gap-2" ref={dropdownRef}>
-          {!address ? (
-            <button onClick={connect} className="bg-accent-primary hover:bg-accent-primary-dim text-bg-primary font-bold text-sm px-4 py-1.5 rounded-full transition-all shadow-glow-cyan flex items-center gap-2">
-              <Link className="w-4 h-4" />
-              <span>Connect</span>
-            </button>
-          ) : (
-            <div className="relative">
-              {/* Connected Pill */}
-              <button 
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 bg-surface-2 hover:bg-surface-1 transition-colors px-2 py-1.5 rounded-full border border-border-light hover:border-accent-primary/50 cursor-pointer shadow-sm">
-                
-                {/* Mini Avatar */}
-                <div className="w-5 h-5 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-tr from-accent-primary to-accent-runestone shadow-[0_0_5px_rgba(0,229,255,0.3)]">
-                  <Image unoptimized src={getAvatarUrl(address)} alt="Avatar" width={20} height={20} className="w-full h-full opacity-90" />
-                </div>
-                
-                {/* Address */}
-                <span className="text-xs font-mono font-bold text-white tracking-wider pt-0.5">
-                  {address.slice(0, 6)}...{address.slice(-4)}
-                </span>
-                
-                <ChevronDown className={`w-3.5 h-3.5 text-text-muted transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
+        <div className="relative flex items-center gap-2">
+          <ConnectButton.Custom>
+            {({
+              account,
+              chain,
+              openAccountModal,
+              openChainModal,
+              openConnectModal,
+              authenticationStatus,
+              mounted,
+            }) => {
+              const ready = mounted && authenticationStatus !== 'loading';
+              const connected =
+                ready &&
+                account &&
+                chain &&
+                (!authenticationStatus ||
+                  authenticationStatus === 'authenticated');
 
-              {/* Dropdown Menu */}
-              {dropdownOpen && (
-                <div className="absolute top-full right-0 mt-3 border border-border-light rounded-2xl shadow-[0_15px_50px_rgba(0,0,0,1)] min-w-[170px] z-50 overflow-hidden bg-bg-primary">
-                  <div className="flex flex-col p-1.5 w-full">
-                    <button 
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        disconnect();
-                      }} 
-                      className="w-full text-left px-3 py-2.5 rounded-xl text-xs text-accent-error font-bold hover:bg-accent-error/10 transition-colors flex items-center gap-2">
-                      <LogOut className="w-3.5 h-3.5" />
-                      Disconnect
-                    </button>
-                  </div>
+              return (
+                <div
+                  {...(!ready && {
+                    'aria-hidden': true,
+                    'style': {
+                      opacity: 0,
+                      pointerEvents: 'none',
+                      userSelect: 'none',
+                    },
+                  })}
+                >
+                  {(() => {
+                    if (!connected) {
+                      return (
+                        <button onClick={openConnectModal} type="button" className="bg-accent-primary hover:bg-accent-primary-dim text-bg-primary font-bold text-sm px-4 py-1.5 rounded-full transition-all shadow-glow-cyan flex items-center gap-2">
+                          <Link className="w-4 h-4" />
+                          <span>Connect</span>
+                        </button>
+                      );
+                    }
+
+                    if (chain.unsupported) {
+                      return (
+                        <button onClick={openChainModal} type="button" className="bg-accent-error hover:bg-red-600 text-white font-bold text-sm px-4 py-1.5 rounded-full transition-all flex items-center gap-2">
+                          Wrong network
+                        </button>
+                      );
+                    }
+
+                    return (
+                      <button 
+                        onClick={openAccountModal}
+                        type="button"
+                        className="flex items-center gap-2 bg-surface-2 hover:bg-surface-1 transition-colors px-2 py-1.5 rounded-full border border-border-light hover:border-accent-primary/50 cursor-pointer shadow-sm">
+                        
+                        {/* Mini Avatar */}
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-tr from-accent-primary to-accent-runestone shadow-[0_0_5px_rgba(0,229,255,0.3)]">
+                          <Image unoptimized src={getAvatarUrl(account.address)} alt="Avatar" width={20} height={20} className="w-full h-full opacity-90" />
+                        </div>
+                        
+                        {/* Address */}
+                        <span className="text-xs font-mono font-bold text-white tracking-wider pt-0.5">
+                          {account.displayName}
+                        </span>
+                        
+                        <ChevronDown className="w-3.5 h-3.5 text-text-muted transition-transform duration-200" />
+                      </button>
+                    );
+                  })()}
                 </div>
-              )}
-            </div>
-          )}
+              );
+            }}
+          </ConnectButton.Custom>
         </div>
       </div>
     </header>

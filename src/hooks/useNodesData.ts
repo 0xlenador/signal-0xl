@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ethers } from 'ethers';
+import { formatUnits } from 'viem';
 import { BLOCKSCOUT, CONSTANTS } from '@/lib/config';
 
 export interface ICommitmentNode {
@@ -78,7 +78,7 @@ export function useNodesData(address: string | null | undefined): INodesData {
       };
 
       let balanceStr = addressRes?.coin_balance || "0";
-      let balanceUSDC = parseFloat(ethers.formatUnits(balanceStr, CONSTANTS.DECIMALS));
+      let balanceUSDC = parseFloat(formatUnits(BigInt(balanceStr), CONSTANTS.DECIMALS));
       
       let percentageOfSupply = (balanceUSDC / CONSTANTS.TOTAL_SUPPLY) * 100;
       let convictionTier = "Observador";

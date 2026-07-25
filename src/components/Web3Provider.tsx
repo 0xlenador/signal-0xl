@@ -1,195 +1,73 @@
 'use client';
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
-import { ethers } from 'ethers';
-import { NETWORK } from '@/lib/config';
 
-// 1. Definición estricta del Contexto
+import '@rainbow-me/rainbowkit/styles.css';
+
+import { createContext, useContext, ReactNode, useState, useCallback, useMemo, useEffect } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { WagmiProvider, useAccount, useDisconnect, useChainId } from 'wagmi';
+import { RainbowKitProvider, darkTheme, useConnectModal } from '@rainbow-me/rainbowkit';
+import { wagmiConfig } from '@/lib/wagmi.config';
+
+// Definición estricta del Contexto — ethers completamente eliminado
 export interface IWeb3Context {
   address: string | null;
   chainId: number | null;
-  provider: ethers.BrowserProvider | null;
-  signer: ethers.JsonRpcSigner | null;
   error: string | null;
   isInitializing: boolean;
-  connect: () => Promise<void>;
+  status: 'connected' | 'reconnecting' | 'connecting' | 'disconnected' | undefined;
+  isReconnecting: boolean;
+  connect: () => void;
   disconnect: () => void;
   clearError: () => void;
 }
 
-// 2. Extender Window con una interfaz de proveedor básica en lugar de 'any'
-interface WindowEthereum {
-  isMetaMask?: boolean;
-  request: (request: { method: string, params?: unknown[] }) => Promise<unknown>;
-  on: (eventName: string, handler: (args: unknown) => void) => void;
-  removeListener: (eventName: string, handler: (args: unknown) => void) => void;
-}
-
-declare global {
-  interface Window {
-    ethereum?: WindowEthereum;
-  }
-}
-
 const Web3Context = createContext<IWeb3Context | undefined>(undefined);
 
-interface Web3ProviderProps {
-  children: ReactNode;
-}
+// Hook tipado y seguro
+export const useWeb3 = (): IWeb3Context => {
+  const context = useContext(Web3Context);
+  if (context === undefined) {
+    throw new Error('useWeb3 must be used within a Web3Provider');
+  }
+  return context;
+};
 
-export function Web3Provider({ children }: Web3ProviderProps) {
-  const [address, setAddress] = useState<string | null>(null);
-  const [chainId, setChainId] = useState<number | null>(null);
-  const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
-  const [signer, setSigner] = useState<ethers.JsonRpcSigner | null>(null);
+// Componente interno que usa los hooks de Wagmi/RainbowKit
+function Web3ContextManager({ children }: { children: ReactNode }) {
+  const { address, isConnecting, isReconnecting, status } = useAccount();
+  const chainId = useChainId();
+  const { disconnect: wagmiDisconnect } = useDisconnect();
+  const { openConnectModal } = useConnectModal();
+
   const [error, setError] = useState<string | null>(null);
-  const [isInitializing, setIsInitializing] = useState<boolean>(true);
+  
+  // Manejo del estado montado para SSR y evitar Hydration Mismatch
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const clearError = useCallback(() => setError(null), []);
 
   const disconnect = useCallback(() => {
-    setAddress(null);
-    setChainId(null);
-    setProvider(null);
-    setSigner(null);
-    setError(null);
-  }, []);
+    wagmiDisconnect();
+  }, [wagmiDisconnect]);
 
-  // 3. Resolución de Linter: Declarar funciones antes de usarlas y con useCallback
-  const handleAccountsChanged = useCallback(async (accounts: string[]) => {
-    if (accounts.length === 0) {
-      disconnect();
-    } else {
-      setAddress(accounts[0]);
-      if (typeof window !== 'undefined' && window.ethereum) {
-        const ethersProvider = new ethers.BrowserProvider(window.ethereum);
-        const ethersSigner = await ethersProvider.getSigner();
-        setProvider(ethersProvider);
-        setSigner(ethersSigner);
-      }
+  const connect = useCallback(() => {
+    if (openConnectModal) {
+      openConnectModal();
     }
-  }, [disconnect]);
+  }, [openConnectModal]);
 
-  const handleChainChanged = useCallback((newChainIdHex: string) => {
-    setChainId(parseInt(newChainIdHex, 16));
-    window.location.reload();
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true; // Patrón avanzado para prevenir fugas de memoria si el componente se desmonta antes de que acabe el await
-
-    const checkConnection = async () => {
-      if (typeof window !== 'undefined' && window.ethereum) {
-        try {
-          const response = await window.ethereum.request({ method: 'eth_accounts' });
-          const accounts = response as string[];
-          if (accounts && accounts.length > 0 && isMounted) {
-            const ethersProvider = new ethers.BrowserProvider(window.ethereum);
-            const ethersSigner = await ethersProvider.getSigner();
-            const addr = await ethersSigner.getAddress();
-            const net = await ethersProvider.getNetwork();
-            
-            if (isMounted) {
-              setProvider(ethersProvider);
-              setSigner(ethersSigner);
-              setAddress(addr);
-              setChainId(Number(net.chainId));
-            }
-          }
-        } catch (error) {
-          if (isMounted) console.error("Auto-connect failed:", error);
-        }
-      }
-      if (isMounted) setIsInitializing(false);
-    };
-
-    if (typeof window !== 'undefined' && window.ethereum) {
-      checkConnection();
-      window.ethereum.on('accountsChanged', (args: unknown) => handleAccountsChanged(args as string[]));
-      window.ethereum.on('chainChanged', (args: unknown) => handleChainChanged(args as string));
-    } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (isMounted) setIsInitializing(false);
-    }
-    
-    return () => {
-      isMounted = false; // El desmontaje previene llamadas a setState zombies
-      if (typeof window !== 'undefined' && window.ethereum) {
-        window.ethereum.removeListener('accountsChanged', (args: unknown) => handleAccountsChanged(args as string[]));
-        window.ethereum.removeListener('chainChanged', (args: unknown) => handleChainChanged(args as string));
-      }
-    };
-  }, [handleAccountsChanged, handleChainChanged]); // Dependencias requeridas por ESLint
-
-  const switchToArcTestnet = useCallback(async () => {
-    if (!window.ethereum) return;
-    try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: NETWORK.chainIdHex }],
-      });
-    } catch (error) {
-      const err = error as { code?: number; message?: string };
-      if (err.code === 4902) {
-        await window.ethereum.request({
-          method: 'wallet_addEthereumChain',
-          params: [{
-            chainId: NETWORK.chainIdHex,
-            chainName: NETWORK.name,
-            nativeCurrency: NETWORK.nativeCurrency,
-            rpcUrls: [...NETWORK.rpcUrls], // Romper readonly del as const para la API de Metamask
-            blockExplorerUrls: [NETWORK.blockExplorer],
-          }],
-        });
-      } else {
-        throw err;
-      }
-    }
-  }, []);
-
-  const connect = useCallback(async () => {
-    setError(null);
-    if (typeof window === 'undefined' || typeof window.ethereum === 'undefined') {
-      setError('MetaMask u otra wallet Web3 no detectada en el navegador.');
-      return;
-    }
-    try {
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const ethersProvider = new ethers.BrowserProvider(window.ethereum);
-      const ethersSigner = await ethersProvider.getSigner();
-      const addr = await ethersSigner.getAddress();
-      const net = await ethersProvider.getNetwork();
-      
-      setProvider(ethersProvider);
-      setSigner(ethersSigner);
-      setAddress(addr);
-      setChainId(Number(net.chainId));
-
-      if (Number(net.chainId) !== NETWORK.chainId) {
-        await switchToArcTestnet();
-      }
-    } catch (error) {
-      const err = error as { code?: number; message?: string };
-      console.error(err);
-      if (err.code === 4001) {
-        setError("Solicitud rechazada por el usuario.");
-      } else {
-        setError(err.message || "Error al intentar conectar la wallet.");
-      }
-    }
-  }, [switchToArcTestnet]);
-
-  // 5. Memoización del Contexto (Mejores prácticas de rendimiento en React)
-  const contextValue = useMemo(() => ({
-    address,
-    chainId,
-    provider,
-    signer,
+  const contextValue = useMemo<IWeb3Context>(() => ({
+    address: mounted && status === 'connected' && address ? address : null,
+    chainId: mounted ? chainId : null,
+    status,
+    isReconnecting,
     connect,
     disconnect,
     error,
-    isInitializing,
+    isInitializing: !mounted || isConnecting,
     clearError
-  }), [address, chainId, provider, signer, connect, disconnect, error, isInitializing, clearError]);
+  }), [mounted, status, address, chainId, isReconnecting, connect, disconnect, error, isConnecting, clearError]);
 
   return (
     <Web3Context.Provider value={contextValue}>
@@ -198,11 +76,31 @@ export function Web3Provider({ children }: Web3ProviderProps) {
   );
 }
 
-// 4. Hook tipado y seguro
-export const useWeb3 = (): IWeb3Context => {
-  const context = useContext(Web3Context);
-  if (context === undefined) {
-    throw new Error('useWeb3 must be used within a Web3Provider');
-  }
-  return context;
-};
+// Proveedor principal que envuelve con Wagmi, React Query y RainbowKit
+const queryClient = new QueryClient();
+
+interface Web3ProviderProps {
+  children: ReactNode;
+}
+
+export function Web3Provider({ children }: Web3ProviderProps) {
+  return (
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider 
+          theme={darkTheme({
+            accentColor: '#00e5ff',
+            accentColorForeground: '#0a0a0a',
+            borderRadius: 'large',
+            fontStack: 'system',
+            overlayBlur: 'small',
+          })}
+        >
+          <Web3ContextManager>
+            {children}
+          </Web3ContextManager>
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
+  );
+}
