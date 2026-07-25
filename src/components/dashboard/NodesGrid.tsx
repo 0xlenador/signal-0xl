@@ -18,10 +18,11 @@ export default function NodesGrid() {
 
   const [userData, setUserData] = useState<IUserData | null>(null);
   
-  // Costs state (default static values based on contract to prevent '...' loading delay)
-  const [cost1, setCost1] = useState<string>('0.51');
-  const [cost2, setCost2] = useState<string>('1.26');
-  const [cost3, setCost3] = useState<string>('5.01');
+  // Costs computed synchronously based on user on-chain fork level
+  const isB2Plus = userData && userData.onChainForkLevel > 1;
+  const cost1 = isB2Plus ? '0.01' : '0.51';
+  const cost2 = isB2Plus ? '0.01' : '1.26';
+  const cost3 = isB2Plus ? '0.01' : '5.01';
 
   // Loading states
   const [loadingNode1Streak, setLoadingNode1Streak] = useState(false);
@@ -33,6 +34,7 @@ export default function NodesGrid() {
 
   const isMounted = useRef(true);
   useEffect(() => {
+    isMounted.current = true;
     return () => { isMounted.current = false; };
   }, []);
 
@@ -44,13 +46,7 @@ export default function NodesGrid() {
 
   useEffect(() => {
     refreshData();
-    // Fetch instant costs
-    if (walletParam) {
-      getNodeInstantCost(1, walletParam).then(c => { if (c && isMounted.current) setCost1(parseFloat(formatUnits(c, 18)).toFixed(2)) });
-      getNodeInstantCost(2, walletParam).then(c => { if (c && isMounted.current) setCost2(parseFloat(formatUnits(c, 18)).toFixed(2)) });
-      getNodeInstantCost(3, walletParam).then(c => { if (c && isMounted.current) setCost3(parseFloat(formatUnits(c, 18)).toFixed(2)) });
-    }
-  }, [walletParam, fetchUserData, getNodeInstantCost]);
+  }, [walletParam, fetchUserData]);
 
   const handleActivateInstant = async (nodeId: number, setLoader: (l: boolean) => void) => {
     if (!address) return;

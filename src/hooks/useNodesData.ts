@@ -41,6 +41,7 @@ export function useNodesData(address: string | null | undefined): INodesData {
 
   const isMountedRef = useRef(true);
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
     };
