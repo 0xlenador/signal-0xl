@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 export interface INetworkStats {
   gasPrice: string;
@@ -16,7 +16,6 @@ export interface INetworkStats {
 }
 
 const WS_URL = 'wss://arc-testnet.drpc.org';
-const DEFAULT_FINALITY_MS = 2000;
 const INITIAL_BACKOFF_MS = 1000;
 const MAX_BACKOFF_MS = 10000;
 const MAX_BUFFER = 60;
@@ -30,69 +29,87 @@ function hexToBigInt(hex: string): bigint {
   return BigInt(hex);
 }
 
-export function useNetworkStats(): INetworkStats {
-  const [stats, setStats] = useState<INetworkStats>({
-    gasPrice: '...',
-    blockTime: '...',
-    totalBlocks: '...',
-    totalTxs: '...',
-    isLoading: true,
-    isError: false,
-    history: {
-      gas: [],
-      time: [],
-      blocks: [],
-      txs: []
+const defaultStats: INetworkStats = {
+  gasPrice: '...',
+  blockTime: '...',
+  totalBlocks: '...',
+  totalTxs: '...',
+  isLoading: true,
+  isError: false,
+  history: { gas: [], time: [], blocks: [], txs: [] }
+};
+
+class NetworkStatsManager {
+  private ws: WebSocket | null = null;
+  public stats: INetworkStats = { ...defaultStats };
+  private subscribers: Set<(stats: INetworkStats) => void> = new Set();
+  
+  private prevTimestamp: number | null = null;
+  private finalityBuffer: number[] = [];
+  private latestProcessedBlock: number = 0;
+  private backoffMs: number = INITIAL_BACKOFF_MS;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private disconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  public subscribe = (callback: (stats: INetworkStats) => void) => {
+    this.subscribers.add(callback);
+    callback(this.stats);
+    
+    if (this.disconnectTimeout) {
+      clearTimeout(this.disconnectTimeout);
+      this.disconnectTimeout = null;
     }
-  });
+    
+    if (this.subscribers.size === 1 && !this.ws) {
+      this.connect();
+    }
 
-  const wsRef = useRef<WebSocket | null>(null);
-  const prevTimestampRef = useRef<number | null>(null);
-  const finalityBufferRef = useRef<number[]>([]);
-  const latestProcessedBlockRef = useRef<number>(0);
-  const backoffRef = useRef(INITIAL_BACKOFF_MS);
-  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const mountedRef = useRef(true);
+    return () => {
+      this.subscribers.delete(callback);
+      if (this.subscribers.size === 0) {
+        this.disconnectTimeout = setTimeout(() => {
+          if (this.subscribers.size === 0) {
+            this.disconnect();
+          }
+        }, 5000);
+      }
+    };
+  }
 
-  const processBlockHeader = useCallback((header: Record<string, string>, ws: WebSocket) => {
-    if (!mountedRef.current) return;
+  private updateStats = (updater: (prev: INetworkStats) => INetworkStats) => {
+    this.stats = updater(this.stats);
+    this.subscribers.forEach(cb => cb(this.stats));
+  }
 
+  private processBlockHeader = (header: Record<string, string>, ws: WebSocket) => {
     const blockNumber = header.number ? hexToNumber(header.number) : 0;
     
-    // Gas Cost
     const baseFeePerGas = header.baseFeePerGas ? hexToBigInt(header.baseFeePerGas) : 0n;
     const costWei = baseFeePerGas * 21000n;
     const intermediate = costWei / 10n ** 12n;
     const gasCost = Number(intermediate) / 1e6;
     const gasCostStr = gasCost < 0.0001 ? '<0.0001' : gasCost.toFixed(4);
 
-    // Block Time (Average)
-    // Para redes con tiempos de bloque < 1s (como ARC con 0.5s), el timestamp del header (EVM) 
-    // viene en segundos enteros, lo que genera saltos de 0s a 1s.
-    // Usamos el tiempo local de llegada del WebSocket para mayor precisión.
     const localNow = performance.now();
-    const prev = prevTimestampRef.current;
+    const prev = this.prevTimestamp;
     
-    // Si es el primer bloque, o si hubo un salto irreal por inactividad de pestaña (> 5s), asumimos 500ms
     let finalityMs = 500;
     if (prev !== null) {
       const delta = localNow - prev;
       finalityMs = delta > 5000 ? 500 : delta;
     }
-    prevTimestampRef.current = localNow;
+    this.prevTimestamp = localNow;
 
-    const updatedBuffer = [...finalityBufferRef.current, finalityMs];
+    const updatedBuffer = [...this.finalityBuffer, finalityMs];
     if (updatedBuffer.length > MAX_BUFFER) {
       updatedBuffer.splice(0, updatedBuffer.length - MAX_BUFFER);
     }
-    finalityBufferRef.current = updatedBuffer;
+    this.finalityBuffer = updatedBuffer;
 
     const avgFinalityMs = updatedBuffer.reduce((a, b) => a + b, 0) / updatedBuffer.length;
     const blockTimeMs = Math.round(avgFinalityMs).toString();
 
-    // Actualizamos las métricas instantáneas y el historial
-    setStats(prevStats => {
-      // Usamos el último valor de txs conocido como "placeholder" para no perder sincronía de longitud
+    this.updateStats(prevStats => {
       const lastTxCount = prevStats.history.txs.length > 0 
         ? prevStats.history.txs[prevStats.history.txs.length - 1] 
         : 0;
@@ -113,37 +130,30 @@ export function useNetworkStats(): INetworkStats {
       };
     });
 
-    // Solicitamos la cantidad de TXS por el MISMO WebSocket
     if (ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({
         jsonrpc: '2.0',
-        id: blockNumber, // ID único = blockNumber
+        id: blockNumber,
         method: 'eth_getBlockTransactionCountByNumber',
         params: [header.number],
       }));
     }
-  }, []);
+  }
 
-  const connect = useCallback(() => {
-    if (!mountedRef.current) return;
-
-    if (wsRef.current) {
-      try { wsRef.current.close(); } catch { /* ignore */ }
-      wsRef.current = null;
+  private connect = () => {
+    if (this.ws) {
+      try { this.ws.close(); } catch { }
+      this.ws = null;
     }
 
     const ws = new WebSocket(WS_URL);
-    wsRef.current = ws;
+    this.ws = ws;
 
     ws.onopen = () => {
-      if (!mountedRef.current) {
-        ws.close();
-        return;
-      }
-      backoffRef.current = INITIAL_BACKOFF_MS;
-      setStats(prev => ({ ...prev, isError: false }));
+      if (this.ws !== ws) return;
+      this.backoffMs = INITIAL_BACKOFF_MS;
+      this.updateStats(prev => ({ ...prev, isError: false }));
       
-      // Suscripción al evento newHeads (ID fijo 1)
       ws.send(JSON.stringify({
         jsonrpc: '2.0',
         id: 1,
@@ -153,27 +163,25 @@ export function useNetworkStats(): INetworkStats {
     };
 
     ws.onmessage = (event: MessageEvent) => {
-      if (!mountedRef.current) return;
+      if (this.ws !== ws) return;
       try {
         const data = JSON.parse(event.data as string);
         
-        // 1. Es un evento de suscripción (Nuevo Bloque)
         if (data.method === 'eth_subscription' && data.params?.result) {
           const header = data.params.result;
           const blockNumber = header.number ? hexToNumber(header.number) : 0;
           
-          if (blockNumber >= latestProcessedBlockRef.current) {
-            latestProcessedBlockRef.current = blockNumber;
-            processBlockHeader(header, ws);
+          if (blockNumber >= this.latestProcessedBlock) {
+            this.latestProcessedBlock = blockNumber;
+            this.processBlockHeader(header, ws);
           }
         } 
-        // 2. Es la respuesta a nuestra petición de Transacciones (ID = BlockNumber > 1)
         else if (data.id && typeof data.id === 'number' && data.id > 1) {
           const blockNumber = data.id;
           
-          if (blockNumber >= latestProcessedBlockRef.current) {
+          if (blockNumber >= this.latestProcessedBlock) {
             const txCount = data.result ? hexToNumber(data.result) : 0;
-            setStats(prev => {
+            this.updateStats(prev => {
               const txsCopy = [...prev.history.txs];
               const blockIndex = prev.history.blocks.indexOf(blockNumber);
               if (blockIndex !== -1) {
@@ -191,49 +199,55 @@ export function useNetworkStats(): INetworkStats {
             });
           }
         }
-      } catch { /* ignore */ }
+      } catch { }
     };
 
     ws.onclose = () => {
-      if (!mountedRef.current) return;
-      setStats(prev => ({ ...prev, isError: true }));
-      scheduleReconnect();
+      if (this.ws !== ws) return;
+      this.updateStats(prev => ({ ...prev, isError: true }));
+      this.scheduleReconnect();
     };
 
     ws.onerror = () => {
-      if (!mountedRef.current) return;
-      setStats(prev => ({ ...prev, isError: true }));
+      if (this.ws !== ws) return;
+      this.updateStats(prev => ({ ...prev, isError: true }));
     };
-  }, [processBlockHeader]);
+  }
 
-  const scheduleReconnect = useCallback(() => {
-    if (!mountedRef.current) return;
-    if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+  private scheduleReconnect = () => {
+    if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+    
+    if (this.subscribers.size === 0) return;
 
-    reconnectTimerRef.current = setTimeout(() => {
-      if (!mountedRef.current) return;
-      connect();
-    }, backoffRef.current);
+    this.reconnectTimer = setTimeout(() => {
+      this.connect();
+    }, this.backoffMs);
 
-    backoffRef.current = Math.min(backoffRef.current * 2, MAX_BACKOFF_MS);
-  }, [connect]);
+    this.backoffMs = Math.min(this.backoffMs * 2, MAX_BACKOFF_MS);
+  }
+
+  private disconnect = () => {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    if (this.ws) {
+      this.ws.onclose = null;
+      this.ws.onerror = null;
+      this.ws.close();
+      this.ws = null;
+    }
+  }
+}
+
+const manager = new NetworkStatsManager();
+
+export function useNetworkStats(): INetworkStats {
+  const [stats, setStats] = useState<INetworkStats>(manager.stats);
 
   useEffect(() => {
-    mountedRef.current = true;
-    connect();
-
-    return () => {
-      mountedRef.current = false;
-      if (reconnectTimerRef.current) {
-        clearTimeout(reconnectTimerRef.current);
-        reconnectTimerRef.current = null;
-      }
-      if (wsRef.current) {
-        try { wsRef.current.close(); } catch { /* ignore */ }
-        wsRef.current = null;
-      }
-    };
-  }, [connect]);
+    return manager.subscribe(setStats);
+  }, []);
 
   return stats;
 }
