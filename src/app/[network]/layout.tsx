@@ -3,6 +3,8 @@ import { Header } from '@/components/Header';
 import { ReactNode } from 'react';
 import { SUPPORTED_NETWORKS } from '@/lib/config';
 
+export const runtime = 'edge';
+
 interface NetworkLayoutProps {
   children: ReactNode;
   params: Promise<{ network: string }>;
