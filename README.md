@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>🟢 Signal 0xL</h1>
+  <h1><img src="public/icon.svg" width="36" height="36" alt="Signal 0xL Logo" /> Signal 0xL</h1>
 
   <p>
     <strong>Plataforma integral de análisis y seguimiento de interacciones Web3</strong>
