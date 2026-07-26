@@ -4,8 +4,7 @@ import { BLOCKSCOUT, CONSTANTS } from '@/lib/config';
 
 export interface ICommitmentNode {
   totalTxs: number;
-  totalGasUsed: number;
-  totalFeePaid: string;
+  totalFeePaid: string | null;
   tier: string;
   multiplier: number;
 }
@@ -84,11 +83,6 @@ export function useNodesData(address: string | null | undefined): INodesData {
       // --- COMMITMENT NODE ---
       // Si countersRes falla, usamos el nonce del RPC como aproximación de totalTxs
       let totalTxs = countersRes?.transactions_count ?? rpcNonce;
-      let totalGasUsed = countersRes?.gas_usage_count || 0;
-      
-      if (addressRes?.gas_used) {
-         totalGasUsed = parseInt(addressRes.gas_used);
-      }
 
       let commitmentTier = "Beginner";
       let cMultiplier = 1;
@@ -96,10 +90,11 @@ export function useNodesData(address: string | null | undefined): INodesData {
       else if (totalTxs >= 50) { commitmentTier = "Active"; cMultiplier = 2; }
       else if (totalTxs >= 10) { commitmentTier = "Explorer"; cMultiplier = 1.5; }
 
+      let totalFeePaid = null; // A futuro extraer de la API cuando funcione
+
       const commitment: ICommitmentNode = {
         totalTxs,
-        totalGasUsed,
-        totalFeePaid: '0.00',
+        totalFeePaid,
         tier: commitmentTier,
         multiplier: cMultiplier
       };

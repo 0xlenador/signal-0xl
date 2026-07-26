@@ -113,14 +113,12 @@ export default function NodesGrid() {
               <strong className="text-xs text-white truncate">{data.isLoading ? '...' : data.commitment?.totalTxs.toLocaleString()}</strong>
             </div>
             <div className="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
-              <span className="text-[0.55rem] text-text-muted uppercase tracking-wider truncate">GAS CONSUMED</span>
-              <strong className="text-xs text-white truncate">{data.isLoading ? '...' : data.commitment?.totalGasUsed.toLocaleString()}</strong>
-            </div>
-            <div className="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
               <span className="text-[0.55rem] text-text-muted uppercase tracking-wider truncate">FEES PAID</span>
-              <strong className="text-xs text-white truncate">{data.isLoading ? '...' : data.commitment?.totalFeePaid}</strong>
+              <strong className="text-xs text-white truncate">
+                {data.isLoading ? '...' : (data.commitment?.totalFeePaid ? data.commitment.totalFeePaid : <span className="text-accent-primary/60 font-mono animate-pulse">_[ENCRYPTED]_</span>)}
+              </strong>
             </div>
-            <div className="flex flex-col bg-accent-primary/10 px-2 py-1 rounded border border-accent-primary/30">
+            <div className="flex flex-col bg-accent-primary/10 px-2 py-1 rounded border border-accent-primary/30 col-span-2">
               <span className="text-[0.55rem] text-accent-primary uppercase tracking-wider truncate">TIER</span>
               <strong className="text-xs text-accent-primary font-bold truncate">{data.isLoading ? '...' : data.commitment?.tier} <span className="text-[0.55rem] opacity-70">(×{data.isLoading ? '1' : data.commitment?.multiplier})</span></strong>
             </div>
@@ -252,19 +250,27 @@ export default function NodesGrid() {
           <div className="grid grid-cols-2 gap-1.5 mt-2 mb-3 flex-grow relative z-10">
             <div className="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
               <span className="text-[0.55rem] text-text-muted uppercase tracking-wider truncate">FIRST TX</span>
-              <strong className="text-xs text-white truncate">{data.isLoading ? '...' : (data.legacy?.firstTxDate?.toLocaleDateString() || 'N/A')}</strong>
+              <strong className="text-xs text-white truncate">
+                {data.isLoading ? '...' : (data.legacy?.firstTxDate ? data.legacy.firstTxDate.toLocaleDateString() : <span className="text-accent-primary/60 font-mono animate-pulse">_[ENCRYPTED]_</span>)}
+              </strong>
             </div>
             <div className="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
               <span className="text-[0.55rem] text-text-muted uppercase tracking-wider truncate">LAST TX</span>
-              <strong className="text-xs text-white truncate">{data.isLoading ? '...' : (data.legacy?.lastTxDate?.toLocaleDateString() || 'N/A')}</strong>
+              <strong className="text-xs text-white truncate">
+                {data.isLoading ? '...' : (data.legacy?.lastTxDate ? data.legacy.lastTxDate.toLocaleDateString() : <span className="text-accent-primary/60 font-mono animate-pulse">_[ENCRYPTED]_</span>)}
+              </strong>
             </div>
             <div className="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
               <span className="text-[0.55rem] text-text-muted uppercase tracking-wider truncate">DAYS SINCE GENESIS</span>
-              <strong className="text-xs text-white truncate">{data.isLoading ? '...' : data.legacy?.daysSinceGenesis} d</strong>
+              <strong className="text-xs text-white truncate">
+                {data.isLoading ? '...' : (data.legacy?.firstTxDate ? `${data.legacy.daysSinceGenesis} d` : <span className="text-accent-primary/60 font-mono animate-pulse">_[???]_</span>)}
+              </strong>
             </div>
             <div className="flex flex-col bg-accent-primary/10 px-2 py-1 rounded border border-accent-primary/30">
               <span className="text-[0.55rem] text-accent-primary uppercase tracking-wider truncate">BADGE</span>
-              <strong className="text-xs text-accent-primary font-bold truncate">{data.isLoading ? '...' : data.legacy?.tier}</strong>
+              <strong className="text-xs text-accent-primary font-bold truncate">
+                {data.isLoading ? '...' : (data.legacy?.firstTxDate ? data.legacy.tier : <span className="font-mono text-[0.6rem] animate-pulse opacity-70">NO SIGNAL</span>)}
+              </strong>
             </div>
           </div>
         )}
