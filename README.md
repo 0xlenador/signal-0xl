@@ -2,7 +2,7 @@
   <h1><img src="public/icon.svg" width="36" height="36" alt="Signal 0xL Logo" /> Signal 0xL</h1>
 
   <p>
-    <strong>Plataforma integral de análisis y seguimiento de interacciones Web3</strong>
+    <strong>Comprehensive platform for tracking and analyzing Web3 interactions</strong>
   </p>
 
   <!-- Badges -->
@@ -15,100 +15,100 @@
   </p>
 
   <h4>
-    <a href="https://signal-0xl.pages.dev/">Ver DApp en Vivo</a>
+    <a href="https://signal-0xl.pages.dev/">View Live DApp</a>
     <span> · </span>
-    <a href="https://testnet.arcscan.app/address/0x108E51F9af4aF2D8CAa1f41E81b91B84B1304d36?tab=contract">Ver Contrato Inteligente</a>
+    <a href="https://testnet.arcscan.app/address/0x108E51F9af4aF2D8CAa1f41E81b91B84B1304d36?tab=contract">View Smart Contract</a>
   </h4>
 </div>
 
 <br/>
 
-> **Signal 0xL** es una dApp desplegada en **Arc Testnet**. Diseñada como una herramienta para visualizar datos del usuario y de la red general, utiliza una dinámica de "GM diario" basado en teoría de juegos como pretexto para fomentar la interacción constante. 
-> Su ecosistema se fundamenta en 3 pilares clave para el usuario: **Conocimiento, Utilidad y Entretenimiento**.
+> **Signal 0xL** is a dApp deployed on **Arc Testnet**. Designed as a tool to visualize user and general network data, it uses a game-theory-based "daily GM" dynamic as a pretext to encourage constant interaction. 
+> Its ecosystem is built upon 3 key pillars for the user: **Knowledge, Utility, and Entertainment**.
 >
-> 🚀 **Roadmap:** Actualmente operando en fase de pruebas (Testnet), con la infraestructura y contratos listos para el despliegue oficial en **Arc Mainnet** en cuanto la red esté disponible.
+> 🚀 **Roadmap:** Currently operating in a testing phase (Testnet), with the infrastructure and contracts ready for official deployment on **Arc Mainnet** as soon as the network becomes available.
 
 ---
 
-## 🏗️ Arquitectura y Stack Tecnológico
+## 🏗️ Architecture and Tech Stack
 
-La dApp está construida bajo estándares estrictos de ingeniería, garantizando una integración Web3 robusta, libre de deuda técnica y preparada para escalar.
+The dApp is built under strict engineering standards, ensuring a robust Web3 integration that is free of technical debt and ready to scale.
 
-| Capa | Tecnologías Clave |
+| Layer | Key Technologies |
 | :--- | :--- |
 | **Frontend Core** | Next.js 16 (App Router), React 19, Tailwind CSS |
-| **Web3 Motor** | Wagmi, Viem, RainbowKit |
-| **Smart Contracts** | Solidity (Desplegados en Arc Testnet, listos para Arc Mainnet) |
+| **Web3 Engine** | Wagmi, Viem, RainbowKit |
+| **Smart Contracts** | Solidity (Deployed on Arc Testnet, ready for Arc Mainnet) |
 
 ---
 
-## ⚙️ Prerrequisitos del Sistema
+## ⚙️ System Prerequisites
 
-Asegúrate de contar con las siguientes herramientas antes de iniciar el entorno local:
+Make sure you have the following tools before starting the local environment:
 
-- **[Node.js](https://nodejs.org/)** (v18 o superior recomendado)
-- **[pnpm](https://pnpm.io/)** (Gestor de paquetes oficial de este workspace)
-- Una **Wallet Web3** (ej. MetaMask o Rabby) configurada para interactuar con la red **Arc Testnet**
+- **[Node.js](https://nodejs.org/)** (v18 or higher recommended)
+- **[pnpm](https://pnpm.io/)** (Official package manager for this workspace)
+- A **Web3 Wallet** (e.g., MetaMask or Rabby) configured to interact with the **Arc Testnet** network
 
 ---
 
-## 🚀 Instalación y Configuración Local
+## 🚀 Local Installation and Setup
 
-Sigue estos pasos rigurosos para levantar la DApp desde cero en cualquier máquina:
+Follow these strict steps to set up the DApp from scratch on any machine:
 
-1. **Clonar el repositorio:**
+1. **Clone the repository:**
    ```bash
-   git clone <URL_DEL_REPOSITORIO>
+   git clone <REPOSITORY_URL>
    cd dapp
    ```
 
-2. **Instalar dependencias:**
+2. **Install dependencies:**
    ```bash
    pnpm install
    ```
 
-3. **Configurar Variables de Entorno (CRÍTICO):**
-   Dado que `.env.local` no se sube a GitHub por seguridad, debes crearlo.
+3. **Set up Environment Variables (CRITICAL):**
+   Since `.env.local` is not uploaded to GitHub for security reasons, you must create it.
    ```bash
    cp .env.example .env.local
    ```
-   *Nota: Abre `.env.local` e introduce tus llaves privadas/públicas (ej. Project ID de WalletConnect). Sin esto, la aplicación no podrá conectar wallets.*
+   *Note: Open `.env.local` and enter your private/public keys (e.g., WalletConnect Project ID). Without this, the application will not be able to connect wallets.*
 
-4. **Levantar el entorno de desarrollo:**
+4. **Start the development environment:**
    ```bash
    pnpm dev
    ```
-   La aplicación estará disponible en `http://localhost:3000`.
+   The application will be available at `http://localhost:3000`.
 
 ---
 
-## 📁 Estructura del Proyecto
+## 📁 Project Structure
 
-El repositorio está organizado bajo un enfoque estrictamente modular, separando la lógica on-chain de la interfaz gráfica y la documentación:
+The repository is organized under a strictly modular approach, separating on-chain logic from the graphical interface and documentation:
 
-- 📂 **`contracts/`** — Contiene los ABIs y referencias (solo lectura) del Smart Contract `Signal0xL`. *Todo parte de aquí.*
-- 📂 **`Docs/`** — Cerebro del proyecto. Aquí residen los fundamentos económicos, teoría de juegos y reglas arquitectónicas.
-- 📂 **`src/`** — Frontend de la dApp (Next.js App Router, Componentes React UI, Hooks de Wagmi).
-- 📂 **`scripts/`** — Utilidades y scripts de automatización para el entorno.
-- 📂 **`worker/`** — Lógica de procesamiento en segundo plano.
+- 📂 **`contracts/`** — Contains the ABIs and references (read-only) for the `Signal0xL` Smart Contract. *Everything starts here.*
+- 📂 **`Docs/`** — The brain of the project. This is where the economic fundamentals, game theory, and architectural rules reside.
+- 📂 **`src/`** — The DApp's Frontend (Next.js App Router, React UI Components, Wagmi Hooks).
+- 📂 **`scripts/`** — Utilities and automation scripts for the environment.
+- 📂 **`worker/`** — Background processing logic.
 
 ---
 
-## ⚙️ El Motor: Smart Contract ([`Signal0xL`](https://testnet.arcscan.app/address/0x108E51F9af4aF2D8CAa1f41E81b91B84B1304d36?tab=contract))
+## ⚙️ The Engine: Smart Contract ([`Signal0xL`](https://testnet.arcscan.app/address/0x108E51F9af4aF2D8CAa1f41E81b91B84B1304d36?tab=contract))
 
-El contrato inteligente es el núcleo lógico y económico del protocolo, desplegado en la red Arc. 
+The smart contract is the logical and economic core of the protocol, deployed on the Arc network. 
 
-### Funcionamiento del Contrato
-El contrato implementa una teoría de juegos estricta basada en el tiempo (UTC):
-- **Registro y Progreso:** Maneja el "Daily Signal", calculando rachas consecutivas y otorgando puntos.
-- **Penalizaciones:** Si un usuario omite días, el contrato calcula la inactividad y aplica penalizaciones matemáticas incrementando su "bifurcación" (lo que encarece la interacción).
-- **Mecánicas de Lealtad:** Gestiona la activación de 3 "Nodos Satélite" que, al encenderse, forman la Runestone, otorgando el estatus de Super GM (recompensas dobles).
-- **Agentes IA (ERC-8004):** Se comunica nativamente con el `IdentityRegistry` de Arc para validar la propiedad de NFTs y permitir a los usuarios de élite vincular Agentes IA a sus perfiles.
+### Contract Mechanics
+The contract implements strict time-based (UTC) game theory:
+- **Registration and Progress:** Handles the "Daily Signal", calculating consecutive streaks and awarding points.
+- **Penalties:** If a user skips days, the contract calculates the inactivity and applies mathematical penalties by increasing their "fork level" (which makes interaction more expensive).
+- **Loyalty Mechanics:** Manages the activation of 3 "Satellite Nodes" which, when turned on, form the Runestone, granting Super GM status (double rewards).
+- **AI Agents (ERC-8004):** Communicates natively with the Arc `IdentityRegistry` to validate NFT ownership and allow elite users to bind AI Agents to their profiles.
 
-### Integración en la Plataforma
-Nuestra DApp actúa como el visor e interfaz de interacción de este contrato:
-- **Lectura y Escritura On-chain:** Utilizamos **Wagmi** y **Viem** para conectarnos a la red Arc. El frontend lee el estado en tiempo real (puntos, rachas, costo actual del GM) para renderizar el panel de control.
-- **ABIs Centralizados:** Toda la definición de funciones del contrato vive en la carpeta `contracts/`, sirviendo como puente tipado entre Next.js y la blockchain.
-- **Transacciones:** Acciones como `resetToVIP()` o activar nodos disparan transacciones directamente desde la wallet conectada, dejando que la validación final y segura siempre ocurra a nivel de contrato.
+### Platform Integration
+Our DApp acts as the viewer and interaction interface for this contract:
+- **On-chain Reading and Writing:** We use **Wagmi** and **Viem** to connect to the Arc network. The frontend reads the real-time state (points, streaks, current GM cost) to render the dashboard.
+- **Centralized ABIs:** All contract function definitions live in the `contracts/` folder, serving as a typed bridge between Next.js and the blockchain.
+- **Transactions:** Actions like `resetToVIP()` or activating nodes trigger transactions directly from the connected wallet, ensuring that the final and secure validation always occurs at the contract level.
 
-*Para un desglose matemático de las tarifas y reglas económicas que gobiernan este contrato, consulta `Docs/fundamentals.md`.*
+*For a mathematical breakdown of the fees and economic rules that govern this contract, see `Docs/fundamentals.md`.*
