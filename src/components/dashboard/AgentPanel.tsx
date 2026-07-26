@@ -54,7 +54,7 @@ export default function AgentPanel() {
         ) : (
           <span className="text-xs font-bold text-text-muted uppercase tracking-widest bg-surface-2 px-2 py-0.5 rounded border border-border-light flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-text-muted"></span>
-            INACTIVO
+            INACTIVE
           </span>
         )}
         
@@ -66,8 +66,8 @@ export default function AgentPanel() {
           <button 
             disabled={!isOwner}
             className="text-[0.65rem] text-text-muted uppercase tracking-wider font-bold border border-border-light bg-surface-2 hover:bg-surface-1 px-3 py-1 rounded transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" 
-            title="Próximamente">
-            {!isOwner ? 'SOLO LECTURA' : 'ATTACH AGENT'}
+            title="Coming soon">
+            {!isOwner ? 'READ ONLY' : 'ATTACH AGENT'}
           </button>
         )}
         <button 

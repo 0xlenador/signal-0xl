@@ -257,7 +257,7 @@ export default function RunestonePanel() {
               disabled={gmLoading || !isOwner}
               className="bg-surface-2 hover:bg-surface-1 border border-border-light px-3 py-1.5 rounded-lg text-white transition-colors cursor-pointer disabled:opacity-50"
             >
-              {!isOwner ? 'Solo Lectura' : 'Resetear a VIP'}
+              {!isOwner ? 'Read Only' : 'Resetear a VIP'}
             </button>
           </div>
         )}
@@ -352,7 +352,7 @@ export default function RunestonePanel() {
                   disabled={!isOwner || gmLoading || gmDoneToday}
                   className="gm-pedestal w-full h-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                   <span className="text-xs font-bold uppercase tracking-[0.2em] text-white transition-opacity">
-                    {!isOwner ? 'SOLO LECTURA' : gmDoneToday ? 'GM (REFRESH)' : (gmLoading ? 'SENDING...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'SUPER GM' : 'GM'))}
+                    {!isOwner ? 'READ ONLY' : gmDoneToday ? 'GM (REFRESH)' : (gmLoading ? 'SENDING...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'SUPER GM' : 'GM'))}
                   </span>
                 </button>
               </div>

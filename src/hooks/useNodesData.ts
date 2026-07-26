@@ -105,9 +105,9 @@ export function useNodesData(address: string | null | undefined): INodesData {
       let balanceUSDC = parseFloat(formatUnits(BigInt(balanceStr), CONSTANTS.DECIMALS));
       
       let percentageOfSupply = (balanceUSDC / CONSTANTS.TOTAL_SUPPLY) * 100;
-      let convictionTier = "Observador";
-      if (percentageOfSupply >= 1) convictionTier = "Ballena";
-      else if (percentageOfSupply >= 0.1) convictionTier = "Inversor";
+      let convictionTier = "Observer";
+      if (percentageOfSupply >= 1) convictionTier = "Whale";
+      else if (percentageOfSupply >= 0.1) convictionTier = "Investor";
       else if (percentageOfSupply >= 0.01) convictionTier = "Holder";
 
       const conviction: IConvictionNode = {

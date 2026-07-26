@@ -102,7 +102,7 @@ export default function NodesGrid() {
         
         {/* Requirement Badge */}
         {!userData?.nodeCommitment && (
-           <div className="text-[0.6rem] font-mono text-accent-warning bg-accent-warning/10 px-2 py-0.5 rounded-md w-max border border-accent-warning/20 mb-1">Día 3</div>
+           <div className="text-[0.6rem] font-mono text-accent-warning bg-accent-warning/10 px-2 py-0.5 rounded-md w-max border border-accent-warning/20 mb-1">Day 3</div>
         )}
 
         {/* Node 1 Data Grid */}
@@ -133,14 +133,14 @@ export default function NodesGrid() {
               disabled={loadingNode1Streak || loadingNode1Instant || (userData?.currentStreak || 0) < 3}
               className="bg-surface-2 hover:bg-surface-1 border border-border-light text-[0.65rem] font-semibold text-white py-1.5 rounded-lg transition-colors hover:border-accent-primary/50 flex items-center justify-center gap-1 disabled:opacity-50"
             >
-              {loadingNode1Streak ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Racha ({userData?.currentStreak || 0}/3)</span>}
+              {loadingNode1Streak ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Streak ({userData?.currentStreak || 0}/3)</span>}
             </button>
             <button 
               onClick={() => handleActivateInstant(1, setLoadingNode1Instant)}
               disabled={loadingNode1Streak || loadingNode1Instant}
               className="bg-accent-primary/10 hover:bg-accent-primary/20 border border-accent-primary/30 hover:border-accent-primary text-accent-primary font-bold text-[0.65rem] py-1.5 rounded-lg transition-all shadow-glow-cyan flex items-center justify-center gap-1 disabled:opacity-50"
             >
-              {loadingNode1Instant ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Activar ({cost1} USDC)</span>}
+              {loadingNode1Instant ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Activate ({cost1} USDC)</span>}
             </button>
           </div>
         )}
@@ -171,7 +171,7 @@ export default function NodesGrid() {
 
         {/* Requirement Badge */}
         {!userData?.nodeConviction && (
-           <div className="text-[0.6rem] font-mono text-accent-warning bg-accent-warning/10 px-2 py-0.5 rounded-md w-max border border-accent-warning/20 mb-1">Día 12</div>
+           <div className="text-[0.6rem] font-mono text-accent-warning bg-accent-warning/10 px-2 py-0.5 rounded-md w-max border border-accent-warning/20 mb-1">Day 12</div>
         )}
         
         {/* Node 2 Data Grid */}
@@ -204,14 +204,14 @@ export default function NodesGrid() {
               disabled={loadingNode2Streak || loadingNode2Instant || (userData?.currentStreak || 0) < 12}
               className="bg-surface-2 hover:bg-surface-1 border border-border-light text-[0.65rem] font-semibold text-white py-1.5 rounded-lg transition-colors hover:border-accent-primary/50 flex items-center justify-center gap-1 disabled:opacity-50"
             >
-              {loadingNode2Streak ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Racha ({userData?.currentStreak || 0}/12)</span>}
+              {loadingNode2Streak ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Streak ({userData?.currentStreak || 0}/12)</span>}
             </button>
             <button 
               onClick={() => handleActivateInstant(2, setLoadingNode2Instant)}
               disabled={loadingNode2Streak || loadingNode2Instant}
               className="bg-accent-primary/10 hover:bg-accent-primary/20 border border-accent-primary/30 hover:border-accent-primary text-accent-primary font-bold text-[0.65rem] py-1.5 rounded-lg transition-all shadow-glow-cyan flex items-center justify-center gap-1 disabled:opacity-50"
             >
-              {loadingNode2Instant ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Activar ({cost2} USDC)</span>}
+              {loadingNode2Instant ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Activate ({cost2} USDC)</span>}
             </button>
           </div>
         )}
@@ -242,7 +242,7 @@ export default function NodesGrid() {
 
         {/* Requirement Badge */}
         {!userData?.nodeLegacy && (
-           <div className="text-[0.6rem] font-mono text-accent-warning bg-accent-warning/10 px-2 py-0.5 rounded-md w-max border border-accent-warning/20 mb-1">Día 25</div>
+           <div className="text-[0.6rem] font-mono text-accent-warning bg-accent-warning/10 px-2 py-0.5 rounded-md w-max border border-accent-warning/20 mb-1">Day 25</div>
         )}
         
         {/* Node 3 Data Grid */}
@@ -283,14 +283,14 @@ export default function NodesGrid() {
               disabled={loadingNode3Streak || loadingNode3Instant || (userData?.currentStreak || 0) < 25}
               className="bg-surface-2 hover:bg-surface-1 border border-border-light text-[0.65rem] font-semibold text-white py-1.5 rounded-lg transition-colors hover:border-accent-primary/50 flex items-center justify-center gap-1 disabled:opacity-50"
             >
-              {loadingNode3Streak ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Racha ({userData?.currentStreak || 0}/25)</span>}
+              {loadingNode3Streak ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Streak ({userData?.currentStreak || 0}/25)</span>}
             </button>
             <button 
               onClick={() => handleActivateInstant(3, setLoadingNode3Instant)}
               disabled={loadingNode3Streak || loadingNode3Instant}
               className="bg-accent-primary/10 hover:bg-accent-primary/20 border border-accent-primary/30 hover:border-accent-primary text-accent-primary font-bold text-[0.65rem] py-1.5 rounded-lg transition-all shadow-glow-cyan flex items-center justify-center gap-1 disabled:opacity-50"
             >
-              {loadingNode3Instant ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Activar ({cost3} USDC)</span>}
+              {loadingNode3Instant ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Activate ({cost3} USDC)</span>}
             </button>
           </div>
         )}
