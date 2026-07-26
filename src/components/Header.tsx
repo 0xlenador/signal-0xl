@@ -37,8 +37,9 @@ export function Header({ networkParam }: { networkParam?: string }) {
   return (
     <header className="app-header w-full flex items-center justify-between p-4 px-6 bg-surface-1/95 backdrop-blur-2xl border-b border-border-light sticky top-0 z-50 shadow-lg transition-all">
       <div className="flex items-center gap-4">
-        <div className="app-logo text-xl font-bold tracking-tight text-white cursor-pointer" onClick={() => router.push('/')}>
-          Signal <span className="text-accent-primary drop-shadow-[0_0_10px_rgba(0,229,255,0.5)]">0xL</span>
+        <div className="app-logo flex items-center gap-2 text-xl font-bold tracking-tight text-white cursor-pointer" onClick={() => router.push('/')}>
+          <Image src="/icon.svg" alt="Signal 0xL Logo" width={24} height={24} className="drop-shadow-[0_0_5px_rgba(0,229,255,0.3)]" />
+          <div>Signal <span className="text-accent-primary drop-shadow-[0_0_10px_rgba(0,229,255,0.5)]">0xL</span></div>
         </div>
 
         <button 

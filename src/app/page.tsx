@@ -8,8 +8,9 @@ export default function HomePage() {
       {/* Hero Header */}
       <div className="text-center mb-16 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-accent-primary/5 to-transparent pointer-events-none rounded-[2.5rem]"></div>
-        <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 tracking-tight drop-shadow-md">
-          Signal <span className="text-accent-primary drop-shadow-[0_0_20px_rgba(0,229,255,0.6)]">0xL</span>
+        <h1 className="flex items-center justify-center gap-3 md:gap-5 text-5xl md:text-7xl font-extrabold text-white mb-6 tracking-tight drop-shadow-md">
+          <Image src="/icon.svg" alt="Signal 0xL Logo" width={80} height={80} className="w-12 h-12 md:w-20 md:h-20 drop-shadow-[0_0_15px_rgba(0,229,255,0.4)]" />
+          <div>Signal <span className="text-accent-primary drop-shadow-[0_0_20px_rgba(0,229,255,0.6)]">0xL</span></div>
         </h1>
         <p className="text-text-muted max-w-lg mx-auto text-lg font-light">
           Select a network to connect your wallet and broadcast your signal.
