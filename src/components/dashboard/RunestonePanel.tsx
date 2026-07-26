@@ -2,9 +2,10 @@
 
 import Image from 'next/image';
 
-import { Copy, Info, Crown, Flame, Zap, Radio } from 'lucide-react';
+import { Copy, Info, Crown, Flame, Zap, Radio, X, AlertCircle } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/utils';
 import { useWeb3 } from '../Web3Provider';
+import { formatUnits } from 'viem';
 import { useSignalContract, IUserData, IContractCost } from '@/hooks';
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
@@ -15,13 +16,20 @@ export default function RunestonePanel() {
   const walletParam = params.wallet as string;
   const isOwner = address?.toLowerCase() === walletParam?.toLowerCase();
 
-  const { fetchUserData, getGMCost, hasGMToday, doGM, resetToVIP, loading } = useSignalContract();
+  const { fetchUserData, getGMCost, hasGMToday, doGM, resetToVIP, activateNodeInstant, activateNodeByStreak, getNodeInstantCost, loading, error: contractError } = useSignalContract();
   
   const [userData, setUserData] = useState<IUserData | null>(null);
   const [gmCostInfo, setGmCostInfo] = useState<IContractCost | null>(null);
   const [gmLoading, setGmLoading] = useState(false);
   const [gmDoneToday, setGmDoneToday] = useState(false);
   const [countdown, setCountdown] = useState('');
+
+  // Node Modal State
+  const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
+  const [isNodeModalOpen, setIsNodeModalOpen] = useState(false);
+  const [nodeInstantCost, setNodeInstantCost] = useState<bigint | null>(null);
+  const [activationLoading, setActivationLoading] = useState(false);
+  const [activationError, setActivationError] = useState<string | null>(null);
   
   const isMountedRef = useRef(true);
   useEffect(() => {
@@ -72,6 +80,56 @@ export default function RunestonePanel() {
       hasGMToday(address).then(setGmDoneToday);
     }
     setGmLoading(false);
+  };
+
+  useEffect(() => {
+    if (contractError && isNodeModalOpen) {
+      setActivationError(contractError);
+    }
+  }, [contractError, isNodeModalOpen]);
+
+  const handleNodeClick = async (nodeId: number, isActive: boolean) => {
+    if (!isOwner || isActive) return;
+    setActivationError(null);
+    setNodeInstantCost(null);
+    setSelectedNodeId(nodeId);
+    setIsNodeModalOpen(true);
+    
+    // Fetch instant cost
+    const cost = await getNodeInstantCost(nodeId, address as string);
+    if (isMountedRef.current) {
+      setNodeInstantCost(cost);
+    }
+  };
+
+  const handleActivateByStreak = async () => {
+    if (!selectedNodeId) return;
+    setActivationLoading(true);
+    setActivationError(null);
+    const success = await activateNodeByStreak(selectedNodeId);
+    if (success && isMountedRef.current) {
+      setIsNodeModalOpen(false);
+    }
+    if (isMountedRef.current) setActivationLoading(false);
+  };
+
+  const handleActivateInstant = async () => {
+    if (!selectedNodeId || nodeInstantCost === null) return;
+    setActivationLoading(true);
+    setActivationError(null);
+    const success = await activateNodeInstant(selectedNodeId, nodeInstantCost);
+    if (success && isMountedRef.current) {
+      setIsNodeModalOpen(false);
+    }
+    if (isMountedRef.current) setActivationLoading(false);
+  };
+
+  // Helper para requerimientos de racha
+  const getRequiredStreak = (nodeId: number) => {
+    if (nodeId === 1) return 3;
+    if (nodeId === 2) return 12;
+    if (nodeId === 3) return 25;
+    return 0;
   };
 
   useEffect(() => {
@@ -210,15 +268,25 @@ export default function RunestonePanel() {
         <div className="relative w-full flex-grow flex items-center justify-center min-h-[260px] mt-8">
           <div className="runestone-core-container">
             {/* Nodos Satélite */}
-            <div className={`satellite-node satellite-node-1 text-white ${userData?.nodeCommitment ? 'is-active' : ''}`}>
+            {/* Nodos Satélite */}
+            <div 
+              onClick={() => handleNodeClick(1, !!userData?.nodeCommitment)}
+              className={`satellite-node satellite-node-1 text-white ${userData?.nodeCommitment ? 'is-active' : ''} ${!userData?.nodeCommitment && isOwner ? 'is-interactive' : ''}`}
+            >
               <div className={`w-1.5 h-1.5 rounded-full ${userData?.nodeCommitment ? 'bg-accent-success shadow-glow-cyan' : 'bg-text-muted'}`}></div>
               <span>COMMITMENT</span>
             </div>
-            <div className={`satellite-node satellite-node-2 text-white ${userData?.nodeConviction ? 'is-active' : ''}`}>
+            <div 
+              onClick={() => handleNodeClick(2, !!userData?.nodeConviction)}
+              className={`satellite-node satellite-node-2 text-white ${userData?.nodeConviction ? 'is-active' : ''} ${!userData?.nodeConviction && isOwner ? 'is-interactive' : ''}`}
+            >
               <div className={`w-1.5 h-1.5 rounded-full ${userData?.nodeConviction ? 'bg-accent-success shadow-glow-cyan' : 'bg-text-muted'}`}></div>
               <span>CONVICTION</span>
             </div>
-            <div className={`satellite-node satellite-node-3 text-white ${userData?.nodeLegacy ? 'is-active' : ''}`}>
+            <div 
+              onClick={() => handleNodeClick(3, !!userData?.nodeLegacy)}
+              className={`satellite-node satellite-node-3 text-white ${userData?.nodeLegacy ? 'is-active' : ''} ${!userData?.nodeLegacy && isOwner ? 'is-interactive' : ''}`}
+            >
               <div className={`w-1.5 h-1.5 rounded-full ${userData?.nodeLegacy ? 'bg-accent-success shadow-glow-cyan' : 'bg-text-muted'}`}></div>
               <span>LEGACY</span>
             </div>
@@ -295,6 +363,83 @@ export default function RunestonePanel() {
           </div>
         </div>
       </div>
+
+      {/* Modal de Activación de Nodos */}
+      {isNodeModalOpen && selectedNodeId && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-surface-1 border border-border-light rounded-2xl w-full max-w-sm overflow-hidden shadow-[0_0_40px_rgba(0,229,255,0.15)] relative flex flex-col">
+            
+            {/* Header */}
+            <div className="p-4 border-b border-border-light flex justify-between items-center bg-surface-2/50">
+              <h3 className="font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <Flame className="w-4 h-4 text-accent-runestone" />
+                Activar Nodo {selectedNodeId === 1 ? 'Commitment' : selectedNodeId === 2 ? 'Conviction' : 'Legacy'}
+              </h3>
+              <button 
+                onClick={() => !activationLoading && setIsNodeModalOpen(false)}
+                className="text-text-muted hover:text-white transition-colors disabled:opacity-50"
+                disabled={activationLoading}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-5 flex flex-col gap-5">
+              {activationError && (
+                <div className="bg-red-500/10 border border-red-500/30 p-3 rounded-lg flex items-start gap-2 text-xs text-red-400">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{activationError}</span>
+                </div>
+              )}
+
+              {/* Opción 1: Racha */}
+              <div className="bg-surface-2 p-4 rounded-xl border border-border-light flex flex-col gap-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-bold text-white">Vía Racha</span>
+                  <span className="text-xs font-mono bg-surface-1 px-2 py-1 rounded text-accent-success border border-accent-success/20">0.01 USDC</span>
+                </div>
+                <div className="text-xs text-text-muted">
+                  Requiere una racha activa de {getRequiredStreak(selectedNodeId)} días. 
+                  Tu racha actual es: <span className="text-white font-bold">{userData?.currentStreak || 0}</span>
+                </div>
+                <button
+                  onClick={handleActivateByStreak}
+                  disabled={activationLoading || (userData?.currentStreak || 0) < getRequiredStreak(selectedNodeId)}
+                  className="w-full bg-accent-runestone/20 hover:bg-accent-runestone/30 text-accent-runestone border border-accent-runestone/50 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {activationLoading ? 'Procesando...' : 'Activar por Racha'}
+                </button>
+              </div>
+
+              {/* Opción 2: Instantáneo */}
+              <div className="bg-surface-2 p-4 rounded-xl border border-border-light flex flex-col gap-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-bold text-white">Vía Instantánea</span>
+                  {nodeInstantCost ? (
+                    <span className="text-xs font-mono bg-surface-1 px-2 py-1 rounded text-accent-warning border border-accent-warning/20">
+                      {formatUnits(nodeInstantCost, 18)} USDC
+                    </span>
+                  ) : (
+                    <span className="text-xs animate-pulse text-text-muted">Calculando...</span>
+                  )}
+                </div>
+                <div className="text-xs text-text-muted">
+                  Paga la tarifa premium y activa este nodo de inmediato, sin importar tu racha actual.
+                </div>
+                <button
+                  onClick={handleActivateInstant}
+                  disabled={activationLoading || nodeInstantCost === null}
+                  className="w-full bg-accent-warning/10 hover:bg-accent-warning/20 text-accent-warning border border-accent-warning/50 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {activationLoading ? 'Procesando...' : 'Activar Instantáneo'}
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

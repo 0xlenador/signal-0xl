@@ -192,7 +192,7 @@ export function useSignalContract(): ISignalContractHook {
       return true;
     } catch (error) {
       const err = error as { shortMessage?: string; message?: string };
-      console.error("doGM error:", err);
+      console.warn("doGM transaction failed/rejected:", err.shortMessage || err.message);
       if (isMountedRef.current) setError(err.shortMessage || err.message || "Error desconocido");
       return false;
     } finally {
@@ -217,7 +217,7 @@ export function useSignalContract(): ISignalContractHook {
       return true;
     } catch (error) {
       const err = error as { shortMessage?: string; message?: string };
-      console.error("resetToVIP error:", err);
+      console.warn("resetToVIP transaction failed/rejected:", err.shortMessage || err.message);
       if (isMountedRef.current) setError(err.shortMessage || err.message || "Error desconocido");
       return false;
     } finally {
@@ -244,7 +244,7 @@ export function useSignalContract(): ISignalContractHook {
       return true;
     } catch (error) {
       const err = error as { shortMessage?: string; message?: string };
-      console.error("activateNodeInstant error:", err);
+      console.warn("activateNodeInstant transaction failed/rejected:", err.shortMessage || err.message);
       if (isMountedRef.current) setError(err.shortMessage || err.message || "Error desconocido");
       return false;
     } finally {
@@ -271,7 +271,7 @@ export function useSignalContract(): ISignalContractHook {
       return true;
     } catch (error) {
       const err = error as { shortMessage?: string; message?: string };
-      console.error("activateNodeByStreak error:", err);
+      console.warn("activateNodeByStreak transaction failed/rejected:", err.shortMessage || err.message);
       if (isMountedRef.current) setError(err.shortMessage || err.message || "Error desconocido");
       return false;
     } finally {
