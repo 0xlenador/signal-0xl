@@ -42,9 +42,21 @@ export default function LiveSignals() {
 
   return (
     <div className="w-full mt-4 h-64 shrink-0 flex flex-col bg-black/60 rounded-xl border border-accent-primary/20 p-3 overflow-hidden relative z-10 shadow-[inset_0_0_20px_rgba(0,229,255,0.05)]">
-      <div className="text-[0.55rem] font-bold text-accent-primary uppercase tracking-widest mb-2 flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-accent-primary animate-pulse shadow-glow-cyan"></span>
-        <span>Live Signals</span>
+      <div className="text-[0.55rem] font-bold text-accent-primary uppercase tracking-widest mb-2 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-accent-primary animate-pulse shadow-glow-cyan"></span>
+          <span>Live Signals</span>
+        </div>
+        <div className="group relative flex items-center justify-center cursor-help">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent-primary/50 group-hover:text-accent-primary transition-colors">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 16v-4"></path>
+            <path d="M12 8h.01"></path>
+          </svg>
+          <div className="absolute right-0 top-full mt-1.5 hidden group-hover:block w-48 p-2 bg-black/95 border border-accent-primary/30 rounded text-[0.6rem] text-accent-primary/90 normal-case tracking-normal z-50 shadow-[0_4px_20px_rgba(0,0,0,0.8)] backdrop-blur-sm whitespace-normal">
+            Live Signals is currently under development. Displayed events are a simulation.
+          </div>
+        </div>
       </div>
       <div className="flex-grow w-full font-mono text-[0.6rem] text-accent-primary/80 overflow-y-hidden flex flex-col justify-end relative mask-image-fade-top gap-1.5">
         {signals.map(signal => (

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 
-import { Copy, Info, Crown, Flame, Zap, Radio, X, AlertCircle } from 'lucide-react';
+import { Copy, Check, Info, Crown, Flame, Zap, Radio, X, AlertCircle } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/utils';
 import { useWeb3 } from '../Web3Provider';
 import { formatUnits } from 'viem';
@@ -23,6 +23,7 @@ export default function RunestonePanel() {
   const [gmLoading, setGmLoading] = useState(false);
   const [gmDoneToday, setGmDoneToday] = useState(false);
   const [countdown, setCountdown] = useState('');
+  const [copied, setCopied] = useState(false);
 
   // Node Modal State
   const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
@@ -64,6 +65,18 @@ export default function RunestonePanel() {
     }
     return () => clearInterval(interval);
   }, [gmDoneToday]);
+
+  const handleCopy = async () => {
+    if (walletParam) {
+      try {
+        await navigator.clipboard.writeText(walletParam);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        console.warn("Failed to copy:", err);
+      }
+    }
+  };
 
   const handleResetVIP = async () => {
     if (!address || gmLoading) return;
@@ -200,8 +213,8 @@ export default function RunestonePanel() {
               {walletParam && <Image unoptimized src={getAvatarUrl(walletParam)} alt="Avatar" width={24} height={24} className="w-full h-full opacity-90" />}
             </div>
             <span className="text-xs font-mono font-bold text-white tracking-wider cursor-default pt-0.5">{formattedAddress}</span>
-            <button className="text-text-muted hover:text-accent-primary transition-colors cursor-pointer ml-1" title="Copiar Wallet">
-              <Copy className="w-3.5 h-3.5" />
+            <button onClick={handleCopy} className="text-text-muted hover:text-accent-primary transition-colors cursor-pointer ml-1" title="Copiar Wallet">
+              {copied ? <Check className="w-3.5 h-3.5 text-accent-success" /> : <Copy className="w-3.5 h-3.5" />}
             </button>
           </div>
         </h3>
