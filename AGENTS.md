@@ -19,3 +19,7 @@ Nada de deuda tecnica, parches, espaguetti code. Todo desde la maestria de un in
 # Web3
 
 Implementar funciones en web3 suele crear bugs para el usuario, ejemplo: si conecta una wallet y luego cambia a otra wallet suele romper algo, asi que cada funcion implementada en la UI debe ser pensada para que todo quede perfecto, no solo solucionar una accion o funcion, si no que no altere nada mas en la dapp, lo que dije es solo un ejemplo de muchos, ya que normalmente si un dato debe mostrase, otro dato dejara de mostrarse, bien sea por temas de Apis, RCPs, etc que dejan de funcionar por saturacion de peticiones, a ver tomate estos ejemplos como solo ejemplos de miles, lo que trato de decir es que siempre piensa como ingeniero de software e implementando todo un sistema sin fallos en web3, ya que normalmente los agentes suelen arreglar algo a la ligera pero rompen otra cosa, asi lo tengamos establecido en las reglas.
+
+# Idioma en UI
+
+A pesar de que nuestras conversaciones sean en español, todo el código, textos de la interfaz (UI) y documentación del proyecto deben ser escritos siempre y estrictamente en inglés nativo. No introduzcas texto en español en la base de código.
