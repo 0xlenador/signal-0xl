@@ -36,16 +36,10 @@ app.get('/', async (c) => {
 // Ruta: /api/leaderboard -> Devuelve el Top 100
 app.get('/api/leaderboard', async (c) => {
   try {
-    const db = drizzle(c.env.RANKING_DB);
-    const results = await db
-      .select({
-        address: users.address,
-        points: users.points,
-        forkLevel: users.forkLevel
-      })
-      .from(users)
-      .orderBy(desc(users.points))
-      .limit(100);
+    // Usamos SQL nativo (Raw SQL) para evitar el overhead de CPU de Drizzle ORM
+    const { results } = await c.env.RANKING_DB.prepare(
+      "SELECT address, points, forkLevel FROM users ORDER BY points DESC LIMIT 100"
+    ).all();
     
     return c.json(results, 200, {
       "Cache-Control": "public, max-age=60, s-maxage=60" 
@@ -73,23 +67,19 @@ app.get(
       const { address } = c.req.valid('param');
       const lowerAddress = address.toLowerCase();
       
-      const db = drizzle(c.env.RANKING_DB);
-
-      const [user] = await db
-        .select()
-        .from(users)
-        .where(eq(users.address, lowerAddress))
-        .limit(1);
+      // Usamos SQL nativo para evitar overhead
+      const user: any = await c.env.RANKING_DB.prepare(
+        "SELECT * FROM users WHERE address = ? LIMIT 1"
+      ).bind(lowerAddress).first();
 
       if (!user) {
         return c.json({ error: "User not found" }, 404);
       }
 
       // Calcular rango
-      const [rankData] = await db
-        .select({ higherCount: count() })
-        .from(users)
-        .where(gt(users.points, user.points));
+      const rankData: any = await c.env.RANKING_DB.prepare(
+        "SELECT COUNT(*) as higherCount FROM users WHERE points > ?"
+      ).bind(user.points).first();
 
       const rank = (rankData?.higherCount || 0) + 1;
 
@@ -104,7 +94,7 @@ app.get(
 app.get('/__scheduled', async (c) => {
   try {
     // Ejecutamos la función del cron de forma manual
-    c.executionCtx.waitUntil(runCron({} as any, c.env, c.executionCtx));
+    c.executionCtx.waitUntil(runCron({} as any, c.env, c.executionCtx as any));
     return c.text("Cron Job disparado en segundo plano. Revisa la consola de tu terminal.");
   } catch (error: any) {
     return c.json({ error: error.message }, 500);
