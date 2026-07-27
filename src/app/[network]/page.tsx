@@ -24,12 +24,12 @@ export default function NetworkPage({ params }: NetworkPageProps) {
             {/* Real Content overlay / Connect message */}
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-8 bg-black/60 backdrop-blur-sm">
                <Lock className="w-12 h-12 text-accent-primary mb-6 opacity-80" />
-               <h2 className="text-2xl font-bold text-white mb-2">Señales & Agente</h2>
+               <h2 className="text-2xl font-bold text-white mb-2">Signals & Agent</h2>
                <p className="text-text-muted text-sm max-w-xs mb-8">
-                 Conecta tu wallet para acceder a tu Panel de Runestone, interactuar con el Agente y emitir señales en la red.
+                 Connect your wallet to access your Runestone Panel, interact with the Agent, and broadcast signals on the network.
                </p>
                <button onClick={connect} className="bg-accent-primary hover:bg-accent-primary-dim text-bg-primary font-bold px-8 py-3 rounded-full transition-all shadow-glow-cyan hover:scale-105 flex items-center justify-center gap-2">
-                 Conectar Wallet
+                 Connect Wallet
                </button>
             </div>
             
@@ -51,12 +51,12 @@ export default function NetworkPage({ params }: NetworkPageProps) {
           <div className="relative flex flex-col items-center justify-center min-h-[250px] bg-bg-primary rounded-[2.5rem] border border-border-light overflow-hidden shadow-glow-cyan">
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-8 bg-black/60 backdrop-blur-sm">
                <Lock className="w-10 h-10 text-accent-secondary mb-4 opacity-80" />
-               <h3 className="text-xl font-bold text-white mb-2">Red de Nodos</h3>
+               <h3 className="text-xl font-bold text-white mb-2">Node Network</h3>
                <p className="text-text-muted text-sm max-w-xs text-center mb-6">
-                 Conecta tu wallet para ver el estado y actividad de los nodos.
+                 Connect your wallet to view the status and activity of the nodes.
                </p>
                <button onClick={connect} className="bg-accent-secondary hover:bg-accent-secondary-dim text-white font-bold px-6 py-2 rounded-full transition-all shadow-glow-magenta hover:scale-105 flex items-center justify-center gap-2 text-sm">
-                 Conectar Wallet
+                 Connect Wallet
                </button>
             </div>
             
