@@ -11,10 +11,15 @@
     "db:deploy": "wrangler d1 execute RANKING_DB --remote --file=./schema.sql"
   },
   "dependencies": {
-    "ethers": "^6.13.0"
+    "@hono/zod-validator": "^0.2.2",
+    "drizzle-orm": "^0.31.2",
+    "hono": "^4.5.0",
+    "viem": "^2.17.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20240512.0",
+    "@cloudflare/workers-types": "^4.20260702.1",
+    "drizzle-kit": "^0.22.8",
     "typescript": "^5.0.4",
     "wrangler": "^3.0.0"
   }

@@ -1,4 +1,11 @@
-import { ethers } from 'ethers';
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
+import { createPublicClient, http, defineChain, parseAbiItem } from 'viem';
+import { drizzle } from 'drizzle-orm/d1';
+import { desc, eq, count, gt, sql } from 'drizzle-orm';
+import { users, syncState } from './db/schema';
 
 export interface Env {
   RANKING_DB: D1Database;
@@ -8,181 +15,237 @@ export interface Env {
   CHAIN_ID: string;
 }
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-  "Content-Type": "application/json",
-  "Cache-Control": "public, max-age=60, s-maxage=60" // Escudo de Caché de 60 segundos
-};
+const app = new Hono<{ Bindings: Env }>();
 
-export default {
-  // ─────────────────────────────────────────────────────────────────────────
-  // 1. HTTP ENDPOINTS (API REST Ultra-rápida protegida por Caché)
-  // ─────────────────────────────────────────────────────────────────────────
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    if (request.method === "OPTIONS") {
-      return new Response(null, { headers: corsHeaders });
+// Middleware CORS
+app.use('/*', cors({
+  origin: '*',
+  allowMethods: ['GET', 'OPTIONS'],
+  allowHeaders: ['Content-Type'],
+  maxAge: 60
+}));
+
+// ─────────────────────────────────────────────────────────────────────────
+// 1. HTTP ENDPOINTS (API REST Ultra-rápida protegida por Caché)
+// ─────────────────────────────────────────────────────────────────────────
+
+app.get('/', async (c) => {
+  return c.redirect('/api/leaderboard');
+});
+
+// Ruta: /api/leaderboard -> Devuelve el Top 100
+app.get('/api/leaderboard', async (c) => {
+  try {
+    const db = drizzle(c.env.RANKING_DB);
+    const results = await db
+      .select({
+        address: users.address,
+        points: users.points,
+        forkLevel: users.forkLevel
+      })
+      .from(users)
+      .orderBy(desc(users.points))
+      .limit(100);
+    
+    return c.json(results, 200, {
+      "Cache-Control": "public, max-age=60, s-maxage=60" 
+    });
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Esquema Zod para validar la wallet address en la URL
+const addressParamSchema = z.object({
+  address: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Formato de dirección inválido')
+});
+
+// Ruta: /api/user/:address -> Devuelve datos y rango global
+app.get(
+  '/api/user/:address',
+  zValidator('param', addressParamSchema, (result, c) => {
+    if (!result.success) {
+      return c.json({ error: result.error.issues[0].message }, 400);
     }
-
-    const url = new URL(request.url);
-
+  }),
+  async (c) => {
     try {
-      // Ruta: /api/leaderboard -> Devuelve el Top 100
-      if (url.pathname === "/api/leaderboard" || url.pathname === "/") {
-        const { results } = await env.RANKING_DB.prepare(
-          "SELECT address, points, forkLevel FROM users ORDER BY points DESC LIMIT 100"
-        ).all();
-        
-        return new Response(JSON.stringify(results), {
-          status: 200,
-          headers: corsHeaders
-        });
+      const { address } = c.req.valid('param');
+      const lowerAddress = address.toLowerCase();
+      
+      const db = drizzle(c.env.RANKING_DB);
+
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.address, lowerAddress))
+        .limit(1);
+
+      if (!user) {
+        return c.json({ error: "User not found" }, 404);
       }
 
-      // Ruta: /api/user/:address -> Devuelve datos y rango global de un usuario
-      if (url.pathname.startsWith("/api/user/")) {
-        const address = url.pathname.split("/").pop()?.toLowerCase();
-        
-        // Validación básica usando regex simple para no depender de ethers aquí si es posible (optimización)
-        if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
-          return new Response(JSON.stringify({ error: "Invalid address format" }), { status: 400, headers: corsHeaders });
-        }
+      // Calcular rango
+      const [rankData] = await db
+        .select({ higherCount: count() })
+        .from(users)
+        .where(gt(users.points, user.points));
 
-        // 1. Buscar al usuario
-        const user: any = await env.RANKING_DB.prepare(
-          "SELECT * FROM users WHERE address = ?"
-        ).bind(address).first();
+      const rank = (rankData?.higherCount || 0) + 1;
 
-        if (!user) {
-          return new Response(JSON.stringify({ error: "User not found" }), { status: 404, headers: corsHeaders });
-        }
-
-        // 2. Calcular su rango global (cuántas personas tienen más puntos que él + 1)
-        const rankData: any = await env.RANKING_DB.prepare(
-          "SELECT COUNT(*) as higherCount FROM users WHERE points > ?"
-        ).bind(user.points).first();
-
-        const rank = (rankData?.higherCount || 0) + 1;
-
-        return new Response(JSON.stringify({ ...user, rank }), {
-          status: 200,
-          headers: corsHeaders
-        });
-      }
-
-      return new Response(JSON.stringify({ error: "Endpoint Not found" }), { status: 404, headers: corsHeaders });
-
+      return c.json({ ...user, rank });
     } catch (error: any) {
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: corsHeaders
-      });
-    }
-  },
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // 2. CRON JOB (El Sincronizador de GMDone)
-  // ─────────────────────────────────────────────────────────────────────────
-  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
-    console.log("Iniciando Cron Job de Sincronización...");
-    
-    // Configuración Segura de Ingeniería (Resilient Batching)
-    const MAX_ITERATIONS = 5;  // De vuelta a la normalidad para proteger el CPU de Cloudflare
-    const CHUNK_SIZE = 1000;   // Tamaño de bloque seguro para RPC público
-    const CONFIRMATION_DELAY = 10;
-    // CORRECCIÓN CRÍTICA: Arc Testnet tiene bloques de 0.5s. 300,000 bloques son solo 1.7 días.
-    // El contrato es del 18 de Julio. Leemos el bloque inicial dinámicamente desde wrangler.toml
-    const GENESIS_BLOCK = Number(env.GENESIS_BLOCK) || 52000000;
-    
-    try {
-      // Usamos staticNetwork y pasamos el Chain ID explícito desde env para evitar que
-      // ethers haga peticiones extra de 'eth_chainId' que saturan el Rate Limit.
-      const provider = new ethers.JsonRpcProvider(env.RPC_URL, Number(env.CHAIN_ID) || 5042002, { staticNetwork: true });
-      
-      // ABI mínimo para leer el evento GMDone
-      const SIGNAL_ABI = [
-        "event GMDone(address indexed user, uint256 pointsEarned, uint256 totalPoints, uint256 streak, uint256 forkLevel, bool superGM)"
-      ];
-      const contract = new ethers.Contract(env.CONTRACT_ADDRESS, SIGNAL_ABI, provider);
-
-      // 1. Obtener el cursor (último bloque procesado) de SQL
-      const stateRow: any = await env.RANKING_DB.prepare(
-        "SELECT lastProcessedBlock FROM sync_state WHERE id = 1"
-      ).first();
-      
-      let lastProcessedBlock = stateRow ? stateRow.lastProcessedBlock : GENESIS_BLOCK;
-
-      // 2. Obtener el bloque actual del RPC y aplicar Confirmation Delay
-      const currentBlock = await provider.getBlockNumber();
-      const safeBlock = currentBlock - CONFIRMATION_DELAY;
-
-      if (lastProcessedBlock >= safeBlock) {
-        console.log("No hay bloques seguros nuevos para procesar.");
-        return;
-      }
-
-      console.log(`Sincronizando desde el bloque ${lastProcessedBlock + 1} hasta ${safeBlock}`);
-
-      // 3. Resilient Batch Processing (Bucle Seguro)
-      let fromBlock = lastProcessedBlock + 1;
-      let iterations = 0;
-      
-      while (fromBlock <= safeBlock && iterations < MAX_ITERATIONS) {
-        const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, safeBlock);
-        console.log(`Iteración ${iterations + 1}: Procesando chunk ${fromBlock} a ${toBlock}...`);
-
-        const filter = contract.filters.GMDone();
-        const logs = await contract.queryFilter(filter, fromBlock, toBlock);
-
-        // Si hay eventos en este bloque, preparamos las sentencias SQL de Upsert
-        if (logs.length > 0) {
-          console.log(`¡Se encontraron ${logs.length} eventos GMDone en este chunk!`);
-          
-          const statements = [];
-          for (const log of logs) {
-            const userAddress = (log as any).args[0].toLowerCase();
-            const totalPoints = Number((log as any).args[2]);
-            const forkLevel = Number((log as any).args[4]);
-            const finalForkLevel = forkLevel === 0 ? 1 : forkLevel;
-
-            // Upsert SQLite: Si la address no existe, se crea. Si existe, actualiza sus puntos.
-            const stmt = env.RANKING_DB.prepare(
-              `INSERT INTO users (address, points, forkLevel) VALUES (?, ?, ?)
-               ON CONFLICT(address) DO UPDATE SET 
-                  points=excluded.points, 
-                  forkLevel=excluded.forkLevel, 
-                  lastUpdated=CURRENT_TIMESTAMP`
-            ).bind(userAddress, totalPoints, finalForkLevel);
-            
-            statements.push(stmt);
-          }
-          
-          // Ejecutamos todos los upserts de los usuarios del chunk en un solo lote rápido
-          await env.RANKING_DB.batch(statements);
-        }
-
-        // Guardamos el avance del cursor después de cada chunk exitoso
-        await env.RANKING_DB.prepare(
-          `INSERT INTO sync_state (id, lastProcessedBlock) VALUES (1, ?)
-           ON CONFLICT(id) DO UPDATE SET lastProcessedBlock = excluded.lastProcessedBlock`
-        ).bind(toBlock).run();
-
-        // Avanzar bucle
-        fromBlock = toBlock + 1;
-        iterations++;
-      }
-
-      if (fromBlock <= safeBlock) {
-        console.log("Límite de iteraciones alcanzado. El cron continuará el próximo minuto para evitar Timeout.");
-      } else {
-        console.log("¡Sincronización 100% al día!");
-      }
-
-    } catch (error) {
-      console.error("Error crítico en Cron Job:", error);
-      // El worker muere silenciosamente aquí, pero gracias al guardado por Chunks, 
-      // el progreso anterior ya está a salvo en la base de datos D1.
+      return c.json({ error: error.message }, 500);
     }
   }
+);
+
+// Ruta secreta solo para desarrollo: Permite disparar el cron manualmente desde el navegador
+app.get('/__scheduled', async (c) => {
+  try {
+    // Ejecutamos la función del cron de forma manual
+    c.executionCtx.waitUntil(runCron({} as any, c.env, c.executionCtx));
+    return c.text("Cron Job disparado en segundo plano. Revisa la consola de tu terminal.");
+  } catch (error: any) {
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────
+// 2. CRON JOB (El Sincronizador de GMDone)
+// ─────────────────────────────────────────────────────────────────────────
+async function runCron(event: any, env: Env, ctx: ExecutionContext): Promise<void> {
+  console.log("Iniciando Cron Job de Sincronización...");
+  
+  const MAX_ITERATIONS = 10;  // Aumentamos iteraciones
+  const CHUNK_SIZE = 100n;    // Reducimos el tamaño de bloque a 100 para evitar "request limit reached"
+  const CONFIRMATION_DELAY = 10n;
+  const GENESIS_BLOCK = BigInt(env.GENESIS_BLOCK) || 52000000n;
+  
+  // Función auxiliar para pausas
+  const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+  
+  try {
+    const arcTestnet = defineChain({
+      id: Number(env.CHAIN_ID) || 5042002,
+      name: 'Arc Testnet',
+      network: 'arc-testnet',
+      nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+      rpcUrls: {
+        default: { http: [env.RPC_URL] },
+        public: { http: [env.RPC_URL] }
+      }
+    });
+
+    const publicClient = createPublicClient({
+      chain: arcTestnet,
+      transport: http(env.RPC_URL, {
+        retryCount: 3,
+        retryDelay: 1000,
+        timeout: 10000
+      })
+    });
+
+    const GMDoneEvent = parseAbiItem('event GMDone(address indexed user, uint256 pointsEarned, uint256 totalPoints, uint256 streak, uint256 forkLevel, bool superGM)');
+
+    const db = drizzle(env.RANKING_DB);
+
+    // Obtener cursor con Drizzle
+    const [stateRow] = await db
+      .select({ lastProcessedBlock: syncState.lastProcessedBlock })
+      .from(syncState)
+      .where(eq(syncState.id, 1))
+      .limit(1);
+    
+    let lastProcessedBlock = stateRow ? BigInt(stateRow.lastProcessedBlock) : GENESIS_BLOCK;
+
+    const currentBlock = await publicClient.getBlockNumber();
+    const safeBlock = currentBlock - CONFIRMATION_DELAY;
+
+    if (lastProcessedBlock >= safeBlock) {
+      console.log("No hay bloques seguros nuevos para procesar.");
+      return;
+    }
+
+    console.log(`Sincronizando desde el bloque ${lastProcessedBlock + 1n} hasta ${safeBlock}`);
+
+    let fromBlock = lastProcessedBlock + 1n;
+    let iterations = 0;
+    
+    while (fromBlock <= safeBlock && iterations < MAX_ITERATIONS) {
+      let toBlock = fromBlock + CHUNK_SIZE - 1n;
+      if (toBlock > safeBlock) {
+        toBlock = safeBlock;
+      }
+      
+      console.log(`Iteración ${iterations + 1}: Procesando chunk ${fromBlock} a ${toBlock}...`);
+
+      const logs = await publicClient.getLogs({
+        address: env.CONTRACT_ADDRESS as `0x${string}`,
+        event: GMDoneEvent,
+        fromBlock,
+        toBlock
+      });
+
+      if (logs.length > 0) {
+        console.log(`¡Se encontraron ${logs.length} eventos GMDone en este chunk!`);
+        
+        // D1 Driver supporta db.batch
+        const batchUpserts = [];
+        for (const log of logs) {
+          if (!log.args.user || log.args.totalPoints === undefined || log.args.forkLevel === undefined) continue;
+
+          const userAddress = log.args.user.toLowerCase();
+          const totalPoints = Number(log.args.totalPoints);
+          const forkLevel = Number(log.args.forkLevel);
+          const finalForkLevel = forkLevel === 0 ? 1 : forkLevel;
+
+          batchUpserts.push(
+            db.insert(users)
+              .values({ address: userAddress, points: totalPoints, forkLevel: finalForkLevel })
+              .onConflictDoUpdate({
+                target: users.address,
+                set: {
+                  points: totalPoints,
+                  forkLevel: finalForkLevel,
+                  lastUpdated: sql`CURRENT_TIMESTAMP`
+                }
+              })
+          );
+        }
+        
+        if (batchUpserts.length > 0) {
+          await db.batch(batchUpserts as any); // Batch ejecuta todas las queries
+        }
+      }
+
+      await db.insert(syncState)
+        .values({ id: 1, lastProcessedBlock: Number(toBlock) })
+        .onConflictDoUpdate({
+          target: syncState.id,
+          set: { lastProcessedBlock: Number(toBlock) }
+        });
+
+      fromBlock = toBlock + 1n;
+      iterations++;
+      
+      // Pequeña pausa de medio segundo entre peticiones para respirar y respetar el Rate Limit del RPC
+      await delay(500);
+    }
+
+    if (fromBlock <= safeBlock) {
+      console.log("Límite de iteraciones alcanzado.");
+    } else {
+      console.log("¡Sincronización 100% al día!");
+    }
+
+  } catch (error) {
+    console.error("Error crítico en Cron Job:", error);
+  }
+}
+
+export default {
+  fetch: app.fetch,
+  scheduled: runCron
 };
+
