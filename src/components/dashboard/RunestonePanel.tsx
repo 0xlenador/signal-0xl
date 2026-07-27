@@ -28,6 +28,7 @@ export default function RunestonePanel() {
   // Node Modal State
   const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
   const [isNodeModalOpen, setIsNodeModalOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [nodeInstantCost, setNodeInstantCost] = useState<bigint | null>(null);
   const [activationLoading, setActivationLoading] = useState(false);
   const [activationError, setActivationError] = useState<string | null>(null);
@@ -80,10 +81,6 @@ export default function RunestonePanel() {
 
   const handleResetVIP = async () => {
     if (!address || gmLoading) return;
-    const confirmed = window.confirm(
-      '⚠️ ¿Confirmas resetear a VIP?\n\nEsto reiniciará tu racha y desactivará todos los nodos. Tu puntaje acumulado se conserva.'
-    );
-    if (!confirmed) return;
 
     setGmLoading(true);
     const success = await resetToVIP();
@@ -180,7 +177,7 @@ export default function RunestonePanel() {
     const currentCost = await getGMCost(address);
     
     if (!currentCost) {
-      alert("No se pudo calcular el costo del GM debido a congestión de la red. Intenta de nuevo.");
+      alert("Could not calculate GM cost due to network congestion. Try again.");
       setGmLoading(false);
       return;
     }
@@ -213,7 +210,7 @@ export default function RunestonePanel() {
               {walletParam && <Image unoptimized src={getAvatarUrl(walletParam)} alt="Avatar" width={24} height={24} className="w-full h-full opacity-90" />}
             </div>
             <span className="text-xs font-mono font-bold text-white tracking-wider cursor-default pt-0.5">{formattedAddress}</span>
-            <button onClick={handleCopy} className="text-text-muted hover:text-accent-primary transition-colors cursor-pointer ml-1" title="Copiar Wallet">
+            <button onClick={handleCopy} className="text-text-muted hover:text-accent-primary transition-colors cursor-pointer ml-1" title="Copy Wallet">
               {copied ? <Check className="w-3.5 h-3.5 text-accent-success" /> : <Copy className="w-3.5 h-3.5" />}
             </button>
           </div>
@@ -248,19 +245,6 @@ export default function RunestonePanel() {
             </div>
           </div>
         </div>
-
-        {userData && userData.forkLevel > 1 && (
-          <div className="mt-3 flex items-center justify-between bg-accent-warning/10 border border-accent-warning/30 p-2 rounded-xl text-xs">
-            <p className="text-accent-warning mb-0 font-bold">Estás en Bifurcación {userData.forkLevel}. El costo del GM es mayor.</p>
-            <button 
-              onClick={handleResetVIP}
-              disabled={gmLoading || !isOwner}
-              className="bg-surface-2 hover:bg-surface-1 border border-border-light px-3 py-1.5 rounded-lg text-white transition-colors cursor-pointer disabled:opacity-50"
-            >
-              {!isOwner ? 'Read Only' : 'Resetear a VIP'}
-            </button>
-          </div>
-        )}
 
       </div>
 
@@ -375,6 +359,19 @@ export default function RunestonePanel() {
 
           </div>
         </div>
+
+        {/* Small floating button for Reset VIP */}
+        {userData && userData.forkLevel > 1 && (
+          <button 
+            onClick={() => setIsResetModalOpen(true)}
+            title="Reset to VIP"
+            className="absolute bottom-0 right-0 z-50 bg-accent-warning/10 hover:bg-accent-warning/20 text-accent-warning border border-accent-warning/30 px-3 py-1.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 text-[0.65rem] font-bold uppercase tracking-wider hover:scale-105"
+          >
+            <AlertCircle className="w-3.5 h-3.5" />
+            <span>Reset VIP</span>
+          </button>
+        )}
+
       </div>
 
       {/* Modal de Activación de Nodos */}
@@ -386,7 +383,7 @@ export default function RunestonePanel() {
             <div className="p-4 border-b border-border-light flex justify-between items-center bg-surface-2/50">
               <h3 className="font-bold text-white uppercase tracking-wider flex items-center gap-2">
                 <Flame className="w-4 h-4 text-accent-runestone" />
-                Activar Nodo {selectedNodeId === 1 ? 'Commitment' : selectedNodeId === 2 ? 'Conviction' : 'Legacy'}
+                Activate Node {selectedNodeId === 1 ? 'Commitment' : selectedNodeId === 2 ? 'Conviction' : 'Legacy'}
               </h3>
               <button 
                 onClick={() => !activationLoading && setIsNodeModalOpen(false)}
@@ -409,46 +406,85 @@ export default function RunestonePanel() {
               {/* Opción 1: Racha */}
               <div className="bg-surface-2 p-4 rounded-xl border border-border-light flex flex-col gap-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-bold text-white">Vía Racha</span>
+                  <span className="text-sm font-bold text-white">By Streak</span>
                   <span className="text-xs font-mono bg-surface-1 px-2 py-1 rounded text-accent-success border border-accent-success/20">0.01 USDC</span>
                 </div>
                 <div className="text-xs text-text-muted">
-                  Requiere una racha activa de {getRequiredStreak(selectedNodeId)} días. 
-                  Tu racha actual es: <span className="text-white font-bold">{userData?.currentStreak || 0}</span>
+                  Requires an active streak of {getRequiredStreak(selectedNodeId)} days. 
+                  Your current streak is: <span className="text-white font-bold">{userData?.currentStreak || 0}</span>
                 </div>
                 <button
                   onClick={handleActivateByStreak}
                   disabled={activationLoading || (userData?.currentStreak || 0) < getRequiredStreak(selectedNodeId)}
                   className="w-full bg-accent-runestone/20 hover:bg-accent-runestone/30 text-accent-runestone border border-accent-runestone/50 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {activationLoading ? 'Procesando...' : 'Activar por Racha'}
+                  {activationLoading ? 'Processing...' : 'Activate by Streak'}
                 </button>
               </div>
 
               {/* Opción 2: Instantáneo */}
               <div className="bg-surface-2 p-4 rounded-xl border border-border-light flex flex-col gap-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-bold text-white">Vía Instantánea</span>
+                  <span className="text-sm font-bold text-white">Instant Activation</span>
                   {nodeInstantCost ? (
                     <span className="text-xs font-mono bg-surface-1 px-2 py-1 rounded text-accent-warning border border-accent-warning/20">
                       {formatUnits(nodeInstantCost, 18)} USDC
                     </span>
                   ) : (
-                    <span className="text-xs animate-pulse text-text-muted">Calculando...</span>
+                    <span className="text-xs animate-pulse text-text-muted">Calculating...</span>
                   )}
                 </div>
                 <div className="text-xs text-text-muted">
-                  Paga la tarifa premium y activa este nodo de inmediato, sin importar tu racha actual.
+                  Pay the premium fee and activate this node immediately, regardless of your current streak.
                 </div>
                 <button
                   onClick={handleActivateInstant}
                   disabled={activationLoading || nodeInstantCost === null}
                   className="w-full bg-accent-warning/10 hover:bg-accent-warning/20 text-accent-warning border border-accent-warning/50 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {activationLoading ? 'Procesando...' : 'Activar Instantáneo'}
+                  {activationLoading ? 'Processing...' : 'Activate Instantly'}
                 </button>
               </div>
 
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para Reset VIP */}
+      {isResetModalOpen && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-surface-1 border border-accent-warning/30 rounded-2xl w-full max-w-sm overflow-hidden shadow-[0_0_40px_rgba(245,158,11,0.15)] relative flex flex-col">
+            <div className="p-4 border-b border-border-light flex justify-between items-center bg-surface-2/50">
+              <h3 className="font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-accent-warning" />
+                Reset to VIP
+              </h3>
+              <button 
+                onClick={() => !gmLoading && setIsResetModalOpen(false)}
+                className="text-text-muted hover:text-white transition-colors disabled:opacity-50"
+                disabled={gmLoading}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 flex flex-col gap-4 text-center text-sm text-text-muted">
+              <p className="text-accent-warning font-bold text-base">
+                You are at Fork {userData?.forkLevel}. GM cost is higher.
+              </p>
+              <p>
+                This will reset your streak and deactivate all nodes. Your accumulated score will be kept.
+              </p>
+              <button 
+                onClick={async () => {
+                  await handleResetVIP();
+                  setIsResetModalOpen(false);
+                }}
+                disabled={gmLoading || !isOwner}
+                className="w-full bg-accent-warning/20 hover:bg-accent-warning/30 text-accent-warning border border-accent-warning/50 py-3 rounded-lg font-bold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4 shadow-sm hover:shadow-glow-warning"
+              >
+                {!isOwner ? 'Read Only' : (gmLoading ? 'Processing...' : 'Confirm Reset to VIP')}
+              </button>
             </div>
           </div>
         </div>

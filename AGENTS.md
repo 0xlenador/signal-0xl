@@ -22,4 +22,4 @@ Implementar funciones en web3 suele crear bugs para el usuario, ejemplo: si cone
 
 # Idioma en UI
 
-A pesar de que nuestras conversaciones sean en español, todo el código, textos de la interfaz (UI) y documentación del proyecto deben ser escritos siempre y estrictamente en inglés nativo. No introduzcas texto en español en la base de código.
+A pesar de que el código, textos de la interfaz (UI) y documentación del proyecto deben ser escritos SIEMPRE en inglés nativo, TUS RESPUESTAS EN EL CHAT Y TUS PENSAMIENTOS DEBEN SER 100% EN ESPAÑOL. NUNCA me hables ni me respondas en inglés. No introduzcas texto en español en la base de código.
