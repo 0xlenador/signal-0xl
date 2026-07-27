@@ -50,11 +50,14 @@ export function useNodesData(address: string | null | undefined): INodesData {
     if (!address) return;
     
     try {
+      const classicApiUrl = BLOCKSCOUT.baseUrl.replace('/api/v2', '/api');
+
       // 1. Intentamos obtener datos del Blockscout (con .catch para no crashear Promise.all)
-      const [addressRes, countersRes, txsRes] = await Promise.all([
+      const [addressRes, countersRes, firstTxRes, lastTxRes] = await Promise.all([
         fetch(`${BLOCKSCOUT.baseUrl}/addresses/${address}`).then(res => res.ok ? res.json() : null).catch(() => null),
         fetch(`${BLOCKSCOUT.baseUrl}/addresses/${address}/counters`).then(res => res.ok ? res.json() : null).catch(() => null),
-        fetch(`${BLOCKSCOUT.baseUrl}/addresses/${address}/transactions`).then(res => res.ok ? res.json() : null).catch(() => null)
+        fetch(`${classicApiUrl}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=1&sort=asc`).then(res => res.ok ? res.json() : null).catch(() => null),
+        fetch(`${classicApiUrl}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=1&sort=desc`).then(res => res.ok ? res.json() : null).catch(() => null)
       ]);
 
       // 2. Fallback a RPC si el Blockscout falló
@@ -123,27 +126,23 @@ export function useNodesData(address: string | null | undefined): INodesData {
       let daysSinceGenesis = 0;
       let legacyBadge = "Newbie";
 
-      if (txsRes?.items && txsRes.items.length > 0) {
-        const latestTx = txsRes.items[0];
-        const oldestTx = txsRes.items[txsRes.items.length - 1];
-        
-        if (oldestTx && oldestTx.timestamp) {
-           firstTxDate = new Date(oldestTx.timestamp);
-        }
-        if (latestTx && latestTx.timestamp) {
-           lastTxDate = new Date(latestTx.timestamp);
-        }
-        
-        if (firstTxDate) {
-          const now = new Date();
-          const diffTime = Math.abs(now.getTime() - firstTxDate.getTime());
-          daysSinceGenesis = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        }
-
-        if (daysSinceGenesis >= 365) legacyBadge = "OG (1 Year+)";
-        else if (daysSinceGenesis >= 30) legacyBadge = "Early Adopter";
-        else if (daysSinceGenesis >= 7) legacyBadge = "Founder (Week 1)";
+      if (firstTxRes?.status === "1" && firstTxRes.result && firstTxRes.result.length > 0) {
+        firstTxDate = new Date(parseInt(firstTxRes.result[0].timeStamp) * 1000);
       }
+      
+      if (lastTxRes?.status === "1" && lastTxRes.result && lastTxRes.result.length > 0) {
+        lastTxDate = new Date(parseInt(lastTxRes.result[0].timeStamp) * 1000);
+      }
+      
+      if (firstTxDate) {
+        const now = new Date();
+        const diffTime = Math.abs(now.getTime() - firstTxDate.getTime());
+        daysSinceGenesis = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      }
+
+      if (daysSinceGenesis >= 365) legacyBadge = "OG (1 Year+)";
+      else if (daysSinceGenesis >= 30) legacyBadge = "Early Adopter";
+      else if (daysSinceGenesis >= 7) legacyBadge = "Founder (Week 1)";
 
       const legacy: ILegacyNode = {
         firstTxDate,
