@@ -1,9 +1,9 @@
 'use client';
 
 import { Trophy, Info, Loader2 } from 'lucide-react';
-import { useLeaderboard } from '@/hooks';
 import { useWeb3 } from '../Web3Provider';
 import { CONSTANTS } from '@/lib/config';
+import type { ILeaderboardUser } from '@/lib/leaderboardService';
 
 // Skeleton Row Component
 const SkeletonRow = ({ index }: { index: number }) => (
@@ -26,8 +26,14 @@ const SkeletonRow = ({ index }: { index: number }) => (
   </tr>
 );
 
-export default function RankingTable() {
-  const { leaderboard, isLoading, isScanning } = useLeaderboard();
+interface RankingTableProps {
+  initialData: ILeaderboardUser[];
+}
+
+export default function RankingTable({ initialData }: RankingTableProps) {
+  const leaderboard = initialData || [];
+  const isLoading = false; // Como viene del servidor, ya está cargado
+  const isScanning = false; // Ya no aplica el polling del cliente
   const { address } = useWeb3();
 
   const shortAddress = (addr: string | null) => addr ? `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}` : '';
