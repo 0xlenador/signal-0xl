@@ -1,6 +1,9 @@
-import { Outfit, Space_Grotesk } from 'next/font/google';
+import { Outfit, Space_Grotesk, Geist } from 'next/font/google';
 import { ReactNode } from 'react';
 import './globals.css';
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -21,7 +24,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="es" className={`${outfit.variable} ${spaceGrotesk.variable}`}>
+    <html lang="es" className={cn(outfit.variable, spaceGrotesk.variable, "font-sans", geist.variable)}>
       <body className="antialiased bg-bg-primary text-text-primary min-h-screen flex flex-col font-sans">
         {children}
       </body>

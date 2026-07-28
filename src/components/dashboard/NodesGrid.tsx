@@ -78,24 +78,24 @@ export default function NodesGrid() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* NODO 1: Compromiso */}
-      <div className="glass-panel rounded-2xl p-3 flex flex-col glow-cyan-hover transition-all duration-300 relative group hover:z-50" id="node1-card">
+      <div className="bg-white border border-slate-200/80 shadow-md rounded-2xl p-4 flex flex-col hover:shadow-xl hover:-translate-y-0.5 hover:border-slate-300 transition-all duration-300 relative group hover:z-50" id="node1-card">
         <div className="absolute top-0 right-0 w-16 h-16 bg-accent-primary/5 rounded-bl-full rounded-tr-2xl pointer-events-none group-hover:bg-accent-primary/10 transition-colors"></div>
         <div className="flex items-center justify-between mb-2 relative z-10">
-          <div className="flex items-center gap-2 font-bold text-white text-sm">
+          <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
             <Microscope className="w-5 h-5 text-accent-primary drop-shadow-md" /> 
             <span className="group-hover:text-accent-primary transition-colors">Node 1 — Commitment</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="relative cursor-help group/ntt pointer-events-auto flex items-center">
               <Info className="w-3.5 h-3.5 opacity-80 group-hover/ntt:opacity-100 transition-opacity" />
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 bg-black/95 backdrop-blur-md border border-border-light rounded shadow-glow-cyan/20 text-[0.65rem] text-gray-200 opacity-0 group-hover/ntt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case tracking-normal">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 bg-white backdrop-blur-md border border-slate-200 rounded shadow-sm text-[0.65rem] text-slate-700 opacity-0 group-hover/ntt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case tracking-normal">
                 Analyzes historical transaction volume and gas spent on Arc Testnet. Calculates your activity tier and score multiplier.
               </div>
             </div>
             {userData?.nodeCommitment ? (
-              <div className="w-2.5 h-2.5 rounded-full bg-accent-success shadow-[0_0_8px_rgba(0,230,118,0.6)]"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-accent-success shadow-sm"></div>
             ) : (
-              <div className="w-2.5 h-2.5 rounded-full bg-accent-error shadow-[0_0_8px_rgba(255,23,68,0.6)]"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-accent-error shadow-sm"></div>
             )}
           </div>
         </div>
@@ -108,14 +108,14 @@ export default function NodesGrid() {
         {/* Node 1 Data Grid */}
         {userData?.nodeCommitment && (
           <div className="grid grid-cols-2 gap-1.5 mt-2 mb-3 flex-grow relative z-10">
-            <div className="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
-              <span className="text-[0.55rem] text-text-muted uppercase tracking-wider truncate">TOTAL TRANSACTIONS</span>
-              <strong className="text-xs text-white truncate">{data.isLoading ? '...' : data.commitment?.totalTxs.toLocaleString()}</strong>
+            <div className="flex flex-col bg-slate-100/50 px-2 py-1.5 rounded-lg border border-slate-200/60 shadow-sm">
+              <span className="text-[0.55rem] text-slate-500 uppercase tracking-wider truncate">TOTAL TRANSACTIONS</span>
+              <strong className="text-xs text-slate-900 truncate">{data.isLoading ? '...' : data.commitment?.totalTxs.toLocaleString()}</strong>
             </div>
-            <div className="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
-              <span className="text-[0.55rem] text-text-muted uppercase tracking-wider truncate">FEES PAID</span>
-              <strong className="text-xs text-white truncate">
-                {data.isLoading ? '...' : (data.commitment?.totalFeePaid ? data.commitment.totalFeePaid : <span className="text-accent-primary/60 font-mono animate-pulse">_[ENCRYPTED]_</span>)}
+            <div className="flex flex-col bg-slate-100/50 px-2 py-1.5 rounded-lg border border-slate-200/60 shadow-sm">
+              <span className="text-[0.55rem] text-slate-500 uppercase tracking-wider truncate">FEES PAID</span>
+              <strong className="text-xs text-slate-900 truncate">
+                {data.isLoading ? '...' : (data.commitment?.totalFeePaid ? data.commitment.totalFeePaid : <span className="text-slate-400 bg-slate-100/80 px-1.5 py-0.5 rounded font-mono animate-pulse">_[ENCRYPTED]_</span>)}
               </strong>
             </div>
             <div className="flex flex-col bg-accent-primary/10 px-2 py-1 rounded border border-accent-primary/30 col-span-2">
@@ -131,7 +131,7 @@ export default function NodesGrid() {
             <button 
               onClick={() => handleActivateStreak(1, setLoadingNode1Streak)} 
               disabled={loadingNode1Streak || loadingNode1Instant || (userData?.currentStreak || 0) < 3}
-              className="bg-surface-2 hover:bg-surface-1 border border-border-light text-[0.65rem] font-semibold text-white py-1.5 rounded-lg transition-colors hover:border-accent-primary/50 flex items-center justify-center gap-1 disabled:opacity-50"
+              className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[0.65rem] font-bold text-slate-700 py-2 rounded-xl transition-all hover:border-slate-300 flex items-center justify-center gap-1 disabled:opacity-50 shadow-sm"
             >
               {loadingNode1Streak ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Streak ({userData?.currentStreak || 0}/3)</span>}
             </button>
@@ -147,24 +147,24 @@ export default function NodesGrid() {
       </div>
 
       {/* NODO 2: Convicción */}
-      <div className="glass-panel rounded-2xl p-3 flex flex-col glow-cyan-hover transition-all duration-300 relative group hover:z-50" id="node2-card">
+      <div className="bg-white border border-slate-200/80 shadow-md rounded-2xl p-4 flex flex-col hover:shadow-xl hover:-translate-y-0.5 hover:border-slate-300 transition-all duration-300 relative group hover:z-50" id="node2-card">
         <div className="absolute top-0 right-0 w-16 h-16 bg-accent-primary/5 rounded-bl-full rounded-tr-2xl pointer-events-none group-hover:bg-accent-primary/10 transition-colors"></div>
         <div className="flex items-center justify-between mb-2 relative z-10">
-          <div className="flex items-center gap-2 font-bold text-white text-sm">
+          <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
             <Gem className="w-5 h-5 text-accent-primary drop-shadow-md" /> 
             <span className="group-hover:text-accent-primary transition-colors">Node 2 — Conviction</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="relative cursor-help group/ntt pointer-events-auto flex items-center">
               <Info className="w-3.5 h-3.5 opacity-80 group-hover/ntt:opacity-100 transition-opacity" />
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 bg-black/95 backdrop-blur-md border border-border-light rounded shadow-glow-cyan/20 text-[0.65rem] text-gray-200 opacity-0 group-hover/ntt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case tracking-normal">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 bg-white backdrop-blur-md border border-slate-200 rounded shadow-sm text-[0.65rem] text-slate-700 opacity-0 group-hover/ntt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case tracking-normal">
                 Calculates the percentage of the total native USDC supply held in your wallet. Measures your economic weight on the network.
               </div>
             </div>
             {userData?.nodeConviction ? (
-              <div className="w-2.5 h-2.5 rounded-full bg-accent-success shadow-[0_0_8px_rgba(0,230,118,0.6)]"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-accent-success shadow-sm"></div>
             ) : (
-              <div className="w-2.5 h-2.5 rounded-full bg-accent-error shadow-[0_0_8px_rgba(255,23,68,0.6)]"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-accent-error shadow-sm"></div>
             )}
           </div>
         </div>
@@ -177,17 +177,17 @@ export default function NodesGrid() {
         {/* Node 2 Data Grid */}
         {userData?.nodeConviction && (
           <div className="grid grid-cols-2 gap-1.5 mt-2 mb-3 flex-grow relative z-10">
-            <div className="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
-              <span className="text-[0.55rem] text-text-muted uppercase tracking-wider truncate">NATIVE BALANCE</span>
-              <strong className="text-xs text-white truncate">{data.isLoading ? '...' : data.conviction?.balanceUSDC}</strong>
+            <div className="flex flex-col bg-slate-100/50 px-2 py-1.5 rounded-lg border border-slate-200/60 shadow-sm">
+              <span className="text-[0.55rem] text-slate-500 uppercase tracking-wider truncate">NATIVE BALANCE</span>
+              <strong className="text-xs text-slate-900 truncate">{data.isLoading ? '...' : data.conviction?.balanceUSDC}</strong>
             </div>
-            <div className="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
-              <span className="text-[0.55rem] text-text-muted uppercase tracking-wider truncate">% OF SUPPLY</span>
-              <strong className="text-xs text-white truncate">{data.isLoading ? '...' : data.conviction?.percentageOfSupply}%</strong>
+            <div className="flex flex-col bg-slate-100/50 px-2 py-1.5 rounded-lg border border-slate-200/60 shadow-sm">
+              <span className="text-[0.55rem] text-slate-500 uppercase tracking-wider truncate">% OF SUPPLY</span>
+              <strong className="text-xs text-slate-900 truncate">{data.isLoading ? '...' : data.conviction?.percentageOfSupply}%</strong>
             </div>
-            <div className="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
-              <span className="text-[0.55rem] text-text-muted uppercase tracking-wider truncate">TOTAL SUPPLY (REF.)</span>
-              <strong className="text-xs text-white truncate">{data.isLoading ? '...' : data.conviction?.supplyTotal.toLocaleString()}</strong>
+            <div className="flex flex-col bg-slate-100/50 px-2 py-1.5 rounded-lg border border-slate-200/60 shadow-sm">
+              <span className="text-[0.55rem] text-slate-500 uppercase tracking-wider truncate">TOTAL SUPPLY (REF.)</span>
+              <strong className="text-xs text-slate-900 truncate">{data.isLoading ? '...' : data.conviction?.supplyTotal.toLocaleString()}</strong>
             </div>
             <div className="flex flex-col bg-accent-primary/10 px-2 py-1 rounded border border-accent-primary/30">
               <span className="text-[0.55rem] text-accent-primary uppercase tracking-wider truncate">CLASSIFICATION</span>
@@ -202,7 +202,7 @@ export default function NodesGrid() {
             <button 
               onClick={() => handleActivateStreak(2, setLoadingNode2Streak)} 
               disabled={loadingNode2Streak || loadingNode2Instant || (userData?.currentStreak || 0) < 12}
-              className="bg-surface-2 hover:bg-surface-1 border border-border-light text-[0.65rem] font-semibold text-white py-1.5 rounded-lg transition-colors hover:border-accent-primary/50 flex items-center justify-center gap-1 disabled:opacity-50"
+              className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[0.65rem] font-bold text-slate-700 py-2 rounded-xl transition-all hover:border-slate-300 flex items-center justify-center gap-1 disabled:opacity-50 shadow-sm"
             >
               {loadingNode2Streak ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Streak ({userData?.currentStreak || 0}/12)</span>}
             </button>
@@ -218,24 +218,24 @@ export default function NodesGrid() {
       </div>
 
       {/* NODO 3: Legado */}
-      <div className="glass-panel rounded-2xl p-3 flex flex-col glow-cyan-hover transition-all duration-300 relative group hover:z-50" id="node3-card">
+      <div className="bg-white border border-slate-200/80 shadow-md rounded-2xl p-4 flex flex-col hover:shadow-xl hover:-translate-y-0.5 hover:border-slate-300 transition-all duration-300 relative group hover:z-50" id="node3-card">
         <div className="absolute top-0 right-0 w-16 h-16 bg-accent-primary/5 rounded-bl-full rounded-tr-2xl pointer-events-none group-hover:bg-accent-primary/10 transition-colors"></div>
         <div className="flex items-center justify-between mb-2 relative z-10">
-          <div className="flex items-center gap-2 font-bold text-white text-sm">
+          <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
             <Landmark className="w-5 h-5 text-accent-primary drop-shadow-md" /> 
             <span className="group-hover:text-accent-primary transition-colors">Node 3 — Legacy</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="relative cursor-help group/ntt pointer-events-auto flex items-center">
               <Info className="w-3.5 h-3.5 opacity-80 group-hover/ntt:opacity-100 transition-opacity" />
-              <div className="absolute bottom-full right-0 mb-2 w-56 p-3 bg-black/95 backdrop-blur-md border border-border-light rounded shadow-glow-cyan/20 text-[0.65rem] text-gray-200 opacity-0 group-hover/ntt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case tracking-normal">
+              <div className="absolute bottom-full right-0 mb-2 w-56 p-3 bg-white backdrop-blur-md border border-slate-200 rounded shadow-sm text-[0.65rem] text-slate-700 opacity-0 group-hover/ntt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case tracking-normal">
                 Analyzes the timestamp of your first and last transaction on Arc Testnet. The older you are on the network, the higher your legacy multiplier.
               </div>
             </div>
             {userData?.nodeLegacy ? (
-              <div className="w-2.5 h-2.5 rounded-full bg-accent-success shadow-[0_0_8px_rgba(0,230,118,0.6)]"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-accent-success shadow-sm"></div>
             ) : (
-              <div className="w-2.5 h-2.5 rounded-full bg-accent-error shadow-[0_0_8px_rgba(255,23,68,0.6)]"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-accent-error shadow-sm"></div>
             )}
           </div>
         </div>
@@ -248,22 +248,22 @@ export default function NodesGrid() {
         {/* Node 3 Data Grid */}
         {userData?.nodeLegacy && (
           <div className="grid grid-cols-2 gap-1.5 mt-2 mb-3 flex-grow relative z-10">
-            <div className="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
-              <span className="text-[0.55rem] text-text-muted uppercase tracking-wider truncate">FIRST TX</span>
-              <strong className="text-xs text-white truncate">
-                {data.isLoading ? '...' : (data.legacy?.firstTxDate ? data.legacy.firstTxDate.toLocaleDateString() : <span className="text-accent-primary/60 font-mono animate-pulse">_[ENCRYPTED]_</span>)}
+            <div className="flex flex-col bg-slate-100/50 px-2 py-1.5 rounded-lg border border-slate-200/60 shadow-sm">
+              <span className="text-[0.55rem] text-slate-500 uppercase tracking-wider truncate">FIRST TX</span>
+              <strong className="text-xs text-slate-900 truncate">
+                {data.isLoading ? '...' : (data.legacy?.firstTxDate ? data.legacy.firstTxDate.toLocaleDateString() : <span className="text-slate-400 bg-slate-100/80 px-1.5 py-0.5 rounded font-mono animate-pulse">_[ENCRYPTED]_</span>)}
               </strong>
             </div>
-            <div className="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
-              <span className="text-[0.55rem] text-text-muted uppercase tracking-wider truncate">LAST TX</span>
-              <strong className="text-xs text-white truncate">
-                {data.isLoading ? '...' : (data.legacy?.lastTxDate ? data.legacy.lastTxDate.toLocaleDateString() : <span className="text-accent-primary/60 font-mono animate-pulse">_[ENCRYPTED]_</span>)}
+            <div className="flex flex-col bg-slate-100/50 px-2 py-1.5 rounded-lg border border-slate-200/60 shadow-sm">
+              <span className="text-[0.55rem] text-slate-500 uppercase tracking-wider truncate">LAST TX</span>
+              <strong className="text-xs text-slate-900 truncate">
+                {data.isLoading ? '...' : (data.legacy?.lastTxDate ? data.legacy.lastTxDate.toLocaleDateString() : <span className="text-slate-400 bg-slate-100/80 px-1.5 py-0.5 rounded font-mono animate-pulse">_[ENCRYPTED]_</span>)}
               </strong>
             </div>
-            <div className="flex flex-col bg-surface-1/30 px-2 py-1 rounded border border-white/5">
-              <span className="text-[0.55rem] text-text-muted uppercase tracking-wider truncate">DAYS SINCE GENESIS</span>
-              <strong className="text-xs text-white truncate">
-                {data.isLoading ? '...' : (data.legacy?.firstTxDate ? `${data.legacy.daysSinceGenesis} d` : <span className="text-accent-primary/60 font-mono animate-pulse">_[???]_</span>)}
+            <div className="flex flex-col bg-slate-100/50 px-2 py-1.5 rounded-lg border border-slate-200/60 shadow-sm">
+              <span className="text-[0.55rem] text-slate-500 uppercase tracking-wider truncate">DAYS SINCE GENESIS</span>
+              <strong className="text-xs text-slate-900 truncate">
+                {data.isLoading ? '...' : (data.legacy?.firstTxDate ? `${data.legacy.daysSinceGenesis} d` : <span className="text-slate-400 bg-slate-100/80 px-1.5 py-0.5 rounded font-mono animate-pulse">_[???]_</span>)}
               </strong>
             </div>
             <div className="flex flex-col bg-accent-primary/10 px-2 py-1 rounded border border-accent-primary/30">
@@ -281,7 +281,7 @@ export default function NodesGrid() {
             <button 
               onClick={() => handleActivateStreak(3, setLoadingNode3Streak)} 
               disabled={loadingNode3Streak || loadingNode3Instant || (userData?.currentStreak || 0) < 25}
-              className="bg-surface-2 hover:bg-surface-1 border border-border-light text-[0.65rem] font-semibold text-white py-1.5 rounded-lg transition-colors hover:border-accent-primary/50 flex items-center justify-center gap-1 disabled:opacity-50"
+              className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[0.65rem] font-bold text-slate-700 py-2 rounded-xl transition-all hover:border-slate-300 flex items-center justify-center gap-1 disabled:opacity-50 shadow-sm"
             >
               {loadingNode3Streak ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Streak ({userData?.currentStreak || 0}/25)</span>}
             </button>

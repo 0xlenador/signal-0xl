@@ -8,32 +8,37 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'bg-primary': '#05050A', /* Obsidiana Profunda */
-        'bg-secondary': '#0A0A10',
-        'surface-1': 'rgba(20, 20, 30, 0.4)',
-        'surface-2': 'rgba(30, 30, 45, 0.6)',
-        'accent-primary': '#00E5FF', /* Neon Cyan */
-        'accent-primary-dim': '#00B3CC',
-        'accent-runestone': '#FF007F', /* Neon Pink/Magenta */
-        'accent-success': '#00E676',
-        'accent-warning': '#FFD600',
-        'accent-error': '#FF1744',
-        'accent-vip': '#a78bfa',
-        'accent-fork': '#fb923c',
-        'text-primary': '#F8FAFC',
-        'text-muted': '#94A3B8',
-        'border-color': 'rgba(255, 255, 255, 0.08)',
-        'border-light': 'rgba(255, 255, 255, 0.15)',
+        'bg-primary': '#f8fafc', 
+        'bg-secondary': '#ffffff',
+        'surface-1': '#ffffff',
+        'surface-2': '#f1f5f9',
+        'accent-primary': '#47bfff', /* Cyan */
+        'accent-primary-dim': '#38bdf8',
+        'accent-runestone': '#863bff', /* Púrpura Vibrante */
+        'accent-success': '#22c55e',
+        'accent-warning': '#eab308',
+        'accent-error': '#ef4444',
+        'accent-vip': '#863bff',
+        'accent-fork': '#f97316',
+        'text-primary': '#0f172a',
+        'text-muted': '#64748b',
+        'border-color': '#e2e8f0',
+        'border-light': '#f1f5f9',
+        border: 'var(--border)',
+        input: 'var(--input)',
+        ring: 'var(--ring)',
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
       },
       fontFamily: {
         sans: ['Outfit', 'Inter', 'sans-serif'],
         mono: ['Space Grotesk', 'ui-monospace', 'monospace'],
       },
       boxShadow: {
-        'glow-cyan': '0 0 20px rgba(0, 229, 255, 0.4)',
-        'glow-cyan-lg': '0 0 35px rgba(0, 229, 255, 0.6)',
-        'glow-magenta': '0 0 20px rgba(255, 0, 127, 0.4)',
-        'glow-magenta-lg': '0 0 35px rgba(255, 0, 127, 0.6)',
+        'glow-cyan': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        'glow-cyan-lg': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        'glow-magenta': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        'glow-magenta-lg': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
       },
       backgroundImage: {
         'glass': 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)',

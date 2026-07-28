@@ -36,11 +36,11 @@ export function Header({ networkParam }: { networkParam?: string }) {
   }, [address, networkParam, router, params.wallet, isInitializing, isReconnecting, status]);
 
   return (
-    <header className="app-header w-full flex items-center justify-between p-4 px-6 bg-surface-1/95 backdrop-blur-2xl border-b border-border-light sticky top-0 z-50 shadow-lg transition-all">
+    <header className="app-header w-full flex items-center justify-between p-4 px-6 bg-white/95 backdrop-blur-2xl border-b border-slate-200 sticky top-0 z-50 shadow-sm transition-all">
       <div className="flex items-center gap-4">
-        <div className="app-logo flex items-center gap-2 text-xl font-bold tracking-tight text-white cursor-pointer" onClick={() => router.push('/')}>
-          <Image src="/icon.svg" alt="Signal 0xL Logo" width={24} height={24} className="drop-shadow-[0_0_5px_rgba(0,229,255,0.3)]" />
-          <div>Signal <span className="text-accent-primary drop-shadow-[0_0_10px_rgba(0,229,255,0.5)]">0xL</span></div>
+        <div className="app-logo flex items-center gap-2 text-xl font-bold tracking-tight text-slate-900 cursor-pointer" onClick={() => router.push('/')}>
+          <Image src="/icon.svg" alt="Signal 0xL Logo" width={24} height={24} className="shadow-sm rounded-full" />
+          <div>Signal <span className="text-accent-primary">0xL</span></div>
         </div>
 
         <ClientOnly>
@@ -52,7 +52,7 @@ export function Header({ networkParam }: { networkParam?: string }) {
                 router.push(`/${networkParam || 'arc-testnet'}/${address}`);
               }
             }}
-            className={`bg-surface-2 border border-border-light text-white font-bold text-xs px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${!isOnOwnDashboard ? 'hover:bg-surface-1 hover:border-accent-primary/50 cursor-pointer' : 'cursor-default'}`}
+            className={`bg-slate-50 border border-slate-200 text-slate-700 font-bold text-xs px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${!isOnOwnDashboard ? 'hover:bg-white hover:border-accent-primary/50 cursor-pointer shadow-sm' : 'cursor-default shadow-none'}`}
           >
             <LayoutDashboard className="w-3.5 h-3.5 text-accent-primary" />
             <span className="hidden sm:inline">My Dashboard</span>
@@ -62,7 +62,7 @@ export function Header({ networkParam }: { networkParam?: string }) {
       
       <div className="flex items-center gap-3">
         {/* GitHub */}
-        <a href="https://github.com/0xlenador/signal-0xl" target="_blank" rel="noopener noreferrer" className="text-text-muted hover:text-white transition-colors flex items-center" aria-label="GitHub">
+        <a href="https://github.com/0xlenador/signal-0xl" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-slate-900 transition-colors flex items-center" aria-label="GitHub">
           <GithubIcon className="w-5 h-5" />
         </a>
 
@@ -71,14 +71,14 @@ export function Header({ networkParam }: { networkParam?: string }) {
 
         {/* Network Badge */}
         {networkParam && SUPPORTED_NETWORKS.includes(networkParam) && (
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-1 border border-border-light text-[0.65rem] font-bold text-text-muted">
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[0.65rem] font-bold text-slate-500 shadow-sm">
             <Image src="/assets/arc-logo.jpg" alt="Logo de Arc (Circle)" width={16} height={16} className="rounded-full object-cover" />
             {NETWORK.name}
           </div>
         )}
 
         <div className="relative flex items-center gap-2">
-          <ClientOnly fallback={<div className="w-24 h-8 bg-surface-2 animate-pulse rounded-full"></div>}>
+          <ClientOnly fallback={<div className="w-24 h-8 bg-slate-100 animate-pulse rounded-full"></div>}>
             <ConnectButton.Custom>
               {({
                 account,
@@ -111,7 +111,7 @@ export function Header({ networkParam }: { networkParam?: string }) {
                     {(() => {
                       if (!connected) {
                         return (
-                          <button onClick={openConnectModal} type="button" className="bg-accent-primary hover:bg-accent-primary-dim text-bg-primary font-bold text-sm px-4 py-1.5 rounded-full transition-all shadow-glow-cyan flex items-center gap-2">
+                          <button onClick={openConnectModal} type="button" className="bg-accent-primary hover:bg-accent-primary-dim text-white font-bold text-sm px-4 py-1.5 rounded-full transition-all shadow-sm flex items-center gap-2">
                             <Link className="w-4 h-4" />
                             <span>Connect</span>
                           </button>
@@ -130,19 +130,19 @@ export function Header({ networkParam }: { networkParam?: string }) {
                         <button 
                           onClick={openAccountModal}
                           type="button"
-                          className="flex items-center gap-2 bg-surface-2 hover:bg-surface-1 transition-colors px-2 py-1.5 rounded-full border border-border-light hover:border-accent-primary/50 cursor-pointer shadow-sm">
+                          className="flex items-center gap-2 bg-white hover:bg-slate-50 transition-colors px-2 py-1.5 rounded-full border border-slate-200 hover:border-accent-primary/50 cursor-pointer shadow-sm">
                           
                           {/* Mini Avatar */}
-                          <div className="w-5 h-5 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-tr from-accent-primary to-accent-runestone shadow-[0_0_5px_rgba(0,229,255,0.3)]">
+                          <div className="w-5 h-5 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-tr from-accent-primary to-accent-runestone shadow-sm">
                             <Image unoptimized src={getAvatarUrl(account.address)} alt="Avatar" width={20} height={20} className="w-full h-full opacity-90" />
                           </div>
                           
                           {/* Address */}
-                          <span className="text-xs font-mono font-bold text-white tracking-wider pt-0.5">
+                          <span className="text-xs font-mono font-bold text-slate-900 tracking-wider pt-0.5">
                             {account.displayName}
                           </span>
                           
-                          <ChevronDown className="w-3.5 h-3.5 text-text-muted transition-transform duration-200" />
+                          <ChevronDown className="w-3.5 h-3.5 text-slate-500 transition-transform duration-200" />
                         </button>
                       );
                     })()}

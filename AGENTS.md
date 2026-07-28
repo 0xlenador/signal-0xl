@@ -8,6 +8,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 El smart contract Signal0xL.sol es el que esta desplegado, nunca dudar de él, cuando algo falle en la aplicacion, analiza el smart contract, pero es de solo lectura, nunca modificar, usamos otros entornos para segurarnos de que funcione correcto, asi que tu solo lo estudiaras cuando necesites implementar, auditar, comprender, modificar y/o proponer nuevas funciones.
 
+# pnpm
+
+Aca usamos pnpm en vez de npm
+
 # Fundamentos y mis notas
 
 El archivo Docs\my_thoughts.md es como se ideo el plan para desplegar el contrato inteligente Signal0xL.sol, luego se desplego el contrato inteligente y de alli obtenemos los fundamentos aqui: Docs\fundamentals.md. el contrato ya esta desplegado y funcionando asi que es el centro y motor de nuestra dapp.

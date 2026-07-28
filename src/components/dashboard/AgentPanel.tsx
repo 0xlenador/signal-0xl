@@ -38,8 +38,8 @@ export default function AgentPanel() {
   }, [walletParam, fetchUserData]);
 
   return (
-    <div className="w-full mt-4 h-14 shrink-0 relative z-10 bg-surface-1/50 border border-border-color/30 rounded-xl p-3 shadow-sm flex items-center justify-between gap-2">
-      <h3 className="text-[0.65rem] font-bold text-text-muted uppercase tracking-wider flex items-center gap-1.5 whitespace-nowrap">
+    <div className="w-full mt-8 pt-4 h-14 shrink-0 relative z-10 bg-transparent border-t border-slate-800/80 flex items-center justify-between gap-2">
+      <h3 className="text-[0.65rem] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 whitespace-nowrap">
         <Bot className="w-4 h-4 text-accent-success" />
         <span className="group-hover:text-accent-primary transition-colors cursor-default">
           AI AGENT
@@ -48,12 +48,12 @@ export default function AgentPanel() {
       <div className="flex items-center gap-2">
         {userData?.attachedAgentId ? (
           <span className="text-xs font-bold text-accent-success uppercase tracking-widest bg-accent-success/10 px-2 py-0.5 rounded border border-accent-success/30 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-accent-success shadow-glow-cyan animate-pulse"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-accent-success animate-pulse"></span>
             ID: {userData.attachedAgentId}
           </span>
         ) : (
-          <span className="text-xs font-bold text-text-muted uppercase tracking-widest bg-surface-2 px-2 py-0.5 rounded border border-border-light flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-text-muted"></span>
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-900 px-2 py-0.5 rounded border border-slate-700 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
             INACTIVE
           </span>
         )}
@@ -65,14 +65,14 @@ export default function AgentPanel() {
         ) : (
           <button 
             disabled={!isOwner}
-            className="text-[0.65rem] text-text-muted uppercase tracking-wider font-bold border border-border-light bg-surface-2 hover:bg-surface-1 px-3 py-1 rounded transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" 
+            className="text-[0.65rem] text-slate-300 uppercase tracking-wider font-bold border border-slate-700 bg-slate-900 hover:bg-slate-800 px-3 py-1 rounded transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" 
             title="Coming soon">
             {!isOwner ? 'READ ONLY' : 'ATTACH AGENT'}
           </button>
         )}
         <button 
           disabled={!isOwner}
-          className="flex items-center gap-1.5 px-3 py-1 bg-surface-2 hover:bg-surface-1 border border-border-color rounded-lg text-[0.65rem] font-bold text-text-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          className="flex items-center gap-1.5 px-3 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-lg text-[0.65rem] font-bold text-slate-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           <AlertTriangle className="w-3 h-3" />
           Register an Agent (Arc)
         </button>
