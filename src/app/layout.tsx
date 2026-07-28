@@ -25,7 +25,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="es" className={cn(outfit.variable, spaceGrotesk.variable, "font-sans", geist.variable)}>
-      <body className="antialiased bg-bg-primary text-text-primary min-h-screen flex flex-col font-sans">
+      <body className="antialiased bg-background text-foreground min-h-screen flex flex-col font-sans">
         {children}
       </body>
     </html>

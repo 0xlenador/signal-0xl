@@ -1,10 +1,10 @@
 'use client';
 import Image from 'next/image';
-
 import { Globe, Droplets, BookOpen, ExternalLink, Search } from 'lucide-react';
 import { useNetworkStats } from '@/hooks';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
-// Helper component for mini aesthetic charts (Sparklines)
 const Sparkline = ({ color, data, glowColor }: { color: string, data: number[], glowColor: string }) => {
   const width = 48;
   const height = 20;
@@ -36,10 +36,10 @@ const Sparkline = ({ color, data, glowColor }: { color: string, data: number[], 
 
   return (
     <div className="relative group/sparkline flex items-center justify-center">
-      <svg width="48" height="20" viewBox="0 0 48 20" className="opacity-90 overflow-visible transition-all duration-300 group-hover/stat:drop-shadow-[0_0_6px_var(--glow)]" style={{ '--glow': glowColor } as React.CSSProperties}>
+      <svg width="48" height="20" viewBox="0 0 48 20" className="opacity-90 overflow-visible transition-all duration-300">
         <defs>
           <linearGradient id={`grad-${color.replace('#', '')}`} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={glowColor} stopOpacity={0.4} />
+            <stop offset="0%" stopColor={glowColor} stopOpacity={0.2} />
             <stop offset="100%" stopColor={glowColor} stopOpacity={0} />
           </linearGradient>
         </defs>
@@ -71,47 +71,45 @@ export default function NetworkStats() {
   const stats = useNetworkStats();
 
   return (
-    <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm hover:shadow-md relative flex flex-col justify-between group transition-shadow duration-300">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent pointer-events-none rounded-3xl group-hover:from-purple-50 transition-colors border-t-2 border-t-purple-600/10"></div>
-      
-      <div className="flex items-center justify-between mb-4 relative z-10 pb-3">
-        <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-          <span className="group-hover:text-black transition-colors flex items-center gap-2">
-            <Image src="/assets/arc-logo.jpg" alt="Arc" width={22} height={22} className="rounded-full object-cover shadow-[0_0_8px_rgba(0,229,255,0.3)]" />
+    <Card className="p-5 shadow-sm flex flex-col justify-between group transition-shadow duration-300 overflow-hidden relative">
+      <div className="flex items-center justify-between mb-4 relative z-10 pb-3 border-b border-border/50">
+        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
+          <span className="flex items-center gap-2">
+            <Image src="/assets/arc-logo.jpg" alt="Arc" width={22} height={22} className="rounded-full object-cover border border-border" />
             ARC TESTNET 
           </span>
-          <span className={`text-[0.6rem] px-2 py-0.5 rounded-full border flex items-center gap-1.5 shadow-sm font-extrabold ${
-            stats.isLoading ? 'bg-amber-50 text-amber-900 border-amber-200' :
-            stats.isError ? 'bg-rose-50 text-rose-900 border-rose-200' :
-            'bg-emerald-50 text-emerald-900 border-emerald-200'
+          <Badge variant="outline" className={`h-5 px-2 py-0 gap-1.5 font-medium ${
+            stats.isLoading ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30' :
+            stats.isError ? 'bg-destructive/10 text-destructive border-destructive/20' :
+            'bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30'
           }`}>
             <span className={`w-1.5 h-1.5 rounded-full ${stats.isError ? '' : 'animate-pulse'} ${
-              stats.isLoading ? 'bg-amber-600' :
-              stats.isError ? 'bg-rose-600' :
-              'bg-emerald-600'
+              stats.isLoading ? 'bg-amber-500' :
+              stats.isError ? 'bg-destructive' :
+              'bg-green-500'
             }`}></span>
             {stats.isLoading ? 'CONNECTING' : stats.isError ? 'ISSUES' : 'ONLINE'}
-          </span>
+          </Badge>
         </h3>
         
         {/* Quick Links Section */}
-        <div className="flex items-center gap-4 text-slate-900 font-bold">
-          <a href="https://faucet.circle.com/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-black transition-colors group/link text-[0.80rem] font-extrabold tracking-wide">
+        <div className="flex items-center gap-4 text-muted-foreground font-medium text-xs">
+          <a href="https://faucet.circle.com/" target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors group/link">
             <Droplets className="w-3.5 h-3.5" />
             <span>Faucet</span>
             <ExternalLink className="w-2 h-2 opacity-50 -ml-0.5 group-hover/link:opacity-100 transition-opacity" />
           </a>
-          <a href="https://docs.arc.io/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-purple-700 transition-colors group/link text-[0.80rem] font-extrabold tracking-wide">
+          <a href="https://docs.arc.io/" target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors group/link">
             <BookOpen className="w-3.5 h-3.5" />
             <span>Docs</span>
             <ExternalLink className="w-2 h-2 opacity-50 -ml-0.5 group-hover/link:opacity-100 transition-opacity" />
           </a>
-          <a href="https://www.arc.io/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-purple-700 transition-colors group/link text-[0.80rem] font-extrabold tracking-wide">
+          <a href="https://www.arc.io/" target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors group/link">
             <Globe className="w-3.5 h-3.5" />
             <span>Website</span>
             <ExternalLink className="w-2 h-2 opacity-50 -ml-0.5 group-hover/link:opacity-100 transition-opacity" />
           </a>
-          <a href="https://testnet.arcscan.app/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-purple-700 transition-colors group/link text-[0.80rem] font-extrabold tracking-wide">
+          <a href="https://testnet.arcscan.app/" target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors group/link">
             <Search className="w-3.5 h-3.5" />
             <span>Explorer</span>
             <ExternalLink className="w-2 h-2 opacity-50 -ml-0.5 group-hover/link:opacity-100 transition-opacity" />
@@ -123,39 +121,39 @@ export default function NetworkStats() {
       <div className="flex-grow w-full relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {/* GAS */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col justify-between hover:bg-slate-100 transition-colors group/stat shadow-sm">
-            <span className="text-[0.6rem] text-slate-900 uppercase tracking-wider flex items-center gap-1 font-extrabold">⛽ GAS COST</span>
+          <div className="bg-muted/40 border border-border rounded-lg p-3 flex flex-col justify-between hover:bg-muted/60 transition-colors shadow-sm">
+            <span className="text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center gap-1 font-semibold">⛽ GAS COST</span>
             <div className="mt-2 flex items-end justify-between">
-              <span className="text-sm font-extrabold text-black tracking-tight">{stats.gasPrice} <span className="text-[0.6rem] text-slate-900 font-extrabold">USDC</span></span>
-              <Sparkline color="#000000" glowColor="#000000" data={stats.history.gas} />
+              <span className="text-sm font-semibold text-foreground tracking-tight">{stats.gasPrice} <span className="text-[0.6rem] text-muted-foreground font-medium">USDC</span></span>
+              <Sparkline color="#64748b" glowColor="#64748b" data={stats.history.gas} />
             </div>
           </div>
           {/* BLK TIME */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col justify-between hover:bg-slate-100 transition-colors group/stat shadow-sm">
-            <span className="text-[0.6rem] text-slate-900 uppercase tracking-wider flex items-center gap-1 font-extrabold">⏱ AVG BLK TIME</span>
+          <div className="bg-muted/40 border border-border rounded-lg p-3 flex flex-col justify-between hover:bg-muted/60 transition-colors shadow-sm">
+            <span className="text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center gap-1 font-semibold">⏱ AVG BLK TIME</span>
             <div className="mt-2 flex items-end justify-between">
-              <span className="text-sm font-extrabold text-black tracking-tight">{stats.blockTime} <span className="text-[0.6rem] text-slate-900 font-extrabold">ms</span></span>
-              <Sparkline color="#ff007f" glowColor="#ff007f" data={stats.history.time} />
+              <span className="text-sm font-semibold text-foreground tracking-tight">{stats.blockTime} <span className="text-[0.6rem] text-muted-foreground font-medium">ms</span></span>
+              <Sparkline color="#8b5cf6" glowColor="#8b5cf6" data={stats.history.time} />
             </div>
           </div>
           {/* BLOCKS */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col justify-between hover:bg-slate-100 transition-colors group/stat shadow-sm">
-            <span className="text-[0.6rem] text-slate-900 uppercase tracking-wider flex items-center gap-1 font-extrabold">📦 BLOCKS</span>
+          <div className="bg-muted/40 border border-border rounded-lg p-3 flex flex-col justify-between hover:bg-muted/60 transition-colors shadow-sm">
+            <span className="text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center gap-1 font-semibold">📦 BLOCKS</span>
             <div className="mt-2 flex items-end justify-between">
-              <span className="text-sm font-extrabold text-black tracking-tight">{stats.totalBlocks}</span>
-              <Sparkline color="#ffaa00" glowColor="#ffaa00" data={stats.history.blocks} />
+              <span className="text-sm font-semibold text-foreground tracking-tight">{stats.totalBlocks}</span>
+              <Sparkline color="#f59e0b" glowColor="#f59e0b" data={stats.history.blocks} />
             </div>
           </div>
           {/* TXS */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col justify-between hover:bg-slate-100 transition-colors group/stat shadow-sm">
-            <span className="text-[0.6rem] text-slate-900 uppercase tracking-wider flex items-center gap-1 font-extrabold">🔄 TXS / BLK</span>
+          <div className="bg-muted/40 border border-border rounded-lg p-3 flex flex-col justify-between hover:bg-muted/60 transition-colors shadow-sm">
+            <span className="text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center gap-1 font-semibold">🔄 TXS / BLK</span>
             <div className="mt-2 flex items-end justify-between">
-              <span className="text-sm font-extrabold text-black tracking-tight">{stats.totalTxs}</span>
-              <Sparkline color="#00e676" glowColor="#00e676" data={stats.history.txs} />
+              <span className="text-sm font-semibold text-foreground tracking-tight">{stats.totalTxs}</span>
+              <Sparkline color="#10b981" glowColor="#10b981" data={stats.history.txs} />
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

@@ -15,22 +15,23 @@ interface DashboardPageProps {
 
 export default function ClientPage({ params, leaderboardData }: DashboardPageProps) {
   const { network, wallet } = use(params);
-  // Address can be checked via useWeb3() inside child components if needed
 
   return (
-    <main className="app-content p-4 md:p-6 lg:p-8 w-full mx-auto flex flex-col gap-6">
+    <main className="p-4 md:p-6 lg:p-8 w-full mx-auto flex flex-col gap-6">
       
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
         {/* COLUMNA IZQUIERDA (Span 4) */}
         <div className="xl:col-span-4 flex flex-col gap-4">
           {/* Tarjeta Unificada (Tu Señal + Runestone + Agent + Live Signals) */}
-          <div className="bg-slate-950 rounded-[2.5rem] border border-slate-800 shadow-2xl relative flex flex-col p-6 justify-between flex-grow group hover:shadow-[0_0_40px_rgba(255,0,127,0.2)] transition-shadow duration-700 min-h-[800px] hover:z-50">
+          <div className="bg-slate-950 rounded-[2.5rem] border border-slate-800 shadow-xl relative flex flex-col p-6 justify-between flex-grow group hover:shadow-[0_0_40px_rgba(147,51,234,0.15)] transition-shadow duration-700 min-h-[800px] hover:z-50">
             {/* Glow effects */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-accent-runestone/15 via-transparent to-transparent pointer-events-none group-hover:from-accent-runestone/25 transition-colors duration-700 rounded-[2.5rem]"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-accent-runestone/10 via-transparent to-transparent pointer-events-none group-hover:from-accent-runestone/20 transition-colors duration-700 rounded-[2.5rem]"></div>
             
-            <RunestonePanel />
-            <AgentPanel />
-            <LiveSignals />
+            <div className="relative z-10 flex flex-col h-full justify-between">
+              <RunestonePanel />
+              <AgentPanel />
+              <LiveSignals />
+            </div>
           </div>
         </div>
 

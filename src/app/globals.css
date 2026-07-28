@@ -1,636 +1,81 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ════════════════════════════════════════════════════════════════════════════
-   style.css — Signal 0xL (Neon Obsidian)
-   Estilos funcionales minimalistas. Sin frameworks externos.
-   Prioridad: legibilidad, estado de los elementos, feedback visual claro.
-   ════════════════════════════════════════════════════════════════════════════ */
-
-/* ─── Reset y Base ─────────────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --color-bg:          #f1f5f9;
-  --color-surface:     #ffffff;
-  --color-surface-2:   #e2e8f0;
-  --color-border:      #cbd5e1;
-  --color-text:        #0f172a;
-  --color-text-muted:  #0f172a;
-  --color-primary:     #000000;
-  --color-primary-dim: #1e293b;
-  --color-success:     #22c55e;
-  --color-warning:     #eab308;
-  --color-danger:      #ef4444;
-  --color-vip:         #863bff;
-  --color-fork:        #f97316;
-  --color-runestone:   #863bff;
-  --radius:            0.5rem;
-  --font:              var(--font-outfit), system-ui, -apple-system, sans-serif;
-  --font-mono:         var(--font-space-grotesk), ui-monospace, monospace;
-}
-
-html, body {
-  height: 100%;
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-family: var(--font);
-  font-size: 15px;
-  line-height: 1.6;
-}
-
-a { color: var(--color-primary); text-decoration: none; }
-a:hover { text-decoration: underline; }
-
-/* ─── Layout Principal ─────────────────────────────────────────────────────── */
-.app-wrapper {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-/* ─── Header ───────────────────────────────────────────────────────────────── */
-.app-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 24px;
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.app-logo {
-  font-size: 1.2rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  color: var(--color-primary);
-}
-
-.app-logo span { color: var(--color-text-muted); font-weight: 400; }
-
-.wallet-status {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.wallet-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--color-text-muted);
-  transition: background 0.3s;
-}
-
-.wallet-status.connected .wallet-dot { background: var(--color-success); }
-
-#wallet-address-header {
-  font-family: monospace;
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
-}
-
-.wallet-status.connected #wallet-address-header { color: var(--color-text); }
-
-/* ─── Wallet Dropdown ──────────────────────────────────────────────────────── */
-.wallet-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 8px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: 8px 0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-  min-width: 150px;
-  z-index: 1000;
-}
-
-.wallet-dropdown.hidden {
-  display: none;
-}
-
-.dropdown-item {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 8px 16px;
-  background: transparent;
-  border: none;
-  color: var(--color-text);
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.dropdown-item:hover {
-  background: var(--color-surface-2);
-}
-
-.text-danger {
-  color: var(--color-danger) !important;
-}
-
-/* ─── Navegación ───────────────────────────────────────────────────────────── */
-.app-nav {
-  display: flex;
-  gap: 4px;
-  padding: 8px 24px;
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  overflow-x: auto;
-}
-
-.nav-btn {
-  background: none;
-  border: 1px solid transparent;
-  color: var(--color-text-muted);
-  padding: 6px 16px;
-  border-radius: var(--radius);
-  cursor: pointer;
-  font-size: 0.9rem;
-  white-space: nowrap;
-  transition: all 0.2s;
-}
-
-.nav-btn:hover { background: var(--color-surface-2); color: var(--color-text); }
-.nav-btn.nav-active {
-  background: var(--color-surface-2);
-  border-color: var(--color-border);
-  color: var(--color-primary);
-  font-weight: 600;
-}
-
-/* ─── Contenido Principal ──────────────────────────────────────────────────── */
-
-/* ─── Secciones ────────────────────────────────────────────────────────────── */
-.section { display: none; }
-.section.active { display: block; }
-
-.section-title {
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 20px;
-  color: var(--color-text);
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: 10px;
-}
-
-/* ─── Hero / Desconectado ──────────────────────────────────────────────────── */
-#hero-connect-section {
-  text-align: center;
-  padding: 48px 24px;
-}
-
-#hero-connect-section h2 {
-  font-size: 2rem;
-  margin-bottom: 12px;
-  color: var(--color-primary);
-}
-
-#hero-connect-section p {
-  color: var(--color-text-muted);
-  margin-bottom: 28px;
-  max-width: 480px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-#main-app-section.hidden,
-#hero-connect-section.hidden { display: none; }
-
-/* ─── Botones ──────────────────────────────────────────────────────────────── */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border-radius: var(--radius);
-  border: 1px solid transparent;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: center;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background: var(--color-primary);
-  color: #fff;
-  border-color: var(--color-primary);
-}
-.btn-primary:hover:not(:disabled) { background: var(--color-primary-dim); }
-
-.btn-secondary {
-  background: var(--color-surface-2);
-  color: var(--color-text);
-  border-color: var(--color-border);
-}
-.btn-secondary:hover:not(:disabled) { border-color: var(--color-primary); color: var(--color-primary); }
-
-.btn-success {
-  background: var(--color-success);
-  color: #fff;
-  border-color: var(--color-success);
-}
-
-.btn-danger {
-  background: var(--color-danger);
-  color: #fff;
-}
-
-.btn-done {
-  background: var(--color-surface-2);
-  color: var(--color-success);
-  border-color: var(--color-success);
-  cursor: default;
-}
-
-.btn-runestone {
-  background: linear-gradient(135deg, #7c3aed, #db2777);
-  color: #fff;
-  border: none;
-  box-shadow: 0 0 16px rgba(232, 121, 249, 0.4);
-}
-.btn-runestone:hover:not(:disabled) {
-  box-shadow: 0 0 24px rgba(232, 121, 249, 0.7);
-}
-
-.btn-gm-main {
-  width: 100%;
-  padding: 16px;
-  font-size: 1.1rem;
-  margin-top: 16px;
-}
-
-.btn-small { padding: 6px 14px; font-size: 0.85rem; }
-
-.btn-wide { width: 100%; }
-
-/* ─── Tarjetas ─────────────────────────────────────────────────────────────── */
-.card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: 20px;
-  margin-bottom: 16px;
-}
-
-.card-title {
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 14px;
-  color: var(--color-text);
-}
-
-/* ─── Panel GM ─────────────────────────────────────────────────────────────── */
-.gm-panel {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: 1fr;
-}
-
-/* ─── Stats del Usuario ────────────────────────────────────────────────────── */
-.user-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
-}
-
-.stat-item {
-  background: var(--color-surface-2);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: 12px 16px;
-}
-
-.stat-label {
-  font-size: 0.78rem;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 4px;
-}
-
-.stat-value {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.debt-warn { color: var(--color-warning); font-size: 0.85rem; }
-
-/* ─── Fork info ────────────────────────────────────────────────────────────── */
-.fork-info {
-  margin-top: 12px;
-  padding: 12px 16px;
-  background: rgba(251,146,60,0.1);
-  border: 1px solid rgba(251,146,60,0.3);
-  border-radius: var(--radius);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.fork-info p { font-size: 0.9rem; color: var(--color-text); }
-
-/* ─── Badges ───────────────────────────────────────────────────────────────── */
-.badge {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-}
-.badge-vip  { background: rgba(167,139,250,0.2); color: var(--color-vip); border: 1px solid var(--color-vip); }
-.badge-fork { background: rgba(251,146,60,0.2);  color: var(--color-fork); border: 1px solid var(--color-fork); }
-.badge-me   { background: rgba(59,130,246,0.2);  color: var(--color-primary); border: 1px solid var(--color-primary); }
-
-/* ─── Nodos ────────────────────────────────────────────────────────────────── */
-.nodes-grid {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: 1fr;
-}
-
-.node-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: 20px;
-}
-
-.node-card.node-active {
-  border-color: var(--color-success);
-  box-shadow: 0 0 0 1px rgba(34,197,94,0.2);
-}
-
-.node-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.node-icon { font-size: 1.5rem; }
-
-.node-title {
-  flex: 1;
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.node-status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--color-text-muted);
-  transition: background 0.3s;
-}
-.node-status-dot.active  { background: var(--color-success); box-shadow: 0 0 6px rgba(34,197,94,0.6); }
-.node-status-dot.inactive { background: var(--color-text-muted); }
-
-.node-description {
-  font-size: 0.88rem;
-  color: var(--color-text-muted);
-  margin-bottom: 12px;
-}
-
-.node-streak-info {
-  font-size: 0.85rem;
-  color: var(--color-warning);
-  margin-bottom: 12px;
-}
-
-.node-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 14px;
-}
-
-.node-data {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--color-border);
-  min-height: 40px;
-}
-
-.node-data-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 8px;
-}
-
-.node-data-item {
-  background: var(--color-surface-2);
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 0.85rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.node-data-item span  { color: var(--color-text-muted); font-size: 0.78rem; }
-.node-data-item strong { color: var(--color-text); }
-.node-data-item.span-2 { grid-column: span 2; }
-
-/* ─── Runestone ────────────────────────────────────────────────────────────── */
-.runestone-indicator {
-  text-align: center;
-  padding: 14px;
-  border-radius: var(--radius);
-  background: var(--color-surface-2);
-  border: 1px solid var(--color-border);
-  color: var(--color-text-muted);
-  font-size: 0.95rem;
-  margin-top: 16px;
-  transition: all 0.3s;
-}
-
-.runestone-indicator.active {
-  background: rgba(232,121,249,0.1);
-  border-color: var(--color-runestone);
-  color: var(--color-runestone);
-  font-weight: 700;
-  box-shadow: 0 0 16px rgba(232,121,249,0.3);
-}
-
-/* ─── Ranking ──────────────────────────────────────────────────────────────── */
-.ranking-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.ranking-header h3 { font-size: 1rem; font-weight: 700; }
-.total-count { font-size: 0.85rem; color: var(--color-text-muted); }
-
-.table-wrapper { overflow-x: auto; }
-
-.ranking-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-}
-
-.ranking-table th {
-  text-align: left;
-  padding: 10px 14px;
-  background: var(--color-surface-2);
-  border-bottom: 1px solid var(--color-border);
-  color: var(--color-text-muted);
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.ranking-table td {
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--color-border);
-  vertical-align: middle;
-}
-
-.ranking-table tbody tr:hover { background: var(--color-surface-2); }
-.ranking-table .row-highlight { background: rgba(59,130,246,0.08); }
-
-.rank-cell { font-weight: 700; width: 50px; }
-.addr-cell { font-family: monospace; }
-.addr-text { font-size: 0.88rem; }
-.fork-cell { width: 80px; }
-.points-cell { text-align: right; }
-
-/* ─── Red / Network ────────────────────────────────────────────────────────── */
-.network-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.metric-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: 16px;
-  text-align: center;
-}
-
-.metric-card-wide { grid-column: span 2; }
-
-.metric-icon { font-size: 1.5rem; margin-bottom: 6px; }
-.metric-label { font-size: 0.78rem; color: var(--color-text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
-.metric-value { font-size: 1.4rem; font-weight: 700; color: var(--color-text); }
-.metric-sub { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 2px; }
-
-.utilization-bar {
-  height: 8px;
-  background: var(--color-surface-2);
-  border-radius: 4px;
-  overflow: hidden;
-  margin: 8px 0;
-}
-.utilization-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
-.util-low    { background: var(--color-success); color: var(--color-success); }
-.util-medium { background: var(--color-warning); color: var(--color-warning); }
-.util-high   { background: var(--color-danger);  color: var(--color-danger);  }
-
-.gas-tiers { display: flex; justify-content: center; gap: 16px; font-size: 0.95rem; font-weight: 600; margin: 8px 0; }
-.gas-slow  { color: var(--color-success); }
-.gas-avg   { color: var(--color-warning); }
-.gas-fast  { color: var(--color-danger); }
-
-.network-footer {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.78rem;
-  color: var(--color-text-muted);
-  padding-top: 8px;
-  border-top: 1px solid var(--color-border);
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.network-error { text-align: center; padding: 24px; color: var(--color-warning); }
-.network-error .error-detail { font-size: 0.82rem; color: var(--color-text-muted); margin: 8px 0; }
-
-/* ─── Estados de texto ─────────────────────────────────────────────────────── */
-.loading-text { color: var(--color-text-muted); font-style: italic; padding: 8px 0; }
-.empty-text   { color: var(--color-text-muted); padding: 16px 0; text-align: center; }
-.error-text   { color: var(--color-danger); padding: 8px 0; }
-
-/* ─── Toast ────────────────────────────────────────────────────────────────── */
-.toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%) translateY(120%);
-  background: var(--color-surface-2);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-  padding: 12px 24px;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  z-index: 1000;
-  transition: transform 0.3s ease;
-  max-width: 90vw;
-  text-align: center;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-}
-
-.toast.show { transform: translateX(-50%) translateY(0); }
-
-.toast-success { border-color: var(--color-success); color: var(--color-success); }
-.toast-error   { border-color: var(--color-danger);  color: var(--color-danger); }
-.toast-warning { border-color: var(--color-warning); color: var(--color-warning); }
-
-/* ─── Responsive ───────────────────────────────────────────────────────────── */
-@media (max-width: 600px) {
-
-  .app-header { padding: 10px 16px; }
-  .app-nav { padding: 8px 16px; }
-  .user-stats-grid { grid-template-columns: 1fr 1fr; }
-  .network-grid { grid-template-columns: 1fr 1fr; }
-  .metric-card-wide { grid-column: span 2; }
-  .node-actions { flex-direction: column; }
-  .node-actions .btn { width: 100%; }
-  .fork-info { flex-direction: column; }
-}
-
-/* Obfuscation for inactive nodes */
-.obfuscated-value {
-  color: var(--text-muted);
-  filter: blur(4px);
-  user-select: none;
-  opacity: 0.7;
-  transition: filter 0.3s ease;
-}
-.node-data-item:hover .obfuscated-value {
-  filter: blur(2px);
-}
-
-/* ─── Orbit Animations ────────────────────────────────────────────────────── */
-@keyframes node-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+ 
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+ 
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+ 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+ 
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+ 
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+ 
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+ 
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+ 
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+ 
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+ 
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+ 
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+ 
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* --- Orbit Animations & Runic Panel specific ----------------------------- */
 
 .runestone-core-container {
   position: relative;
@@ -652,18 +97,18 @@ a:hover { text-decoration: underline; }
   opacity: 0.4;
   transition: all 0.3s ease;
   backdrop-filter: blur(12px);
-  border: 1px solid var(--color-border-light);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 9999px;
   padding: 6px 12px;
-  background: var(--color-surface-1);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .satellite-node.is-active {
   opacity: 1;
-  animation: node-float 4s ease-in-out infinite;
   border-color: rgba(74, 222, 128, 0.4);
   box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3), inset 0 0 10px rgba(34, 197, 94, 0.1);
   pointer-events: none;
+  @apply animate-node-float;
 }
 
 .satellite-node.is-interactive {
@@ -716,8 +161,8 @@ a:hover { text-decoration: underline; }
 
 .crystal-svg {
   filter: drop-shadow(0 0 25px rgba(220, 20, 140, 0.7));
-  animation: pulse-glow 4s ease-in-out infinite alternate;
   transition: all 0.5s ease;
+  @apply animate-pulse-glow;
 }
 
 .crystal-svg.is-inactive {
@@ -726,44 +171,11 @@ a:hover { text-decoration: underline; }
   opacity: 0.8;
 }
 
-@keyframes pulse-glow {
-  from { filter: drop-shadow(0 0 10px rgba(255, 0, 127, 0.4)); }
-  to { filter: drop-shadow(0 0 35px rgba(255, 0, 127, 0.9)); }
-}
-
-/* Removed Neon Obsidian classes for light mode */
-
-/* ─── Visor de Señales en Vivo (Live Signals) ──────────────────────────────── */
 .mask-image-fade-top {
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%);
   mask-image: linear-gradient(to bottom, transparent 0%, black 30%);
 }
 
-.signal-line {
-  opacity: 0;
-  transform: translateY(10px);
-  animation: signal-entry 0.3s ease-out forwards;
-  transition: opacity 1s ease-out;
-}
-
 .signal-line.fade-out {
   opacity: 0 !important;
 }
-
-@keyframes signal-entry {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@layer base {
-  .theme { --font-heading: var(--font-sans); --font-sans: var(--font-sans); }
-  :root { --background: oklch(0.97 0 0.01); --foreground: oklch(0.145 0 0); --card: oklch(1 0 0); --card-foreground: oklch(0.145 0 0); --popover: oklch(1 0 0); --popover-foreground: oklch(0.145 0 0); --primary: oklch(0.205 0 0); --primary-foreground: oklch(0.985 0 0); --secondary: oklch(0.97 0 0); --secondary-foreground: oklch(0.205 0 0); --muted: oklch(0.97 0 0); --muted-foreground: oklch(0.556 0 0); --accent: oklch(0.97 0 0); --accent-foreground: oklch(0.205 0 0); --destructive: oklch(0.577 0.245 27.325); --border: oklch(0.922 0 0); --input: oklch(0.922 0 0); --ring: oklch(0.708 0 0); --chart-1: oklch(0.87 0 0); --chart-2: oklch(0.556 0 0); --chart-3: oklch(0.439 0 0); --chart-4: oklch(0.371 0 0); --chart-5: oklch(0.269 0 0); --radius: 0.625rem; --sidebar: oklch(0.985 0 0); --sidebar-foreground: oklch(0.145 0 0); --sidebar-primary: oklch(0.205 0 0); --sidebar-primary-foreground: oklch(0.985 0 0); --sidebar-accent: oklch(0.97 0 0); --sidebar-accent-foreground: oklch(0.205 0 0); --sidebar-border: oklch(0.922 0 0); --sidebar-ring: oklch(0.708 0 0); }
-  .dark { --background: oklch(0.145 0 0); --foreground: oklch(0.985 0 0); --card: oklch(0.205 0 0); --card-foreground: oklch(0.985 0 0); --popover: oklch(0.205 0 0); --popover-foreground: oklch(0.985 0 0); --primary: oklch(0.922 0 0); --primary-foreground: oklch(0.205 0 0); --secondary: oklch(0.269 0 0); --secondary-foreground: oklch(0.985 0 0); --muted: oklch(0.269 0 0); --muted-foreground: oklch(0.708 0 0); --accent: oklch(0.269 0 0); --accent-foreground: oklch(0.985 0 0); --destructive: oklch(0.704 0.191 22.216); --border: oklch(1 0 0 / 10%); --input: oklch(1 0 0 / 15%); --ring: oklch(0.556 0 0); --chart-1: oklch(0.87 0 0); --chart-2: oklch(0.556 0 0); --chart-3: oklch(0.439 0 0); --chart-4: oklch(0.371 0 0); --chart-5: oklch(0.269 0 0); --sidebar: oklch(0.205 0 0); --sidebar-foreground: oklch(0.985 0 0); --sidebar-primary: oklch(0.488 0.243 264.376); --sidebar-primary-foreground: oklch(0.985 0 0); --sidebar-accent: oklch(0.269 0 0); --sidebar-accent-foreground: oklch(0.985 0 0); --sidebar-border: oklch(1 0 0 / 10%); --sidebar-ring: oklch(0.556 0 0); }
-  * {
-    @apply border-border outline-ring; }
-  body {
-    @apply bg-background text-foreground; }
-  html {
-    @apply font-sans; } }

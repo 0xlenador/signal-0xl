@@ -8,6 +8,7 @@ import { Link, ChevronDown, LayoutDashboard } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/utils';
 import { NETWORK, SUPPORTED_NETWORKS } from '@/lib/config';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { Button } from '@/components/ui/button';
 
 const GithubIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -23,11 +24,8 @@ export function Header({ networkParam }: { networkParam?: string }) {
   const isOnOwnDashboard = address && params.wallet && (params.wallet as string).toLowerCase() === address.toLowerCase();
 
   useEffect(() => {
-    // No hacer nada mientras se inicializa o reconecta
     if (isInitializing) return;
 
-    // Solo redirigir al dashboard cuando el usuario se conecta manualmente
-    // (no durante reconexión silenciosa), y solo si no está ya en un dashboard
     if (networkParam && address && !params.wallet) {
       if (!isReconnecting && status === 'connected') {
         router.push(`/${networkParam}/${address}`);
@@ -36,15 +34,19 @@ export function Header({ networkParam }: { networkParam?: string }) {
   }, [address, networkParam, router, params.wallet, isInitializing, isReconnecting, status]);
 
   return (
-    <header className="app-header w-full flex items-center justify-between p-4 px-6 bg-white/95 backdrop-blur-2xl border-b border-slate-200 sticky top-0 z-50 shadow-sm transition-all">
+    <header className="w-full flex items-center justify-between p-4 px-6 bg-background/95 backdrop-blur-2xl border-b border-border sticky top-0 z-50 shadow-sm transition-all">
       <div className="flex items-center gap-4">
-        <div className="app-logo flex items-center gap-2 text-xl font-extrabold tracking-tight text-black cursor-pointer" onClick={() => router.push('/')}>
+        <div className="flex items-center gap-2 text-xl font-bold tracking-tight text-foreground cursor-pointer" onClick={() => router.push('/')}>
           <Image src="/icon.svg" alt="Signal 0xL Logo" width={24} height={24} className="shadow-sm" />
-          <div>Signal <span className="text-purple-700">0xL</span></div>
+          <div>Signal <span className="text-accent-runestone">0xL</span></div>
         </div>
 
         <ClientOnly>
-          <button 
+          <Button 
+            variant={!isOnOwnDashboard ? "outline" : "secondary"}
+            size="sm"
+            className="rounded-full h-8 px-3 gap-1.5 font-medium"
+            disabled={!!isOnOwnDashboard}
             onClick={() => {
               if (!address) {
                 connect();
@@ -52,33 +54,32 @@ export function Header({ networkParam }: { networkParam?: string }) {
                 router.push(`/${networkParam || 'arc-testnet'}/${address}`);
               }
             }}
-            className={`bg-slate-100 border border-slate-300 text-slate-900 font-extrabold text-xs px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${!isOnOwnDashboard ? 'hover:bg-white hover:border-black cursor-pointer shadow-sm' : 'cursor-default shadow-none'}`}
           >
-            <LayoutDashboard className="w-3.5 h-3.5 text-black" />
+            <LayoutDashboard className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">My Dashboard</span>
-          </button>
+          </Button>
         </ClientOnly>
       </div>
       
       <div className="flex items-center gap-3">
         {/* GitHub */}
-        <a href="https://github.com/0xlenador/signal-0xl" target="_blank" rel="noopener noreferrer" className="text-slate-900 hover:text-black transition-colors flex items-center" aria-label="GitHub">
+        <a href="https://github.com/0xlenador/signal-0xl" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors flex items-center" aria-label="GitHub">
           <GithubIcon className="w-5 h-5" />
         </a>
 
         {/* Separador */}
-        <div className="h-5 w-[1px] bg-slate-300 mx-1 hidden sm:block"></div>
+        <div className="h-5 w-[1px] bg-border mx-1 hidden sm:block"></div>
 
         {/* Network Badge */}
         {networkParam && SUPPORTED_NETWORKS.includes(networkParam) && (
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-300 text-[0.65rem] font-extrabold text-slate-900 shadow-sm">
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary border border-border text-[0.65rem] font-semibold text-foreground shadow-sm">
             <Image src="/assets/arc-logo.jpg" alt="Logo de Arc (Circle)" width={16} height={16} className="rounded-full object-cover" />
             {NETWORK.name}
           </div>
         )}
 
         <div className="relative flex items-center gap-2">
-          <ClientOnly fallback={<div className="w-24 h-8 bg-slate-100 animate-pulse rounded-full"></div>}>
+          <ClientOnly fallback={<div className="w-24 h-8 bg-muted animate-pulse rounded-full"></div>}>
             <ConnectButton.Custom>
               {({
                 account,
@@ -111,18 +112,18 @@ export function Header({ networkParam }: { networkParam?: string }) {
                     {(() => {
                       if (!connected) {
                         return (
-                          <button onClick={openConnectModal} type="button" className="bg-purple-700 hover:bg-purple-800 text-white font-extrabold text-sm px-4 py-1.5 rounded-full transition-all shadow-sm flex items-center gap-2">
+                          <Button onClick={openConnectModal} size="sm" className="rounded-full h-8 px-4 gap-2 font-medium bg-accent-runestone hover:bg-accent-runestone/90 text-white">
                             <Link className="w-4 h-4" />
                             <span>Connect</span>
-                          </button>
+                          </Button>
                         );
                       }
 
                       if (chain.unsupported) {
                         return (
-                          <button onClick={openChainModal} type="button" className="bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-sm px-4 py-1.5 rounded-full transition-all flex items-center gap-2">
+                          <Button onClick={openChainModal} variant="destructive" size="sm" className="rounded-full h-8 px-4 font-medium">
                             Wrong network
-                          </button>
+                          </Button>
                         );
                       }
 
@@ -130,19 +131,19 @@ export function Header({ networkParam }: { networkParam?: string }) {
                         <button 
                           onClick={openAccountModal}
                           type="button"
-                          className="flex items-center gap-2 bg-white hover:bg-slate-50 transition-colors px-2 py-1.5 rounded-full border border-slate-200 hover:border-purple-300 cursor-pointer shadow-sm">
+                          className="flex items-center gap-2 bg-background hover:bg-accent transition-colors px-2 py-1.5 rounded-full border border-border cursor-pointer shadow-sm">
                           
                           {/* Mini Avatar */}
-                          <div className="w-5 h-5 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-tr from-purple-700 to-indigo-600 shadow-sm">
+                          <div className="w-5 h-5 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-tr from-accent-runestone to-indigo-600 shadow-sm">
                             <Image unoptimized src={getAvatarUrl(account.address)} alt="Avatar" width={20} height={20} className="w-full h-full opacity-90" />
                           </div>
                           
                           {/* Address */}
-                          <span className="text-xs font-mono font-bold text-slate-900 tracking-wider pt-0.5">
+                          <span className="text-xs font-mono font-medium text-foreground tracking-wider pt-0.5">
                             {account.displayName}
                           </span>
                           
-                          <ChevronDown className="w-3.5 h-3.5 text-slate-800 transition-transform duration-200" />
+                          <ChevronDown className="w-3.5 h-3.5 text-muted-foreground transition-transform duration-200" />
                         </button>
                       );
                     })()}

@@ -35,3 +35,4 @@ Prioriza siempre la legibilidad y usabilidad sobre la estética vacía:
 * **Jerarquía Visual:** Los textos principales deben ser casi negros (o blancos puros en modo oscuro). Los textos secundarios deben ser un gris oscuro legible. SÓLO los elementos deshabilitados pueden usar gris claro.
 * **Información Clave:** Nunca uses texto o iconos gris claro sobre fondo blanco (o gris oscuro sobre fondo negro) si contienen información importante.
 * **Enfoque Práctico:** Diseña pensando en un dashboard profesional que será operado durante horas continuas (esfuerzo visual mínimo), NO en una captura de pantalla puramente estética para Dribbble o redes sociales.
+No crees deuda técnica del CSS espagueti.
