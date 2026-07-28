@@ -71,8 +71,8 @@ export default function NetworkStats() {
   const stats = useNetworkStats();
 
   return (
-    <div className="glass-panel rounded-3xl p-5 shadow-lg relative flex flex-col justify-between group hover:shadow-glow-cyan transition-shadow duration-500">
-      <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/5 to-transparent pointer-events-none rounded-3xl group-hover:from-accent-primary/10 transition-colors"></div>
+    <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm hover:shadow-md relative flex flex-col justify-between group transition-shadow duration-300">
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent pointer-events-none rounded-3xl group-hover:from-purple-50 transition-colors border-t-2 border-t-purple-600/10"></div>
       
       <div className="flex items-center justify-between mb-4 relative z-10 pb-3">
         <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
@@ -80,15 +80,15 @@ export default function NetworkStats() {
             <Image src="/assets/arc-logo.jpg" alt="Arc" width={22} height={22} className="rounded-full object-cover shadow-[0_0_8px_rgba(0,229,255,0.3)]" />
             ARC TESTNET 
           </span>
-          <span className={`text-[0.6rem] px-2 py-0.5 rounded-full border flex items-center gap-1.5 shadow-sm ${
-            stats.isLoading ? 'bg-accent-warning/10 text-accent-warning border-accent-warning/30' :
-            stats.isError ? 'bg-accent-error/10 text-accent-error border-accent-error/30' :
-            'bg-accent-success/10 text-accent-success border-accent-success/30'
+          <span className={`text-[0.6rem] px-2 py-0.5 rounded-full border flex items-center gap-1.5 shadow-sm font-extrabold ${
+            stats.isLoading ? 'bg-amber-50 text-amber-900 border-amber-200' :
+            stats.isError ? 'bg-rose-50 text-rose-900 border-rose-200' :
+            'bg-emerald-50 text-emerald-900 border-emerald-200'
           }`}>
             <span className={`w-1.5 h-1.5 rounded-full ${stats.isError ? '' : 'animate-pulse'} ${
-              stats.isLoading ? 'bg-accent-warning' :
-              stats.isError ? 'bg-accent-error' :
-              'bg-accent-success'
+              stats.isLoading ? 'bg-amber-600' :
+              stats.isError ? 'bg-rose-600' :
+              'bg-emerald-600'
             }`}></span>
             {stats.isLoading ? 'CONNECTING' : stats.isError ? 'ISSUES' : 'ONLINE'}
           </span>
@@ -96,22 +96,22 @@ export default function NetworkStats() {
         
         {/* Quick Links Section */}
         <div className="flex items-center gap-4 text-slate-900 font-bold">
-          <a href="https://faucet.circle.com/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-black transition-colors group/link text-[0.80rem] font-bold tracking-wide">
+          <a href="https://faucet.circle.com/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-black transition-colors group/link text-[0.80rem] font-extrabold tracking-wide">
             <Droplets className="w-3.5 h-3.5" />
             <span>Faucet</span>
             <ExternalLink className="w-2 h-2 opacity-50 -ml-0.5 group-hover/link:opacity-100 transition-opacity" />
           </a>
-          <a href="https://docs.arc.io/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-accent-primary transition-colors group/link text-[0.80rem] font-medium tracking-wide">
+          <a href="https://docs.arc.io/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-purple-700 transition-colors group/link text-[0.80rem] font-extrabold tracking-wide">
             <BookOpen className="w-3.5 h-3.5" />
             <span>Docs</span>
             <ExternalLink className="w-2 h-2 opacity-50 -ml-0.5 group-hover/link:opacity-100 transition-opacity" />
           </a>
-          <a href="https://www.arc.io/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-accent-primary transition-colors group/link text-[0.80rem] font-medium tracking-wide">
+          <a href="https://www.arc.io/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-purple-700 transition-colors group/link text-[0.80rem] font-extrabold tracking-wide">
             <Globe className="w-3.5 h-3.5" />
             <span>Website</span>
             <ExternalLink className="w-2 h-2 opacity-50 -ml-0.5 group-hover/link:opacity-100 transition-opacity" />
           </a>
-          <a href="https://testnet.arcscan.app/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-accent-primary transition-colors group/link text-[0.80rem] font-medium tracking-wide">
+          <a href="https://testnet.arcscan.app/" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-purple-700 transition-colors group/link text-[0.80rem] font-extrabold tracking-wide">
             <Search className="w-3.5 h-3.5" />
             <span>Explorer</span>
             <ExternalLink className="w-2 h-2 opacity-50 -ml-0.5 group-hover/link:opacity-100 transition-opacity" />
@@ -123,23 +123,23 @@ export default function NetworkStats() {
       <div className="flex-grow w-full relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {/* GAS */}
-          <div className="bg-slate-100 border border-slate-200 rounded-xl p-3 flex flex-col justify-between hover:bg-slate-200/60 transition-colors group/stat shadow-sm">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col justify-between hover:bg-slate-100 transition-colors group/stat shadow-sm">
             <span className="text-[0.6rem] text-slate-900 uppercase tracking-wider flex items-center gap-1 font-extrabold">⛽ GAS COST</span>
             <div className="mt-2 flex items-end justify-between">
-              <span className="text-sm font-extrabold text-black tracking-tight">{stats.gasPrice} <span className="text-[0.6rem] text-slate-900 font-bold">USDC</span></span>
+              <span className="text-sm font-extrabold text-black tracking-tight">{stats.gasPrice} <span className="text-[0.6rem] text-slate-900 font-extrabold">USDC</span></span>
               <Sparkline color="#000000" glowColor="#000000" data={stats.history.gas} />
             </div>
           </div>
           {/* BLK TIME */}
-          <div className="bg-slate-100 border border-slate-200 rounded-xl p-3 flex flex-col justify-between hover:bg-slate-200/60 transition-colors group/stat shadow-sm">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col justify-between hover:bg-slate-100 transition-colors group/stat shadow-sm">
             <span className="text-[0.6rem] text-slate-900 uppercase tracking-wider flex items-center gap-1 font-extrabold">⏱ AVG BLK TIME</span>
             <div className="mt-2 flex items-end justify-between">
-              <span className="text-sm font-extrabold text-black tracking-tight">{stats.blockTime} <span className="text-[0.6rem] text-slate-900 font-bold">ms</span></span>
+              <span className="text-sm font-extrabold text-black tracking-tight">{stats.blockTime} <span className="text-[0.6rem] text-slate-900 font-extrabold">ms</span></span>
               <Sparkline color="#ff007f" glowColor="#ff007f" data={stats.history.time} />
             </div>
           </div>
           {/* BLOCKS */}
-          <div className="bg-slate-100 border border-slate-200 rounded-xl p-3 flex flex-col justify-between hover:bg-slate-200/60 transition-colors group/stat shadow-sm">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col justify-between hover:bg-slate-100 transition-colors group/stat shadow-sm">
             <span className="text-[0.6rem] text-slate-900 uppercase tracking-wider flex items-center gap-1 font-extrabold">📦 BLOCKS</span>
             <div className="mt-2 flex items-end justify-between">
               <span className="text-sm font-extrabold text-black tracking-tight">{stats.totalBlocks}</span>
@@ -147,7 +147,7 @@ export default function NetworkStats() {
             </div>
           </div>
           {/* TXS */}
-          <div className="bg-slate-100 border border-slate-200 rounded-xl p-3 flex flex-col justify-between hover:bg-slate-200/60 transition-colors group/stat shadow-sm">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col justify-between hover:bg-slate-100 transition-colors group/stat shadow-sm">
             <span className="text-[0.6rem] text-slate-900 uppercase tracking-wider flex items-center gap-1 font-extrabold">🔄 TXS / BLK</span>
             <div className="mt-2 flex items-end justify-between">
               <span className="text-sm font-extrabold text-black tracking-tight">{stats.totalTxs}</span>

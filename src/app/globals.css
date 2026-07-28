@@ -13,10 +13,10 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --color-bg:          #f8fafc;
+  --color-bg:          #f1f5f9;
   --color-surface:     #ffffff;
-  --color-surface-2:   #f1f5f9;
-  --color-border:      #e2e8f0;
+  --color-surface-2:   #e2e8f0;
+  --color-border:      #cbd5e1;
   --color-text:        #0f172a;
   --color-text-muted:  #0f172a;
   --color-primary:     #000000;
@@ -707,6 +707,11 @@ a:hover { text-decoration: underline; }
 .gm-pedestal:disabled {
   cursor: not-allowed;
   filter: grayscale(0.8) brightness(0.5);
+}
+
+.gm-pedestal.gm-done {
+  border-color: transparent !important;
+  box-shadow: none !important;
 }
 
 .crystal-svg {

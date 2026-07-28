@@ -293,7 +293,7 @@ export default function RunestonePanel() {
             </div>
 
             {/* Estructura Central Absoluta */}
-            <div className="relative w-[180px] h-[220px] mx-auto flex flex-col items-center justify-end" style={{ zIndex: 50, transformStyle: 'preserve-3d' }}>
+            <div className="relative w-[180px] h-[220px] mx-auto flex flex-col items-center justify-end" style={{ zIndex: 70, transformStyle: 'preserve-3d' }}>
               
               {/* SVG Cristal (Runestone) */}
               <div className="absolute bottom-[35px] pointer-events-none" style={{ zIndex: 1, transform: 'translateZ(-10px)' }}>
@@ -338,8 +338,8 @@ export default function RunestonePanel() {
                 <button 
                   onClick={handleGM}
                   disabled={!isOwner || gmLoading || gmDoneToday}
-                  className="gm-pedestal w-full h-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-                  <span className="text-xs font-bold uppercase tracking-[0.2em] text-white transition-opacity">
+                  className={`gm-pedestal w-full h-full cursor-pointer disabled:cursor-not-allowed ${gmDoneToday ? 'gm-done' : ''}`}>
+                  <span className={`text-xs font-bold uppercase tracking-[0.2em] transition-opacity ${gmDoneToday ? 'text-slate-500' : 'text-white'}`}>
                     {!isOwner ? 'READ ONLY' : gmDoneToday ? 'GM (REFRESH)' : (gmLoading ? 'SENDING...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'SUPER GM' : 'GM'))}
                   </span>
                 </button>

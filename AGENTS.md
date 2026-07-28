@@ -27,3 +27,11 @@ Implementar funciones en web3 suele crear bugs para el usuario, ejemplo: si cone
 # Idioma en UI
 
 A pesar de que el código, textos de la interfaz (UI) y documentación del proyecto deben ser escritos SIEMPRE en inglés nativo, TUS RESPUESTAS EN EL CHAT Y TUS PENSAMIENTOS DEBEN SER 100% EN ESPAÑOL. NUNCA me hables ni me respondas en inglés. No introduzcas texto en español en la base de código.
+
+# Accesibilidad y Diseño UI
+
+Prioriza siempre la legibilidad y usabilidad sobre la estética vacía:
+* **Contraste:** Mantén siempre un contraste WCAG AA o superior en toda la interfaz.
+* **Jerarquía Visual:** Los textos principales deben ser casi negros (o blancos puros en modo oscuro). Los textos secundarios deben ser un gris oscuro legible. SÓLO los elementos deshabilitados pueden usar gris claro.
+* **Información Clave:** Nunca uses texto o iconos gris claro sobre fondo blanco (o gris oscuro sobre fondo negro) si contienen información importante.
+* **Enfoque Práctico:** Diseña pensando en un dashboard profesional que será operado durante horas continuas (esfuerzo visual mínimo), NO en una captura de pantalla puramente estética para Dribbble o redes sociales.

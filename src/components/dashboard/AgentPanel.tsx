@@ -38,10 +38,10 @@ export default function AgentPanel() {
   }, [walletParam, fetchUserData]);
 
   return (
-    <div className="w-full mt-8 pt-4 h-14 shrink-0 relative z-10 bg-transparent border-t border-slate-800/80 flex items-center justify-between gap-2">
+    <div className="w-full mt-4 shrink-0 relative z-10 bg-black/40 rounded-xl border border-slate-800/80 p-3 flex flex-nowrap items-center justify-between gap-3 shadow-[inset_0_0_20px_rgba(0,0,0,0.3)] overflow-x-auto">
       <h3 className="text-[0.65rem] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 whitespace-nowrap">
         <Bot className="w-4 h-4 text-accent-success" />
-        <span className="group-hover:text-accent-primary transition-colors cursor-default">
+        <span className="text-slate-400 cursor-default">
           AI AGENT
         </span>
       </h3>
@@ -58,23 +58,16 @@ export default function AgentPanel() {
           </span>
         )}
         
-        {userData?.attachedAgentId ? (
-          <button className="text-[0.65rem] text-accent-success uppercase tracking-wider font-bold border border-accent-success/50 bg-accent-success/10 hover:bg-accent-success/20 px-3 py-1 rounded transition-colors shadow-sm cursor-default">
+        {userData?.attachedAgentId && (
+          <button className="text-[0.65rem] text-accent-success uppercase tracking-wider font-bold border border-accent-success/50 bg-accent-success/10 hover:bg-accent-success/20 px-3 py-1.5 rounded transition-colors shadow-sm cursor-default whitespace-nowrap">
             CONNECTED
-          </button>
-        ) : (
-          <button 
-            disabled={!isOwner}
-            className="text-[0.65rem] text-slate-300 uppercase tracking-wider font-bold border border-slate-700 bg-slate-900 hover:bg-slate-800 px-3 py-1 rounded transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" 
-            title="Coming soon">
-            {!isOwner ? 'READ ONLY' : 'ATTACH AGENT'}
           </button>
         )}
         <button 
           disabled={!isOwner}
-          className="flex items-center gap-1.5 px-3 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-lg text-[0.65rem] font-bold text-slate-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-          <AlertTriangle className="w-3 h-3" />
-          Register an Agent (Arc)
+          className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded text-[0.65rem] font-bold text-slate-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap">
+          <AlertTriangle className="w-3 h-3 shrink-0" />
+          <span>Register an Agent (Arc)</span>
         </button>
       </div>
     </div>

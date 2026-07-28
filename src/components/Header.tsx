@@ -38,9 +38,9 @@ export function Header({ networkParam }: { networkParam?: string }) {
   return (
     <header className="app-header w-full flex items-center justify-between p-4 px-6 bg-white/95 backdrop-blur-2xl border-b border-slate-200 sticky top-0 z-50 shadow-sm transition-all">
       <div className="flex items-center gap-4">
-        <div className="app-logo flex items-center gap-2 text-xl font-bold tracking-tight text-slate-900 cursor-pointer" onClick={() => router.push('/')}>
-          <Image src="/icon.svg" alt="Signal 0xL Logo" width={24} height={24} className="shadow-sm rounded-full" />
-          <div>Signal <span className="text-accent-primary">0xL</span></div>
+        <div className="app-logo flex items-center gap-2 text-xl font-extrabold tracking-tight text-black cursor-pointer" onClick={() => router.push('/')}>
+          <Image src="/icon.svg" alt="Signal 0xL Logo" width={24} height={24} className="shadow-sm" />
+          <div>Signal <span className="text-purple-700">0xL</span></div>
         </div>
 
         <ClientOnly>
@@ -111,7 +111,7 @@ export function Header({ networkParam }: { networkParam?: string }) {
                     {(() => {
                       if (!connected) {
                         return (
-                          <button onClick={openConnectModal} type="button" className="bg-accent-primary hover:bg-accent-primary-dim text-white font-bold text-sm px-4 py-1.5 rounded-full transition-all shadow-sm flex items-center gap-2">
+                          <button onClick={openConnectModal} type="button" className="bg-purple-700 hover:bg-purple-800 text-white font-extrabold text-sm px-4 py-1.5 rounded-full transition-all shadow-sm flex items-center gap-2">
                             <Link className="w-4 h-4" />
                             <span>Connect</span>
                           </button>
@@ -120,7 +120,7 @@ export function Header({ networkParam }: { networkParam?: string }) {
 
                       if (chain.unsupported) {
                         return (
-                          <button onClick={openChainModal} type="button" className="bg-accent-error hover:bg-red-600 text-white font-bold text-sm px-4 py-1.5 rounded-full transition-all flex items-center gap-2">
+                          <button onClick={openChainModal} type="button" className="bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-sm px-4 py-1.5 rounded-full transition-all flex items-center gap-2">
                             Wrong network
                           </button>
                         );
@@ -130,10 +130,10 @@ export function Header({ networkParam }: { networkParam?: string }) {
                         <button 
                           onClick={openAccountModal}
                           type="button"
-                          className="flex items-center gap-2 bg-white hover:bg-slate-50 transition-colors px-2 py-1.5 rounded-full border border-slate-200 hover:border-accent-primary/50 cursor-pointer shadow-sm">
+                          className="flex items-center gap-2 bg-white hover:bg-slate-50 transition-colors px-2 py-1.5 rounded-full border border-slate-200 hover:border-purple-300 cursor-pointer shadow-sm">
                           
                           {/* Mini Avatar */}
-                          <div className="w-5 h-5 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-tr from-accent-primary to-accent-runestone shadow-sm">
+                          <div className="w-5 h-5 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-tr from-purple-700 to-indigo-600 shadow-sm">
                             <Image unoptimized src={getAvatarUrl(account.address)} alt="Avatar" width={20} height={20} className="w-full h-full opacity-90" />
                           </div>
                           
@@ -142,7 +142,7 @@ export function Header({ networkParam }: { networkParam?: string }) {
                             {account.displayName}
                           </span>
                           
-                          <ChevronDown className="w-3.5 h-3.5 text-slate-500 transition-transform duration-200" />
+                          <ChevronDown className="w-3.5 h-3.5 text-slate-800 transition-transform duration-200" />
                         </button>
                       );
                     })()}
