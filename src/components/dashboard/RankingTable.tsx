@@ -37,10 +37,10 @@ export default function RankingTable({ initialData }: RankingTableProps) {
   const shortAddress = (addr: string | null) => addr ? `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}` : '';
 
   return (
-    <Card className="p-5 flex-grow flex flex-col relative group transition-all duration-300 hover:shadow-md h-full min-h-[400px]">
+    <Card className="p-4 flex-grow flex flex-col relative group transition-all duration-300 hover:shadow-md h-full min-h-[400px]">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-4 relative z-10 border-b border-border/50 pb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-1 gap-4 relative z-10 border-b border-border/50">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-center justify-center shadow-sm">
             <Trophy className="w-5 h-5 text-amber-600 dark:text-amber-500 drop-shadow-sm" /> 
@@ -50,7 +50,7 @@ export default function RankingTable({ initialData }: RankingTableProps) {
               Signal Leaderboard
               {isScanning && <Loader2 className="w-4 h-4 text-muted-foreground animate-spin ml-1" />}
             </h2>
-            <p className="text-xs text-muted-foreground font-medium mt-0.5">Top contributors on Arc Testnet</p>
+            <p className="text-xs text-muted-foreground font-medium mt-0.5 mb-0.5">Top contributors on Arc Testnet</p>
           </div>
         </div>
         
@@ -61,7 +61,7 @@ export default function RankingTable({ initialData }: RankingTableProps) {
       </div>
 
       {/* Table Area */}
-      <div className="flex-grow relative z-10 overflow-hidden flex flex-col min-h-0 mt-2">
+      <div className="flex-grow relative z-10 overflow-hidden flex flex-col min-h-0">
         <ScrollArea className="flex-grow">
           <Table className="w-full">
             <TableHeader className="sticky top-0 z-20 bg-background/95 backdrop-blur">
@@ -93,7 +93,7 @@ export default function RankingTable({ initialData }: RankingTableProps) {
                       <TableRow 
                         key={user.address} 
                         className={cn(
-                          "transition-all duration-300 group/row border-b border-border/40",
+                          "transition-all duration-300 group/row border-b border-border/40 h-12",
                           isRank1 && "bg-amber-50/50 hover:bg-amber-100/50 dark:bg-amber-950/10 dark:hover:bg-amber-950/20",
                           isRank2 && "bg-muted/30 hover:bg-muted/50",
                           isRank3 && "bg-orange-50/30 hover:bg-orange-100/30 dark:bg-orange-950/10 dark:hover:bg-orange-950/20",
