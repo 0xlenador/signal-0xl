@@ -108,12 +108,12 @@ export default function NodesGrid() {
         {/* Node 1 Data Grid */}
         {userData?.nodeCommitment && (
           <div className="grid grid-cols-2 gap-1.5 mt-2 mb-3 flex-grow relative z-10">
-            <div className="flex flex-col bg-slate-100/50 px-2 py-1.5 rounded-lg border border-slate-200/60 shadow-sm">
-              <span className="text-[0.55rem] text-slate-500 uppercase tracking-wider truncate">TOTAL TRANSACTIONS</span>
-              <strong className="text-xs text-slate-900 truncate">{data.isLoading ? '...' : data.commitment?.totalTxs.toLocaleString()}</strong>
+            <div className="flex flex-col bg-slate-100 px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+              <span className="text-[0.55rem] text-slate-900 font-extrabold uppercase tracking-wider truncate">TOTAL TRANSACTIONS</span>
+              <strong className="text-xs text-black font-extrabold truncate">{data.isLoading ? '...' : data.commitment?.totalTxs.toLocaleString()}</strong>
             </div>
-            <div className="flex flex-col bg-slate-100/50 px-2 py-1.5 rounded-lg border border-slate-200/60 shadow-sm">
-              <span className="text-[0.55rem] text-slate-500 uppercase tracking-wider truncate">FEES PAID</span>
+            <div className="flex flex-col bg-slate-100 px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+              <span className="text-[0.55rem] text-slate-900 font-extrabold uppercase tracking-wider truncate">FEES PAID</span>
               <strong className="text-xs text-slate-900 truncate">
                 {data.isLoading ? '...' : (data.commitment?.totalFeePaid ? data.commitment.totalFeePaid : <span className="text-slate-400 bg-slate-100/80 px-1.5 py-0.5 rounded font-mono animate-pulse">_[ENCRYPTED]_</span>)}
               </strong>
@@ -177,16 +177,16 @@ export default function NodesGrid() {
         {/* Node 2 Data Grid */}
         {userData?.nodeConviction && (
           <div className="grid grid-cols-2 gap-1.5 mt-2 mb-3 flex-grow relative z-10">
-            <div className="flex flex-col bg-slate-100/50 px-2 py-1.5 rounded-lg border border-slate-200/60 shadow-sm">
-              <span className="text-[0.55rem] text-slate-500 uppercase tracking-wider truncate">NATIVE BALANCE</span>
-              <strong className="text-xs text-slate-900 truncate">{data.isLoading ? '...' : data.conviction?.balanceUSDC}</strong>
+            <div className="flex flex-col bg-slate-100 px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+              <span className="text-[0.55rem] text-slate-900 font-extrabold uppercase tracking-wider truncate">NATIVE BALANCE</span>
+              <strong className="text-xs text-black font-extrabold truncate">{data.isLoading ? '...' : data.conviction?.balanceUSDC}</strong>
             </div>
-            <div className="flex flex-col bg-slate-100/50 px-2 py-1.5 rounded-lg border border-slate-200/60 shadow-sm">
-              <span className="text-[0.55rem] text-slate-500 uppercase tracking-wider truncate">% OF SUPPLY</span>
-              <strong className="text-xs text-slate-900 truncate">{data.isLoading ? '...' : data.conviction?.percentageOfSupply}%</strong>
+            <div className="flex flex-col bg-slate-100 px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+              <span className="text-[0.55rem] text-slate-900 font-extrabold uppercase tracking-wider truncate">% OF SUPPLY</span>
+              <strong className="text-xs text-black font-extrabold truncate">{data.isLoading ? '...' : data.conviction?.percentageOfSupply}%</strong>
             </div>
-            <div className="flex flex-col bg-slate-100/50 px-2 py-1.5 rounded-lg border border-slate-200/60 shadow-sm">
-              <span className="text-[0.55rem] text-slate-500 uppercase tracking-wider truncate">TOTAL SUPPLY (REF.)</span>
+            <div className="flex flex-col bg-slate-100 px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+              <span className="text-[0.55rem] text-slate-900 font-extrabold uppercase tracking-wider truncate">TOTAL SUPPLY (REF.)</span>
               <strong className="text-xs text-slate-900 truncate">{data.isLoading ? '...' : data.conviction?.supplyTotal.toLocaleString()}</strong>
             </div>
             <div className="flex flex-col bg-accent-primary/10 px-2 py-1 rounded border border-accent-primary/30">
@@ -248,20 +248,20 @@ export default function NodesGrid() {
         {/* Node 3 Data Grid */}
         {userData?.nodeLegacy && (
           <div className="grid grid-cols-2 gap-1.5 mt-2 mb-3 flex-grow relative z-10">
-            <div className="flex flex-col bg-slate-100/50 px-2 py-1.5 rounded-lg border border-slate-200/60 shadow-sm">
-              <span className="text-[0.55rem] text-slate-500 uppercase tracking-wider truncate">FIRST TX</span>
-              <strong className="text-xs text-slate-900 truncate">
+            <div className="flex flex-col bg-slate-100 px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+              <span className="text-[0.55rem] text-slate-900 font-extrabold uppercase tracking-wider truncate">FIRST TX</span>
+              <strong className="text-xs text-black font-extrabold truncate">
                 {data.isLoading ? '...' : (data.legacy?.firstTxDate ? data.legacy.firstTxDate.toLocaleDateString() : <span className="text-slate-400 bg-slate-100/80 px-1.5 py-0.5 rounded font-mono animate-pulse">_[ENCRYPTED]_</span>)}
               </strong>
             </div>
-            <div className="flex flex-col bg-slate-100/50 px-2 py-1.5 rounded-lg border border-slate-200/60 shadow-sm">
-              <span className="text-[0.55rem] text-slate-500 uppercase tracking-wider truncate">LAST TX</span>
-              <strong className="text-xs text-slate-900 truncate">
+            <div className="flex flex-col bg-slate-100 px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+              <span className="text-[0.55rem] text-slate-900 font-extrabold uppercase tracking-wider truncate">LAST TX</span>
+              <strong className="text-xs text-black font-extrabold truncate">
                 {data.isLoading ? '...' : (data.legacy?.lastTxDate ? data.legacy.lastTxDate.toLocaleDateString() : <span className="text-slate-400 bg-slate-100/80 px-1.5 py-0.5 rounded font-mono animate-pulse">_[ENCRYPTED]_</span>)}
               </strong>
             </div>
-            <div className="flex flex-col bg-slate-100/50 px-2 py-1.5 rounded-lg border border-slate-200/60 shadow-sm">
-              <span className="text-[0.55rem] text-slate-500 uppercase tracking-wider truncate">DAYS SINCE GENESIS</span>
+            <div className="flex flex-col bg-slate-100 px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+              <span className="text-[0.55rem] text-slate-900 font-extrabold uppercase tracking-wider truncate">DAYS SINCE GENESIS</span>
               <strong className="text-xs text-slate-900 truncate">
                 {data.isLoading ? '...' : (data.legacy?.firstTxDate ? `${data.legacy.daysSinceGenesis} d` : <span className="text-slate-400 bg-slate-100/80 px-1.5 py-0.5 rounded font-mono animate-pulse">_[???]_</span>)}
               </strong>

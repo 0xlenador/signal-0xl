@@ -52,9 +52,9 @@ export function Header({ networkParam }: { networkParam?: string }) {
                 router.push(`/${networkParam || 'arc-testnet'}/${address}`);
               }
             }}
-            className={`bg-slate-50 border border-slate-200 text-slate-700 font-bold text-xs px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${!isOnOwnDashboard ? 'hover:bg-white hover:border-accent-primary/50 cursor-pointer shadow-sm' : 'cursor-default shadow-none'}`}
+            className={`bg-slate-100 border border-slate-300 text-slate-900 font-extrabold text-xs px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${!isOnOwnDashboard ? 'hover:bg-white hover:border-black cursor-pointer shadow-sm' : 'cursor-default shadow-none'}`}
           >
-            <LayoutDashboard className="w-3.5 h-3.5 text-accent-primary" />
+            <LayoutDashboard className="w-3.5 h-3.5 text-black" />
             <span className="hidden sm:inline">My Dashboard</span>
           </button>
         </ClientOnly>
@@ -62,16 +62,16 @@ export function Header({ networkParam }: { networkParam?: string }) {
       
       <div className="flex items-center gap-3">
         {/* GitHub */}
-        <a href="https://github.com/0xlenador/signal-0xl" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-slate-900 transition-colors flex items-center" aria-label="GitHub">
+        <a href="https://github.com/0xlenador/signal-0xl" target="_blank" rel="noopener noreferrer" className="text-slate-900 hover:text-black transition-colors flex items-center" aria-label="GitHub">
           <GithubIcon className="w-5 h-5" />
         </a>
 
         {/* Separador */}
-        <div className="h-5 w-[1px] bg-border-light mx-1 hidden sm:block"></div>
+        <div className="h-5 w-[1px] bg-slate-300 mx-1 hidden sm:block"></div>
 
         {/* Network Badge */}
         {networkParam && SUPPORTED_NETWORKS.includes(networkParam) && (
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[0.65rem] font-bold text-slate-500 shadow-sm">
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-300 text-[0.65rem] font-extrabold text-slate-900 shadow-sm">
             <Image src="/assets/arc-logo.jpg" alt="Logo de Arc (Circle)" width={16} height={16} className="rounded-full object-cover" />
             {NETWORK.name}
           </div>

@@ -93,7 +93,7 @@ export function Web3Provider({ children, initialState }: Web3ProviderProps) {
         <RainbowKitProvider 
           locale="en-US"
           theme={darkTheme({
-            accentColor: '#00e5ff',
+            accentColor: '#000000',
             accentColorForeground: '#0a0a0a',
             borderRadius: 'large',
             fontStack: 'system',

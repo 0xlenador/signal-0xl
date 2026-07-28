@@ -12,8 +12,8 @@ module.exports = {
         'bg-secondary': '#ffffff',
         'surface-1': '#ffffff',
         'surface-2': '#f1f5f9',
-        'accent-primary': '#47bfff', /* Cyan */
-        'accent-primary-dim': '#38bdf8',
+        'accent-primary': '#000000', /* Negro Puro */
+        'accent-primary-dim': '#1e293b',
         'accent-runestone': '#863bff', /* Púrpura Vibrante */
         'accent-success': '#22c55e',
         'accent-warning': '#eab308',
@@ -21,7 +21,7 @@ module.exports = {
         'accent-vip': '#863bff',
         'accent-fork': '#f97316',
         'text-primary': '#0f172a',
-        'text-muted': '#64748b',
+        'text-muted': '#0f172a',
         'border-color': '#e2e8f0',
         'border-light': '#f1f5f9',
         border: 'var(--border)',

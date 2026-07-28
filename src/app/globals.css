@@ -18,9 +18,9 @@
   --color-surface-2:   #f1f5f9;
   --color-border:      #e2e8f0;
   --color-text:        #0f172a;
-  --color-text-muted:  #64748b;
-  --color-primary:     #47bfff;
-  --color-primary-dim: #38bdf8;
+  --color-text-muted:  #0f172a;
+  --color-primary:     #000000;
+  --color-primary-dim: #1e293b;
   --color-success:     #22c55e;
   --color-warning:     #eab308;
   --color-danger:      #ef4444;
