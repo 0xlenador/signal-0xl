@@ -1,5 +1,6 @@
 import { defineChain } from 'viem';
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
+import { cookieStorage, createStorage } from 'wagmi';
 import { NETWORK } from '@/lib/config';
 
 /**
@@ -39,4 +40,7 @@ export const wagmiConfig = getDefaultConfig({
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'signal0xl-dev',
   chains: [arcTestnet],
   ssr: true,
+  storage: createStorage({
+    storage: cookieStorage,
+  }),
 });

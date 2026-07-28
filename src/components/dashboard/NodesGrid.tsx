@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Microscope, Gem, Landmark, Info, Loader2 } from 'lucide-react';
 import { useNodesData, useSignalContract, IUserData } from '@/hooks';
 import { useParams } from 'next/navigation';
@@ -38,11 +38,11 @@ export default function NodesGrid() {
     return () => { isMounted.current = false; };
   }, []);
 
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
     if (!walletParam) return;
     const ud = await fetchUserData(walletParam);
     if (isMounted.current) setUserData(ud);
-  };
+  }, [walletParam, fetchUserData]);
 
   useEffect(() => {
     refreshData();
@@ -51,7 +51,7 @@ export default function NodesGrid() {
     return () => {
       window.removeEventListener('signal-data-refresh', refreshData);
     };
-  }, [walletParam, fetchUserData]);
+  }, [refreshData]);
 
   const handleActivateInstant = async (nodeId: number, setLoader: (l: boolean) => void) => {
     if (!address) return;

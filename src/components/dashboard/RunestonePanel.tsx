@@ -94,6 +94,7 @@ export default function RunestonePanel() {
 
   useEffect(() => {
     if (contractError && isNodeModalOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActivationError(contractError);
     }
   }, [contractError, isNodeModalOpen]);
@@ -144,8 +145,11 @@ export default function RunestonePanel() {
 
   useEffect(() => {
     // Prevenir datos 'fantasma' y cobros erróneos al cambiar de perfil
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUserData(null);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setGmCostInfo(null);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setGmDoneToday(false);
 
     const loadData = () => {

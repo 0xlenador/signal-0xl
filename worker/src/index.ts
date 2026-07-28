@@ -171,7 +171,6 @@ async function runCron(event: any, env: Env, ctx: ExecutionContext): Promise<voi
       console.log(`Iteración ${iterations + 1}: Procesando chunk ${fromBlock} a ${toBlock}...`);
 
       const logs = await publicClient.getLogs({
-        address: env.CONTRACT_ADDRESS as `0x${string}`,
         event: GMDoneEvent,
         fromBlock,
         toBlock
@@ -219,8 +218,8 @@ async function runCron(event: any, env: Env, ctx: ExecutionContext): Promise<voi
       fromBlock = toBlock + 1n;
       iterations++;
       
-      // Pequeña pausa de medio segundo entre peticiones para respirar y respetar el Rate Limit del RPC
-      await delay(500);
+      // Pequeña pausa de 2 segundos entre peticiones para respirar y respetar el Rate Limit del RPC
+      await delay(2000);
     }
 
     if (fromBlock <= safeBlock) {

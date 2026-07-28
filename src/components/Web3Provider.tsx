@@ -2,9 +2,9 @@
 
 import '@rainbow-me/rainbowkit/styles.css';
 
-import { createContext, useContext, ReactNode, useState, useCallback, useMemo, useEffect } from 'react';
+import { createContext, useContext, ReactNode, useState, useCallback, useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { WagmiProvider, useAccount, useDisconnect, useChainId } from 'wagmi';
+import { WagmiProvider, useAccount, useDisconnect, useChainId, State } from 'wagmi';
 import { RainbowKitProvider, darkTheme, useConnectModal } from '@rainbow-me/rainbowkit';
 import { wagmiConfig } from '@/lib/wagmi.config';
 
@@ -40,10 +40,6 @@ function Web3ContextManager({ children }: { children: ReactNode }) {
   const { openConnectModal } = useConnectModal();
 
   const [error, setError] = useState<string | null>(null);
-  
-  // Manejo del estado montado para SSR y evitar Hydration Mismatch
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
 
   const clearError = useCallback(() => setError(null), []);
 
@@ -59,21 +55,21 @@ function Web3ContextManager({ children }: { children: ReactNode }) {
 
   // Preservar la dirección durante la reconexión para evitar parpadeos de null
   // que rompen el botón de wallet, el dashboard y los componentes hijos.
-  // Durante el 'reconnecting', wagmi ya tiene el address del localStorage,
+  // Durante el 'reconnecting', wagmi ya tiene el address gracias al cookieStorage,
   // así que es seguro exponerlo mientras se restaura la sesión completa.
   const isConnectedOrReconnecting = status === 'connected' || status === 'reconnecting';
 
   const contextValue = useMemo<IWeb3Context>(() => ({
-    address: mounted && isConnectedOrReconnecting && address ? address : null,
-    chainId: mounted ? chainId : null,
+    address: isConnectedOrReconnecting && address ? address : null,
+    chainId: chainId || null,
     status,
     isReconnecting,
     connect,
     disconnect,
     error,
-    isInitializing: !mounted || isConnecting || isReconnecting,
+    isInitializing: isConnecting || isReconnecting,
     clearError
-  }), [mounted, isConnectedOrReconnecting, status, address, chainId, isReconnecting, connect, disconnect, error, isConnecting, clearError]);
+  }), [isConnectedOrReconnecting, status, address, chainId, isReconnecting, connect, disconnect, error, isConnecting, clearError]);
 
   return (
     <Web3Context.Provider value={contextValue}>
@@ -87,11 +83,12 @@ const queryClient = new QueryClient();
 
 interface Web3ProviderProps {
   children: ReactNode;
+  initialState?: State;
 }
 
-export function Web3Provider({ children }: Web3ProviderProps) {
+export function Web3Provider({ children, initialState }: Web3ProviderProps) {
   return (
-    <WagmiProvider config={wagmiConfig}>
+    <WagmiProvider config={wagmiConfig} initialState={initialState}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider 
           locale="en-US"

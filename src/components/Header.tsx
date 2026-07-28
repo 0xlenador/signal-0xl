@@ -1,6 +1,7 @@
 'use client';
 import Image from 'next/image';
 import { useWeb3 } from './Web3Provider';
+import { ClientOnly } from './ClientOnly';
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { Link, ChevronDown, LayoutDashboard } from 'lucide-react';
@@ -42,19 +43,21 @@ export function Header({ networkParam }: { networkParam?: string }) {
           <div>Signal <span className="text-accent-primary drop-shadow-[0_0_10px_rgba(0,229,255,0.5)]">0xL</span></div>
         </div>
 
-        <button 
-          onClick={() => {
-            if (!address) {
-              connect();
-            } else if (!isOnOwnDashboard) {
-              router.push(`/${networkParam || 'arc-testnet'}/${address}`);
-            }
-          }}
-          className={`bg-surface-2 border border-border-light text-white font-bold text-xs px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${!isOnOwnDashboard ? 'hover:bg-surface-1 hover:border-accent-primary/50 cursor-pointer' : 'cursor-default'}`}
-        >
-          <LayoutDashboard className="w-3.5 h-3.5 text-accent-primary" />
-          <span className="hidden sm:inline">My Dashboard</span>
-        </button>
+        <ClientOnly>
+          <button 
+            onClick={() => {
+              if (!address) {
+                connect();
+              } else if (!isOnOwnDashboard) {
+                router.push(`/${networkParam || 'arc-testnet'}/${address}`);
+              }
+            }}
+            className={`bg-surface-2 border border-border-light text-white font-bold text-xs px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${!isOnOwnDashboard ? 'hover:bg-surface-1 hover:border-accent-primary/50 cursor-pointer' : 'cursor-default'}`}
+          >
+            <LayoutDashboard className="w-3.5 h-3.5 text-accent-primary" />
+            <span className="hidden sm:inline">My Dashboard</span>
+          </button>
+        </ClientOnly>
       </div>
       
       <div className="flex items-center gap-3">
@@ -75,77 +78,79 @@ export function Header({ networkParam }: { networkParam?: string }) {
         )}
 
         <div className="relative flex items-center gap-2">
-          <ConnectButton.Custom>
-            {({
-              account,
-              chain,
-              openAccountModal,
-              openChainModal,
-              openConnectModal,
-              authenticationStatus,
-              mounted,
-            }) => {
-              const ready = mounted && authenticationStatus !== 'loading';
-              const connected =
-                ready &&
-                account &&
-                chain &&
-                (!authenticationStatus ||
-                  authenticationStatus === 'authenticated');
+          <ClientOnly fallback={<div className="w-24 h-8 bg-surface-2 animate-pulse rounded-full"></div>}>
+            <ConnectButton.Custom>
+              {({
+                account,
+                chain,
+                openAccountModal,
+                openChainModal,
+                openConnectModal,
+                authenticationStatus,
+                mounted,
+              }) => {
+                const ready = mounted && authenticationStatus !== 'loading';
+                const connected =
+                  ready &&
+                  account &&
+                  chain &&
+                  (!authenticationStatus ||
+                    authenticationStatus === 'authenticated');
 
-              return (
-                <div
-                  {...(!ready && {
-                    'aria-hidden': true,
-                    'style': {
-                      opacity: 0,
-                      pointerEvents: 'none',
-                      userSelect: 'none',
-                    },
-                  })}
-                >
-                  {(() => {
-                    if (!connected) {
+                return (
+                  <div
+                    {...(!ready && {
+                      'aria-hidden': true,
+                      'style': {
+                        opacity: 0,
+                        pointerEvents: 'none',
+                        userSelect: 'none',
+                      },
+                    })}
+                  >
+                    {(() => {
+                      if (!connected) {
+                        return (
+                          <button onClick={openConnectModal} type="button" className="bg-accent-primary hover:bg-accent-primary-dim text-bg-primary font-bold text-sm px-4 py-1.5 rounded-full transition-all shadow-glow-cyan flex items-center gap-2">
+                            <Link className="w-4 h-4" />
+                            <span>Connect</span>
+                          </button>
+                        );
+                      }
+
+                      if (chain.unsupported) {
+                        return (
+                          <button onClick={openChainModal} type="button" className="bg-accent-error hover:bg-red-600 text-white font-bold text-sm px-4 py-1.5 rounded-full transition-all flex items-center gap-2">
+                            Wrong network
+                          </button>
+                        );
+                      }
+
                       return (
-                        <button onClick={openConnectModal} type="button" className="bg-accent-primary hover:bg-accent-primary-dim text-bg-primary font-bold text-sm px-4 py-1.5 rounded-full transition-all shadow-glow-cyan flex items-center gap-2">
-                          <Link className="w-4 h-4" />
-                          <span>Connect</span>
+                        <button 
+                          onClick={openAccountModal}
+                          type="button"
+                          className="flex items-center gap-2 bg-surface-2 hover:bg-surface-1 transition-colors px-2 py-1.5 rounded-full border border-border-light hover:border-accent-primary/50 cursor-pointer shadow-sm">
+                          
+                          {/* Mini Avatar */}
+                          <div className="w-5 h-5 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-tr from-accent-primary to-accent-runestone shadow-[0_0_5px_rgba(0,229,255,0.3)]">
+                            <Image unoptimized src={getAvatarUrl(account.address)} alt="Avatar" width={20} height={20} className="w-full h-full opacity-90" />
+                          </div>
+                          
+                          {/* Address */}
+                          <span className="text-xs font-mono font-bold text-white tracking-wider pt-0.5">
+                            {account.displayName}
+                          </span>
+                          
+                          <ChevronDown className="w-3.5 h-3.5 text-text-muted transition-transform duration-200" />
                         </button>
                       );
-                    }
-
-                    if (chain.unsupported) {
-                      return (
-                        <button onClick={openChainModal} type="button" className="bg-accent-error hover:bg-red-600 text-white font-bold text-sm px-4 py-1.5 rounded-full transition-all flex items-center gap-2">
-                          Wrong network
-                        </button>
-                      );
-                    }
-
-                    return (
-                      <button 
-                        onClick={openAccountModal}
-                        type="button"
-                        className="flex items-center gap-2 bg-surface-2 hover:bg-surface-1 transition-colors px-2 py-1.5 rounded-full border border-border-light hover:border-accent-primary/50 cursor-pointer shadow-sm">
-                        
-                        {/* Mini Avatar */}
-                        <div className="w-5 h-5 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-tr from-accent-primary to-accent-runestone shadow-[0_0_5px_rgba(0,229,255,0.3)]">
-                          <Image unoptimized src={getAvatarUrl(account.address)} alt="Avatar" width={20} height={20} className="w-full h-full opacity-90" />
-                        </div>
-                        
-                        {/* Address */}
-                        <span className="text-xs font-mono font-bold text-white tracking-wider pt-0.5">
-                          {account.displayName}
-                        </span>
-                        
-                        <ChevronDown className="w-3.5 h-3.5 text-text-muted transition-transform duration-200" />
-                      </button>
-                    );
-                  })()}
-                </div>
-              );
-            }}
-          </ConnectButton.Custom>
+                    })()}
+                  </div>
+                );
+              }}
+            </ConnectButton.Custom>
+          </ClientOnly>
         </div>
       </div>
     </header>

@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { createPublicClient, http, formatUnits, parseUnits } from 'viem';
 import { useWriteContract } from 'wagmi';
+import { useQueryClient } from '@tanstack/react-query';
 import { arcTestnet } from '@/lib/wagmi.config';
 import { CONTRACT_ADDRESS, CONTRACT_ABI, CONSTANTS } from '@/lib/config';
 
@@ -53,14 +54,12 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 1000): 
   throw new Error("Unreachable");
 }
 
-// Caché para evitar peticiones duplicadas simultáneas al RPC
-const requestCache = new Map<string, { promise: Promise<IUserData | null>, timestamp: number }>();
-
 export function useSignalContract(): ISignalContractHook {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const { writeContractAsync } = useWriteContract();
+  const queryClient = useQueryClient();
 
   const isMountedRef = useRef(true);
   useEffect(() => {
@@ -71,67 +70,61 @@ export function useSignalContract(): ISignalContractHook {
   const fetchUserData = useCallback(async (walletAddress: string | null | undefined): Promise<IUserData | null> => {
     if (!walletAddress) return null;
 
-    const now = Date.now();
-    const cached = requestCache.get(walletAddress);
-    // Reutilizar la promesa si tiene menos de 3 segundos de antigüedad (deduplicación)
-    if (cached && (now - cached.timestamp < 3000)) {
-      return cached.promise;
-    }
+    return queryClient.fetchQuery({
+      queryKey: ['userData', walletAddress],
+      staleTime: 5000,
+      queryFn: async () => {
+        try {
+          return await withRetry(async () => {
+            const data = await publicClient.readContract({
+              address: CONTRACT_ADDRESS as `0x${string}`,
+              abi: CONTRACT_ABI,
+              functionName: 'users',
+              args: [walletAddress as `0x${string}`],
+            });
+            
+            let totalPoints = Number(data[0]);
+            let lastGmDay = Number(data[1]);
+            let currentStreak = Number(data[2]);
+            let forkLevel = Number(data[3] === 0n ? 1n : data[3]);
+            const onChainForkLevel = forkLevel;
+            let gmCount = Number(data[4]);
+            let nodeCommitment = Boolean(data[5]);
+            let nodeConviction = Boolean(data[6]);
+            let nodeLegacy = Boolean(data[7]);
+            let exists = Boolean(data[8]);
+            let attachedAgentId = Number(data[9] || 0);
 
-    const promise = (async () => {
-      try {
-        return await withRetry(async () => {
-          const data = await publicClient.readContract({
-            address: CONTRACT_ADDRESS as `0x${string}`,
-            abi: CONTRACT_ABI,
-            functionName: 'users',
-            args: [walletAddress as `0x${string}`],
+            const today = Math.floor(Date.now() / 86400000);
+            if (lastGmDay > 0 && today > lastGmDay + 1) {
+                forkLevel += 1;
+                currentStreak = 0;
+                nodeCommitment = false;
+                nodeConviction = false;
+                nodeLegacy = false;
+            }
+
+            return {
+              totalPoints,
+              lastGmDay,
+              currentStreak,
+              forkLevel,
+              gmCount,
+              nodeCommitment,
+              nodeConviction,
+              nodeLegacy,
+              exists,
+              attachedAgentId,
+              onChainForkLevel
+            };
           });
-          
-          let totalPoints = Number(data[0]);
-          let lastGmDay = Number(data[1]);
-          let currentStreak = Number(data[2]);
-          let forkLevel = Number(data[3] === 0n ? 1n : data[3]);
-          const onChainForkLevel = forkLevel;
-          let gmCount = Number(data[4]);
-          let nodeCommitment = Boolean(data[5]);
-          let nodeConviction = Boolean(data[6]);
-          let nodeLegacy = Boolean(data[7]);
-          let exists = Boolean(data[8]);
-          let attachedAgentId = Number(data[9] || 0);
-
-          const today = Math.floor(Date.now() / 86400000);
-          if (lastGmDay > 0 && today > lastGmDay + 1) {
-              forkLevel += 1;
-              currentStreak = 0;
-              nodeCommitment = false;
-              nodeConviction = false;
-              nodeLegacy = false;
-          }
-
-          return {
-            totalPoints,
-            lastGmDay,
-            currentStreak,
-            forkLevel,
-            gmCount,
-            nodeCommitment,
-            nodeConviction,
-            nodeLegacy,
-            exists,
-            attachedAgentId,
-            onChainForkLevel
-          };
-        });
-      } catch (err) {
-        console.error("Error fetching user data:", err);
-        return null;
+        } catch (err) {
+          console.error("Error fetching user data:", err);
+          return null;
+        }
       }
-    })(); // Execute the async IIFE to create the promise
-
-    requestCache.set(walletAddress, { promise, timestamp: now });
-    return promise;
-  }, []);
+    });
+  }, [queryClient]);
 
   const getGMCost = useCallback(async (walletAddress: string | null | undefined, preloadedData: IUserData | null = null): Promise<IContractCost | null> => {
     if (!walletAddress) return null;
@@ -187,7 +180,7 @@ export function useSignalContract(): ISignalContractHook {
         value: payableAmount,
       });
       await publicClient.waitForTransactionReceipt({ hash });
-      requestCache.clear();
+      queryClient.invalidateQueries({ queryKey: ['userData'] });
       window.dispatchEvent(new CustomEvent('signal-data-refresh'));
       return true;
     } catch (error) {
@@ -198,7 +191,7 @@ export function useSignalContract(): ISignalContractHook {
     } finally {
       if (isMountedRef.current) setLoading(false);
     }
-  }, [writeContractAsync]);
+  }, [writeContractAsync, queryClient]);
 
   const resetToVIP = useCallback(async (): Promise<boolean> => {
     if (isMountedRef.current) {
@@ -212,7 +205,7 @@ export function useSignalContract(): ISignalContractHook {
         functionName: 'resetToVIP',
       });
       await publicClient.waitForTransactionReceipt({ hash });
-      requestCache.clear();
+      queryClient.invalidateQueries({ queryKey: ['userData'] });
       window.dispatchEvent(new CustomEvent('signal-data-refresh'));
       return true;
     } catch (error) {
@@ -223,7 +216,7 @@ export function useSignalContract(): ISignalContractHook {
     } finally {
       if (isMountedRef.current) setLoading(false);
     }
-  }, [writeContractAsync]);
+  }, [writeContractAsync, queryClient]);
 
   const activateNodeInstant = useCallback(async (nodeId: number, costWei: bigint): Promise<boolean> => {
     if (isMountedRef.current) {
@@ -239,7 +232,7 @@ export function useSignalContract(): ISignalContractHook {
         value: costWei,
       });
       await publicClient.waitForTransactionReceipt({ hash });
-      requestCache.clear();
+      queryClient.invalidateQueries({ queryKey: ['userData'] });
       window.dispatchEvent(new CustomEvent('signal-data-refresh'));
       return true;
     } catch (error) {
@@ -250,7 +243,7 @@ export function useSignalContract(): ISignalContractHook {
     } finally {
       if (isMountedRef.current) setLoading(false);
     }
-  }, [writeContractAsync]);
+  }, [writeContractAsync, queryClient]);
 
   const activateNodeByStreak = useCallback(async (nodeId: number): Promise<boolean> => {
     if (isMountedRef.current) {
@@ -266,7 +259,7 @@ export function useSignalContract(): ISignalContractHook {
         value: CONSTANTS.BASE_GM_COST_WEI,
       });
       await publicClient.waitForTransactionReceipt({ hash });
-      requestCache.clear();
+      queryClient.invalidateQueries({ queryKey: ['userData'] });
       window.dispatchEvent(new CustomEvent('signal-data-refresh'));
       return true;
     } catch (error) {
@@ -277,7 +270,7 @@ export function useSignalContract(): ISignalContractHook {
     } finally {
       if (isMountedRef.current) setLoading(false);
     }
-  }, [writeContractAsync]);
+  }, [writeContractAsync, queryClient]);
 
   const getNodeInstantCost = useCallback(async (nodeId: number, walletAddress: string): Promise<bigint | null> => {
     try {
