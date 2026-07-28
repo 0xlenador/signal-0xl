@@ -35,7 +35,7 @@ export function Header({ networkParam }: { networkParam?: string }) {
   }, [address, networkParam, router, params.wallet, isInitializing, isReconnecting, status]);
 
   return (
-    <header className="w-full flex items-center justify-between p-4 px-6 bg-background/95 backdrop-blur-2xl border-b border-border sticky top-0 z-50 shadow-sm transition-all">
+    <header className="w-full flex items-center justify-between p-2.5 px-6 bg-background/95 backdrop-blur-2xl border-b border-border sticky top-0 z-50 shadow-sm transition-all">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2 text-xl font-bold tracking-tight text-foreground cursor-pointer" onClick={() => router.push('/')}>
           <Image src="/icon.svg" alt="Signal 0xL Logo" width={24} height={24} className="shadow-sm" />
