@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
 export default function LiveSignals() {
   const [signals, setSignals] = useState<{ id: number; text: string; type: string }[]>([]);
 
@@ -49,16 +51,18 @@ export default function LiveSignals() {
           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-glow-cyan"></span>
           <span>Live Signals</span>
         </div>
-        <div className="group/live relative flex items-center justify-center cursor-help">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-fuchsia-500 group-hover/live:text-fuchsia-400 transition-colors">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M12 16v-4"></path>
-            <path d="M12 8h.01"></path>
-          </svg>
-          <div className="absolute right-0 top-full mt-1.5 hidden group-hover/live:block w-48 p-2 bg-black/95 border border-slate-700 rounded text-[0.6rem] text-slate-300 normal-case tracking-normal z-50 shadow-[0_4px_20px_rgba(0,0,0,0.8)] backdrop-blur-sm whitespace-normal">
+        <Tooltip>
+          <TooltipTrigger className="cursor-help flex items-center justify-center focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 16v-4"></path>
+              <path d="M12 8h.01"></path>
+            </svg>
+          </TooltipTrigger>
+          <TooltipContent className="w-48 bg-black/95 border-slate-700 text-[0.6rem] text-slate-300 normal-case tracking-normal z-50 shadow-[0_4px_20px_rgba(0,0,0,0.8)] backdrop-blur-sm whitespace-normal p-2">
             Live Signals is currently under development. Displayed events are a simulation.
-          </div>
-        </div>
+          </TooltipContent>
+        </Tooltip>
       </div>
       <div className="flex-grow w-full font-mono text-[0.6rem] text-slate-300/80 overflow-y-hidden flex flex-col justify-end relative mask-image-fade-top gap-1.5">
         {signals.map(signal => (

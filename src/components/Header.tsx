@@ -9,6 +9,7 @@ import { getAvatarUrl } from '@/lib/utils';
 import { NETWORK, SUPPORTED_NETWORKS } from '@/lib/config';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 const GithubIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -72,10 +73,10 @@ export function Header({ networkParam }: { networkParam?: string }) {
 
         {/* Network Badge */}
         {networkParam && SUPPORTED_NETWORKS.includes(networkParam) && (
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary border border-border text-[0.65rem] font-semibold text-foreground shadow-sm">
+          <Badge variant="secondary" className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.65rem] shadow-sm font-semibold">
             <Image src="/assets/arc-logo.jpg" alt="Logo de Arc (Circle)" width={16} height={16} className="rounded-full object-cover" />
             {NETWORK.name}
-          </div>
+          </Badge>
         )}
 
         <div className="relative flex items-center gap-2">

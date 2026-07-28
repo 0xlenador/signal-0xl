@@ -9,6 +9,7 @@ import { formatUnits } from 'viem';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function NodesGrid() {
   const { address } = useWeb3();
@@ -89,12 +90,14 @@ export default function NodesGrid() {
             <span>Node 1 — Commitment</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="relative cursor-help group/ntt pointer-events-auto flex items-center">
-              <Info className="w-3.5 h-3.5 opacity-60 group-hover/ntt:opacity-100 transition-opacity" />
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 bg-background/95 backdrop-blur-md border border-border rounded shadow-sm text-xs text-foreground opacity-0 group-hover/ntt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case">
+            <Tooltip>
+              <TooltipTrigger className="cursor-help flex items-center justify-center focus:outline-none">
+                <Info className="w-3.5 h-3.5 opacity-60 hover:opacity-100 transition-opacity" />
+              </TooltipTrigger>
+              <TooltipContent className="w-56 p-3 bg-background/95 backdrop-blur-md border border-border shadow-sm text-xs text-foreground text-left font-normal normal-case z-[9999]">
                 Analyzes historical transaction volume and gas spent on Arc Testnet. Calculates your activity tier and score multiplier.
-              </div>
-            </div>
+              </TooltipContent>
+            </Tooltip>
             {userData?.nodeCommitment ? (
               <div className="w-2 h-2 rounded-full bg-green-500 shadow-sm"></div>
             ) : (
@@ -110,7 +113,7 @@ export default function NodesGrid() {
 
         {/* Node 1 Data Grid */}
         {userData?.nodeCommitment && (
-          <div className="grid grid-cols-2 gap-1.5 mt-2 mb-3 flex-grow relative z-10">
+          <div className="grid grid-cols-2 gap-1.5 flex-grow relative z-10">
             <div className="flex flex-col bg-muted/40 px-2 py-1.5 rounded-lg border border-border/50 shadow-sm hover:bg-muted/60 transition-colors">
               <span className="text-[0.6rem] text-muted-foreground font-semibold uppercase tracking-wider truncate">TOTAL TRANSACTIONS</span>
               <strong className="text-xs text-foreground font-bold truncate">{data.isLoading ? '...' : data.commitment?.totalTxs.toLocaleString()}</strong>
@@ -121,9 +124,9 @@ export default function NodesGrid() {
                 {data.isLoading ? '...' : (data.commitment?.totalFeePaid ? data.commitment.totalFeePaid : <span className="text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-mono animate-pulse">_[ENCRYPTED]_</span>)}
               </strong>
             </div>
-            <div className="flex flex-col bg-primary/5 px-2 py-1 rounded border border-primary/20 col-span-2 shadow-sm">
-              <span className="text-[0.6rem] text-primary/80 font-semibold uppercase tracking-wider truncate">TIER</span>
-              <strong className="text-xs text-primary font-bold truncate">{data.isLoading ? '...' : data.commitment?.tier} <span className="text-[0.6rem] opacity-70">(×{data.isLoading ? '1' : data.commitment?.multiplier})</span></strong>
+            <div className="flex flex-col bg-primary hover:bg-primary/80 px-2 py-1 rounded border border-primary/20 col-span-2 shadow-sm">
+              <span className="text-[0.6rem] text-primary-foreground/80 font-semibold uppercase tracking-wider truncate">TIER</span>
+              <strong className="text-xs text-primary-foreground truncate">{data.isLoading ? '...' : data.commitment?.tier} <span className="text-[0.6rem] opacity-70">(×{data.isLoading ? '1' : data.commitment?.multiplier})</span></strong>
             </div>
           </div>
         )}
@@ -161,12 +164,14 @@ export default function NodesGrid() {
             <span>Node 2 — Conviction</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="relative cursor-help group/ntt pointer-events-auto flex items-center">
-              <Info className="w-3.5 h-3.5 opacity-60 group-hover/ntt:opacity-100 transition-opacity" />
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 bg-background/95 backdrop-blur-md border border-border rounded shadow-sm text-xs text-foreground opacity-0 group-hover/ntt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case">
+            <Tooltip>
+              <TooltipTrigger className="cursor-help flex items-center justify-center focus:outline-none">
+                <Info className="w-3.5 h-3.5 opacity-60 hover:opacity-100 transition-opacity" />
+              </TooltipTrigger>
+              <TooltipContent className="w-56 p-3 bg-background/95 backdrop-blur-md border border-border shadow-sm text-xs text-foreground text-left font-normal normal-case z-[9999]">
                 Calculates the percentage of the total native USDC supply held in your wallet. Measures your economic weight on the network.
-              </div>
-            </div>
+              </TooltipContent>
+            </Tooltip>
             {userData?.nodeConviction ? (
               <div className="w-2 h-2 rounded-full bg-green-500 shadow-sm"></div>
             ) : (
@@ -182,7 +187,7 @@ export default function NodesGrid() {
         
         {/* Node 2 Data Grid */}
         {userData?.nodeConviction && (
-          <div className="grid grid-cols-2 gap-1.5 mt-2 mb-3 flex-grow relative z-10">
+          <div className="grid grid-cols-2 gap-1.5 flex-grow relative z-10">
             <div className="flex flex-col bg-muted/40 px-2 py-1.5 rounded-lg border border-border/50 shadow-sm hover:bg-muted/60 transition-colors">
               <span className="text-[0.6rem] text-muted-foreground font-semibold uppercase tracking-wider truncate">NATIVE BALANCE</span>
               <strong className="text-xs text-foreground font-bold truncate">{data.isLoading ? '...' : data.conviction?.balanceUSDC}</strong>
@@ -195,9 +200,9 @@ export default function NodesGrid() {
               <span className="text-[0.6rem] text-muted-foreground font-semibold uppercase tracking-wider truncate">TOTAL SUPPLY (REF.)</span>
               <strong className="text-xs text-foreground font-bold truncate">{data.isLoading ? '...' : data.conviction?.supplyTotal.toLocaleString()}</strong>
             </div>
-            <div className="flex flex-col bg-primary/5 px-2 py-1 rounded border border-primary/20 shadow-sm">
-              <span className="text-[0.6rem] text-primary/80 font-semibold uppercase tracking-wider truncate">CLASS</span>
-              <strong className="text-xs text-primary font-bold truncate">{data.isLoading ? '...' : data.conviction?.tier}</strong>
+            <div className="flex flex-col bg-primary hover:bg-primary/80 px-2 py-1 rounded border border-primary/20 shadow-sm">
+              <span className="text-[0.6rem] text-primary-foreground/80 uppercase tracking-wider truncate">CLASS</span>
+              <strong className="text-xs text-primary-foreground truncate">{data.isLoading ? '...' : data.conviction?.tier}</strong>
             </div>
           </div>
         )}
@@ -235,12 +240,14 @@ export default function NodesGrid() {
             <span>Node 3 — Legacy</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="relative cursor-help group/ntt pointer-events-auto flex items-center">
-              <Info className="w-3.5 h-3.5 opacity-60 group-hover/ntt:opacity-100 transition-opacity" />
-              <div className="absolute bottom-full right-0 mb-2 w-56 p-3 bg-background/95 backdrop-blur-md border border-border rounded shadow-sm text-xs text-foreground opacity-0 group-hover/ntt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case">
+            <Tooltip>
+              <TooltipTrigger className="cursor-help flex items-center justify-center focus:outline-none">
+                <Info className="w-3.5 h-3.5 opacity-60 hover:opacity-100 transition-opacity" />
+              </TooltipTrigger>
+              <TooltipContent className="w-56 p-3 bg-background/95 backdrop-blur-md border border-border shadow-sm text-xs text-foreground text-left font-normal normal-case z-[9999]">
                 Analyzes the timestamp of your first and last transaction on Arc Testnet. The older you are on the network, the higher your legacy multiplier.
-              </div>
-            </div>
+              </TooltipContent>
+            </Tooltip>
             {userData?.nodeLegacy ? (
               <div className="w-2 h-2 rounded-full bg-green-500 shadow-sm"></div>
             ) : (
@@ -256,7 +263,7 @@ export default function NodesGrid() {
         
         {/* Node 3 Data Grid */}
         {userData?.nodeLegacy && (
-          <div className="grid grid-cols-2 gap-1.5 mt-2 mb-3 flex-grow relative z-10">
+          <div className="grid grid-cols-2 gap-1.5 flex-grow relative z-10">
             <div className="flex flex-col bg-muted/40 px-2 py-1.5 rounded-lg border border-border/50 shadow-sm hover:bg-muted/60 transition-colors">
               <span className="text-[0.6rem] text-muted-foreground font-semibold uppercase tracking-wider truncate">FIRST TX</span>
               <strong className="text-xs text-foreground font-bold truncate">
@@ -275,9 +282,9 @@ export default function NodesGrid() {
                 {data.isLoading ? '...' : (data.legacy?.firstTxDate ? `${data.legacy.daysSinceGenesis} d` : <span className="text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-mono animate-pulse">_[???]_</span>)}
               </strong>
             </div>
-            <div className="flex flex-col bg-primary/5 px-2 py-1 rounded border border-primary/20 shadow-sm">
-              <span className="text-[0.6rem] text-primary/80 font-semibold uppercase tracking-wider truncate">BADGE</span>
-              <strong className="text-xs text-primary font-bold truncate">
+            <div className="flex flex-col bg-primary hover:bg-primary/80 px-2 py-1 rounded border border-primary/20 shadow-sm">
+              <span className="text-[0.6rem] text-primary-foreground uppercase tracking-wider truncate">BADGE</span>
+              <strong className="text-xs text-primary-foreground truncate">
                 {data.isLoading ? '...' : (data.legacy?.firstTxDate ? data.legacy.tier : <span className="font-mono text-[0.6rem] animate-pulse opacity-70">NO SIGNAL</span>)}
               </strong>
             </div>

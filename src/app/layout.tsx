@@ -22,11 +22,15 @@ export const metadata = {
   description: 'Signal 0xL Platform',
 };
 
+import { TooltipProvider } from "@/components/ui/tooltip";
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="es" className={cn(outfit.variable, spaceGrotesk.variable, "font-sans", geist.variable)}>
       <body className="antialiased bg-background text-foreground min-h-screen flex flex-col font-sans">
-        {children}
+        <TooltipProvider>
+          {children}
+        </TooltipProvider>
       </body>
     </html>
   );

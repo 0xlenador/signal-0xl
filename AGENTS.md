@@ -35,4 +35,10 @@ Prioriza siempre la legibilidad y usabilidad sobre la estética vacía:
 * **Jerarquía Visual:** Los textos principales deben ser casi negros (o blancos puros en modo oscuro). Los textos secundarios deben ser un gris oscuro legible. SÓLO los elementos deshabilitados pueden usar gris claro.
 * **Información Clave:** Nunca uses texto o iconos gris claro sobre fondo blanco (o gris oscuro sobre fondo negro) si contienen información importante.
 * **Enfoque Práctico:** Diseña pensando en un dashboard profesional que será operado durante horas continuas (esfuerzo visual mínimo), NO en una captura de pantalla puramente estética para Dribbble o redes sociales.
-No crees deuda técnica del CSS espagueti.
+
+# Estándares de UI (Tailwind & Shadcn)
+
+Para mantener la base de código libre de CSS espagueti y deuda técnica:
+* **No CSS Custom:** Queda estrictamente prohibido añadir nuevas clases personalizadas en `globals.css` (ej. `.btn-custom`, `.glass-panel`). TODO el estilo debe resolverse mediante utilidades de Tailwind en línea.
+* **Uso exclusivo de Shadcn:** Para cualquier elemento de interfaz (botones, tarjetas, modales, tablas), utiliza siempre los componentes de Shadcn UI (`pnpm dlx shadcn@latest add <component>`). No reinventes la rueda construyendo componentes desde cero con `divs` básicos a menos que sea estrictamente necesario por una personalización extrema.
+* **Paleta de colores del sistema:** Usa las variables del sistema (`bg-background`, `text-foreground`, `text-muted-foreground`, `bg-card`) en lugar de colores quemados (`bg-white`, `text-black`, `bg-slate-900`) para garantizar que la interfaz responda perfectamente a los temas neutros e iteraciones futuras.

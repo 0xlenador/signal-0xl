@@ -71,8 +71,8 @@ export default function NetworkStats() {
   const stats = useNetworkStats();
 
   return (
-    <Card className="p-5 shadow-sm flex flex-col justify-between group transition-shadow duration-300 overflow-hidden relative">
-      <div className="flex items-center justify-between mb-4 relative z-10 pb-3 border-b border-border/50">
+    <Card className="p-4 shadow-sm flex flex-col justify-between group transition-shadow duration-300 relative">
+      <div className="flex items-center justify-between mb-4 relative z-10 pb-1">
         <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
           <span className="flex items-center gap-2">
             <Image src="/assets/arc-logo.jpg" alt="Arc" width={22} height={22} className="rounded-full object-cover border border-border" />

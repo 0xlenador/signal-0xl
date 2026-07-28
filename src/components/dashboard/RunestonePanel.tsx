@@ -9,6 +9,8 @@ import { formatUnits } from 'viem';
 import { useSignalContract, IUserData, IContractCost } from '@/hooks';
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 export default function RunestonePanel() {
   const { address } = useWeb3();
@@ -206,9 +208,9 @@ export default function RunestonePanel() {
   return (
     <>
       {/* Tu Señal */}
-      <div className="relative z-10 w-full mb-8">
+      <div className="relative z-10 w-full mb-4">
         <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center justify-between">
-          <span className="group-hover:text-accent-primary transition-colors">Your Signal</span>
+          <span>Your Signal</span>
           <div className="flex items-center gap-2 bg-slate-900/80 px-2 py-1 rounded-full border border-slate-700 hover:border-accent-primary/50 transition-colors shadow-sm">
             <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-accent-primary to-accent-runestone flex items-center justify-center overflow-hidden shadow-sm">
               {walletParam && <Image unoptimized src={getAvatarUrl(walletParam)} alt="Avatar" width={24} height={24} className="w-full h-full opacity-90" />}
@@ -223,29 +225,29 @@ export default function RunestonePanel() {
         {/* User Stats Grid (Reconstructed) */}
         <div className="text-sm w-full">
           <div className="grid grid-cols-4 gap-2">
-            <div className="flex flex-col items-center bg-slate-900/50 hover:bg-slate-900 transition-colors py-3 px-2 rounded-xl border border-slate-800/80 justify-center shadow-sm">
-              <div className="text-[0.55rem] text-slate-400 font-semibold uppercase tracking-wider mb-2 flex items-center justify-center gap-1.5 w-full"><Crown className="w-3.5 h-3.5" /> <span>STATUS</span></div>
+            <div className="flex flex-col items-center bg-slate-900/50 hover:bg-slate-900 transition-colors p-1.5 rounded-xl border border-slate-800/80 justify-center shadow-sm">
+              <div className="text-[0.55rem] text-slate-400 font-semibold uppercase tracking-wider mb-1 flex items-center justify-center gap-1.5 w-full"><Crown className="w-3.5 h-3.5" /> <span>STATUS</span></div>
               <div className="text-sm font-bold flex items-center justify-center h-6 w-full">
                 {userData ? (
                   userData.forkLevel <= 1 ? (
-                    <span className="px-3 py-1 bg-slate-950 rounded-full text-[0.65rem] font-bold uppercase text-accent-vip border border-accent-vip/30 shadow-sm flex items-center gap-1">VIP</span>
+                    <span className="px-3 bg-slate-950 rounded-lg text-[0.65rem] font-bold uppercase text-accent-vip border border-accent-vip/30 shadow-sm flex items-center gap-1">VIP</span>
                   ) : (
                     <span className="px-3 py-1 bg-slate-950 rounded-full text-[0.65rem] font-bold uppercase text-accent-warning border border-accent-warning/30 flex items-center gap-1">B{userData.forkLevel}</span>
                   )
                 ) : '-'}
               </div>
             </div>
-            <div className="flex flex-col items-center bg-slate-900/50 hover:bg-slate-900 transition-colors py-3 px-2 rounded-xl border border-slate-800/80 justify-center shadow-sm">
-              <div className="text-[0.55rem] text-slate-400 font-semibold uppercase tracking-wider mb-2 flex items-center justify-center gap-1.5 w-full"><Flame className="w-3.5 h-3.5" /> <span>STREAK</span></div>
-              <div className="text-lg font-mono font-bold text-slate-100 h-6 flex items-center justify-center w-full">{userData ? userData.currentStreak : '-'}</div>
+            <div className="flex flex-col items-center bg-slate-900/50 hover:bg-slate-900 transition-colors p-1.5 rounded-xl border border-slate-800/80 justify-center shadow-sm">
+              <div className="text-[0.55rem] text-slate-400 font-semibold uppercase tracking-wider mb-1 flex items-center justify-center gap-1.5 w-full"><Flame className="w-3.5 h-3.5" /> <span>STREAK</span></div>
+              <div className="text-sm font-mono font-bold text-slate-100 h-6 flex items-center justify-center w-full">{userData ? userData.currentStreak : '-'}</div>
             </div>
-            <div className="flex flex-col items-center bg-slate-900/50 hover:bg-slate-900 transition-colors py-3 px-2 rounded-xl border border-slate-800/80 justify-center shadow-sm">
-              <div className="text-[0.55rem] text-slate-400 font-semibold uppercase tracking-wider mb-2 flex items-center justify-center gap-1.5 w-full"><Zap className="w-3.5 h-3.5" /> <span>SCORE</span></div>
-              <div className="text-lg font-mono font-bold text-slate-100 h-6 flex items-center justify-center w-full">{userData ? userData.totalPoints : '-'}</div>
+            <div className="flex flex-col items-center bg-slate-900/50 hover:bg-slate-900 transition-colors p-1.5 rounded-xl border border-slate-800/80 justify-center shadow-sm">
+              <div className="text-[0.55rem] text-slate-400 font-semibold uppercase tracking-wider mb-1 flex items-center justify-center gap-1.5 w-full"><Zap className="w-3.5 h-3.5" /> <span>SCORE</span></div>
+              <div className="text-sm font-mono font-bold text-slate-100 h-6 flex items-center justify-center w-full">{userData ? userData.totalPoints : '-'}</div>
             </div>
-            <div className="flex flex-col items-center bg-slate-900/50 hover:bg-slate-900 transition-colors py-3 px-2 rounded-xl border border-slate-800/80 justify-center shadow-sm">
-              <div className="text-[0.55rem] text-slate-400 font-semibold uppercase tracking-wider mb-2 flex items-center justify-center gap-1.5 w-full"><Radio className="w-3.5 h-3.5" /> <span>GMS SENT</span></div>
-              <div className="text-lg font-mono font-bold text-slate-100 h-6 flex items-center justify-center w-full">{userData ? userData.gmCount : '-'}</div>
+            <div className="flex flex-col items-center bg-slate-900/50 hover:bg-slate-900 transition-colors p-1.5 rounded-xl border border-slate-800/80 justify-center shadow-sm">
+              <div className="text-[0.55rem] text-slate-400 font-semibold uppercase tracking-wider mb-1 flex items-center justify-center gap-1.5 w-full"><Radio className="w-3.5 h-3.5" /> <span>GMS SENT</span></div>
+              <div className="text-sm font-mono font-bold text-slate-100 h-6 flex items-center justify-center w-full">{userData ? userData.gmCount : '-'}</div>
             </div>
           </div>
         </div>
@@ -266,7 +268,7 @@ export default function RunestonePanel() {
           </div>
         )}
 
-        <div className="relative w-full flex-grow flex items-center justify-center min-h-[260px] mt-8 overflow-hidden rounded-[2rem]">
+        <div className="relative w-full flex-grow flex items-center justify-center min-h-[260px] mt-1 overflow-hidden rounded-[2rem]">
           <div className="runestone-core-container">
             {/* Nodos Satélite */}
             {/* Nodos Satélite */}
@@ -351,12 +353,14 @@ export default function RunestonePanel() {
                   {countdown}
                 </div>
                 {/* Tooltip informativo GM */}
-                <div className="relative cursor-help group/gmtt pointer-events-auto flex items-center">
-                  <Info className="w-4 h-4 text-slate-500 hover:text-accent-primary transition-colors" />
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 bg-slate-900 backdrop-blur-md border border-slate-800 rounded shadow-xl text-[0.65rem] text-slate-300 opacity-0 group-hover/gmtt:opacity-100 pointer-events-none transition-opacity z-[9999] text-left font-normal normal-case tracking-normal">
+                <Tooltip>
+                  <TooltipTrigger className="cursor-help flex items-center justify-center p-2 -m-2 focus:outline-none">
+                    <Info className="w-4 h-4 text-slate-500 hover:text-accent-primary transition-colors" />
+                  </TooltipTrigger>
+                  <TooltipContent className="w-56 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-xl text-[0.65rem] text-slate-300 text-left font-normal normal-case tracking-normal z-[9999]">
                     Send your daily signal to Arc Testnet. Window: 00:00–23:59 UTC. +1 point (+2 with Runestone).
-                  </div>
-                </div>
+                  </TooltipContent>
+                </Tooltip>
               </div>
 
             </div>
@@ -379,9 +383,13 @@ export default function RunestonePanel() {
       </div>
 
       {/* Modal de Activación de Nodos */}
-      {isNodeModalOpen && selectedNodeId && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-sm overflow-hidden shadow-xl relative flex flex-col">
+      <Dialog open={isNodeModalOpen && selectedNodeId !== null} onOpenChange={(open) => {
+        if (!open && !activationLoading) setIsNodeModalOpen(false);
+      }}>
+        <DialogContent className="p-0 border-none bg-transparent shadow-none" showCloseButton={false}>
+          <DialogTitle className="sr-only">Activate Node</DialogTitle>
+          <DialogDescription className="sr-only">Activate your Runestone node</DialogDescription>
+          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-sm overflow-hidden shadow-xl relative flex flex-col mx-auto">
             
             {/* Header */}
             <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
@@ -414,12 +422,12 @@ export default function RunestonePanel() {
                   <span className="text-xs font-mono bg-white px-2 py-1 rounded text-accent-success border border-accent-success/20">0.01 USDC</span>
                 </div>
                 <div className="text-xs text-slate-500">
-                  Requires an active streak of {getRequiredStreak(selectedNodeId)} days. 
+                  Requires an active streak of {getRequiredStreak(selectedNodeId || 1)} days. 
                   Your current streak is: <span className="text-slate-900 font-bold">{userData?.currentStreak || 0}</span>
                 </div>
                 <button
                   onClick={handleActivateByStreak}
-                  disabled={activationLoading || (userData?.currentStreak || 0) < getRequiredStreak(selectedNodeId)}
+                  disabled={activationLoading || (userData?.currentStreak || 0) < getRequiredStreak(selectedNodeId || 1)}
                   className="w-full bg-accent-runestone/10 hover:bg-accent-runestone/20 text-accent-runestone border border-accent-runestone/50 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {activationLoading ? 'Processing...' : 'Activate by Streak'}
@@ -452,18 +460,22 @@ export default function RunestonePanel() {
 
             </div>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
 
       {/* Modal para Reset VIP */}
-      {isResetModalOpen && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-          <div className="flex flex-col bg-slate-950 border border-slate-800 rounded-[2rem] p-6 lg:p-8 relative overflow-hidden shadow-2xl max-w-sm w-full">
+      <Dialog open={isResetModalOpen} onOpenChange={(open) => {
+        if (!open && !gmLoading) setIsResetModalOpen(false);
+      }}>
+        <DialogContent className="p-0 border-none bg-transparent shadow-none" showCloseButton={false}>
+          <DialogTitle className="sr-only">Reset to VIP</DialogTitle>
+          <DialogDescription className="sr-only">Reset your account back to VIP status</DialogDescription>
+          <div className="flex flex-col bg-slate-950 border border-slate-800 rounded-[2rem] p-6 lg:p-8 relative overflow-hidden shadow-2xl max-w-sm w-full mx-auto">
             {/* Background Decorativo */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-accent-runestone/5 rounded-full blur-[100px] pointer-events-none transform translate-x-1/2 -translate-y-1/2"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent-primary/5 rounded-full blur-[100px] pointer-events-none transform -translate-x-1/2 translate-y-1/2"></div>
             
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-6 z-10 relative">
               <h3 className="font-bold text-white uppercase tracking-wider flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-accent-warning" />
                 Reset to VIP
@@ -476,7 +488,7 @@ export default function RunestonePanel() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-6 flex flex-col gap-4 text-center text-sm text-slate-500">
+            <div className="p-6 pt-0 flex flex-col gap-4 text-center text-sm text-slate-500 z-10 relative">
               <p className="text-accent-warning font-bold text-base">
                 You are at Fork {userData?.forkLevel}. GM cost is higher.
               </p>
@@ -495,8 +507,8 @@ export default function RunestonePanel() {
               </button>
             </div>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
