@@ -9,7 +9,6 @@ import { getAvatarUrl } from '@/lib/utils';
 import { NETWORK, SUPPORTED_NETWORKS } from '@/lib/config';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 
 const GithubIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -35,7 +34,7 @@ export function Header({ networkParam }: { networkParam?: string }) {
   }, [address, networkParam, router, params.wallet, isInitializing, isReconnecting, status]);
 
   return (
-    <header className="w-full flex items-center justify-between p-2.5 px-6 bg-background/95 backdrop-blur-2xl border-b border-border sticky top-0 z-50 shadow-sm transition-all">
+    <header className="w-full flex items-center justify-between p-2.5 px-6 bg-surface-1 border-b border-border z-50 shadow-sm transition-all">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2 text-xl font-bold tracking-tight text-foreground cursor-pointer" onClick={() => router.push('/')}>
           <Image src="/icon.svg" alt="Signal 0xL Logo" width={24} height={24} className="shadow-sm" />
@@ -71,12 +70,12 @@ export function Header({ networkParam }: { networkParam?: string }) {
         {/* Separador */}
         <div className="h-5 w-[1px] bg-border mx-1 hidden sm:block"></div>
 
-        {/* Network Badge */}
+        {/* Network Button */}
         {networkParam && SUPPORTED_NETWORKS.includes(networkParam) && (
-          <Badge variant="secondary" className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.65rem] shadow-sm font-semibold">
+          <Button variant="secondary" className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.65rem] shadow-sm font-semibold">
             <Image src="/assets/arc-logo.jpg" alt="Logo de Arc (Circle)" width={16} height={16} className="rounded-full object-cover" />
             {NETWORK.name}
-          </Badge>
+          </Button>
         )}
 
         <div className="relative flex items-center gap-2">
