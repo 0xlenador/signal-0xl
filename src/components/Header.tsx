@@ -9,6 +9,7 @@ import { getAvatarUrl } from '@/lib/utils';
 import { NETWORK, SUPPORTED_NETWORKS } from '@/lib/config';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuGroup } from '@/components/ui/dropdown-menu';
 
 const GithubIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -70,12 +71,31 @@ export function Header({ networkParam }: { networkParam?: string }) {
         {/* Separador */}
         <div className="h-5 w-[1px] bg-border mx-1 hidden sm:block"></div>
 
-        {/* Network Button */}
+        {/* Network Dropdown */}
         {networkParam && SUPPORTED_NETWORKS.includes(networkParam) && (
-          <Button variant="secondary" className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.65rem] shadow-sm font-semibold">
-            <Image src="/assets/arc-logo.jpg" alt="Logo de Arc (Circle)" width={16} height={16} className="rounded-full object-cover" />
-            {NETWORK.name}
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.65rem] shadow-sm font-semibold bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors focus-visible:outline-none">
+              <Image src="/assets/arc-logo.jpg" alt="Logo de Arc (Circle)" width={16} height={16} className="rounded-full object-cover" />
+              {NETWORK.name}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 rounded-2xl">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="text-xs text-muted-foreground">Select Network</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-xs font-medium cursor-pointer rounded-xl">
+                  <Image src="/assets/arc-logo.jpg" alt="Arc Testnet" width={16} height={16} className="rounded-full mr-2" />
+                  {NETWORK.name}
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-xs font-medium opacity-50 cursor-not-allowed rounded-xl flex justify-between items-center" onSelect={(e) => e.preventDefault()}>
+                  <div className="flex items-center">
+                    <Image src="/assets/arc-logo.jpg" alt="Arc Mainnet" width={16} height={16} className="rounded-full mr-2 grayscale" />
+                    Arc Mainnet
+                  </div>
+                  <span className="text-[0.6rem] uppercase tracking-wider text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded-md font-semibold">Soon</span>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
 
         <div className="relative flex items-center gap-2">

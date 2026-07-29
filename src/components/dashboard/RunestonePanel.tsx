@@ -149,9 +149,7 @@ export default function RunestonePanel() {
     // Prevenir datos 'fantasma' y cobros erróneos al cambiar de perfil
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setUserData(null);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setGmCostInfo(null);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setGmDoneToday(false);
 
     const loadData = () => {
