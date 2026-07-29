@@ -230,7 +230,7 @@ export default function RunestonePanel() {
                   userData.forkLevel <= 1 ? (
                     <span className="px-3 bg-slate-950 rounded-lg text-[0.65rem] font-bold uppercase text-accent-vip border border-accent-vip/30 shadow-sm flex items-center gap-1">VIP</span>
                   ) : (
-                    <span className="px-3 py-1 bg-slate-950 rounded-full text-[0.65rem] font-bold uppercase text-accent-warning border border-accent-warning/30 flex items-center gap-1">B{userData.forkLevel}</span>
+                    <span className="px-3 bg-slate-950 rounded-lg text-[0.65rem] font-bold uppercase text-accent-warning border border-accent-warning/30 flex items-center gap-1">B{userData.forkLevel}</span>
                   )
                 ) : '-'}
               </div>
