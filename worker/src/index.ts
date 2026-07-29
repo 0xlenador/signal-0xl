@@ -233,8 +233,11 @@ async function runCron(event: any, env: Env, ctx: ExecutionContext): Promise<voi
   }
 }
 
-export default {
+// Se extrae la configuración del worker a una constante para mayor claridad
+const workerExport = {
   fetch: app.fetch,
   scheduled: runCron
 };
+
+export default workerExport;
 
