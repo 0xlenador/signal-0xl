@@ -67,7 +67,18 @@ export default function NodesGrid() {
       return;
     }
     const success = await activateNodeInstant(nodeId, costWei);
-    if (success) await refreshData();
+    if (success) {
+      // Actualización optimista de la UI
+      setUserData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          nodeCommitment: nodeId === 1 ? true : prev.nodeCommitment,
+          nodeConviction: nodeId === 2 ? true : prev.nodeConviction,
+          nodeLegacy:     nodeId === 3 ? true : prev.nodeLegacy,
+        };
+      });
+    }
     setLoader(false);
   };
 
@@ -75,7 +86,18 @@ export default function NodesGrid() {
     if (!address) return;
     setLoader(true);
     const success = await activateNodeByStreak(nodeId);
-    if (success) await refreshData();
+    if (success) {
+      // Actualización optimista de la UI
+      setUserData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          nodeCommitment: nodeId === 1 ? true : prev.nodeCommitment,
+          nodeConviction: nodeId === 2 ? true : prev.nodeConviction,
+          nodeLegacy:     nodeId === 3 ? true : prev.nodeLegacy,
+        };
+      });
+    }
     setLoader(false);
   };
 
@@ -94,7 +116,7 @@ export default function NodesGrid() {
               <TooltipTrigger className="cursor-help flex items-center justify-center focus:outline-none">
                 <Info className="w-3.5 h-3.5 opacity-60 hover:opacity-100 transition-opacity" />
               </TooltipTrigger>
-              <TooltipContent className="w-56 p-3 bg-background/95 backdrop-blur-md border border-border shadow-sm text-xs text-foreground text-left font-normal normal-case z-[9999]">
+              <TooltipContent className="w-56 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-xl text-[0.65rem] text-slate-300 text-left font-normal normal-case tracking-normal z-[9999]">
                 Analyzes historical transaction volume and gas spent on Arc Testnet. Calculates your activity tier and score multiplier.
               </TooltipContent>
             </Tooltip>
@@ -168,7 +190,7 @@ export default function NodesGrid() {
               <TooltipTrigger className="cursor-help flex items-center justify-center focus:outline-none">
                 <Info className="w-3.5 h-3.5 opacity-60 hover:opacity-100 transition-opacity" />
               </TooltipTrigger>
-              <TooltipContent className="w-56 p-3 bg-background/95 backdrop-blur-md border border-border shadow-sm text-xs text-foreground text-left font-normal normal-case z-[9999]">
+              <TooltipContent className="w-56 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-xl text-[0.65rem] text-slate-300 text-left font-normal normal-case tracking-normal z-[9999]">
                 Calculates the percentage of the total native USDC supply held in your wallet. Measures your economic weight on the network.
               </TooltipContent>
             </Tooltip>
@@ -244,7 +266,7 @@ export default function NodesGrid() {
               <TooltipTrigger className="cursor-help flex items-center justify-center focus:outline-none">
                 <Info className="w-3.5 h-3.5 opacity-60 hover:opacity-100 transition-opacity" />
               </TooltipTrigger>
-              <TooltipContent className="w-56 p-3 bg-background/95 backdrop-blur-md border border-border shadow-sm text-xs text-foreground text-left font-normal normal-case z-[9999]">
+              <TooltipContent className="w-56 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-xl text-[0.65rem] text-slate-300 text-left font-normal normal-case tracking-normal z-[9999]">
                 Analyzes the timestamp of your first and last transaction on Arc Testnet. The older you are on the network, the higher your legacy multiplier.
               </TooltipContent>
             </Tooltip>

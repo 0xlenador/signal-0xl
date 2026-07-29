@@ -59,7 +59,7 @@ export default function LiveSignals() {
               <path d="M12 8h.01"></path>
             </svg>
           </TooltipTrigger>
-          <TooltipContent className="w-48 bg-black/95 border-slate-700 text-[0.6rem] text-slate-300 normal-case tracking-normal z-50 shadow-[0_4px_20px_rgba(0,0,0,0.8)] backdrop-blur-sm whitespace-normal p-2">
+          <TooltipContent className="w-48 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-xl text-[0.65rem] text-slate-300 text-left font-normal normal-case tracking-normal z-[9999] whitespace-normal">
             Live Signals is currently under development. Displayed events are a simulation.
           </TooltipContent>
         </Tooltip>

@@ -232,6 +232,8 @@ export function useSignalContract(): ISignalContractHook {
         value: costWei,
       });
       await publicClient.waitForTransactionReceipt({ hash });
+      // Pequeño delay para que el RPC indexe el estado
+      await new Promise(resolve => setTimeout(resolve, 2500));
       queryClient.invalidateQueries({ queryKey: ['userData'] });
       window.dispatchEvent(new CustomEvent('signal-data-refresh'));
       return true;
@@ -259,6 +261,8 @@ export function useSignalContract(): ISignalContractHook {
         value: CONSTANTS.BASE_GM_COST_WEI,
       });
       await publicClient.waitForTransactionReceipt({ hash });
+      // Pequeño delay para que el RPC indexe el estado
+      await new Promise(resolve => setTimeout(resolve, 2500));
       queryClient.invalidateQueries({ queryKey: ['userData'] });
       window.dispatchEvent(new CustomEvent('signal-data-refresh'));
       return true;
