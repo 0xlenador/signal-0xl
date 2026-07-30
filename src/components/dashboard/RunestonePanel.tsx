@@ -86,11 +86,8 @@ export default function RunestonePanel() {
 
     setGmLoading(true);
     const success = await resetToVIP();
-    if (success) {
-      fetchUserData(address).then(setUserData);
-      getGMCost(address).then(setGmCostInfo);
-      hasGMToday(address).then(setGmDoneToday);
-    }
+    // No se necesita fetch manual: la función de escritura ya hizo el fetch fresco
+    // y el evento signal-data-refresh disparará loadData() automáticamente
     setGmLoading(false);
   };
 
@@ -187,12 +184,8 @@ export default function RunestonePanel() {
 
       const totalCost = currentCost.gmCost + currentCost.debtCost;
       const success = await doGM(totalCost);
-      if (success && isMountedRef.current) {
-        // Refresh
-        fetchUserData(address).then(res => { if (isMountedRef.current) setUserData(res); });
-        getGMCost(address).then(res => { if (isMountedRef.current) setGmCostInfo(res); });
-        hasGMToday(address).then(res => { if (isMountedRef.current) setGmDoneToday(res); });
-      }
+      // No se necesita fetch manual: la función de escritura ya hizo el fetch fresco
+      // y el evento signal-data-refresh disparará loadData() automáticamente
     } catch (e) {
       console.error("Unhandled error in handleGM:", e);
     } finally {

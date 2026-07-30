@@ -82,10 +82,9 @@ export function useSignalContract(): ISignalContractHook {
          if (cachedStr) {
             try {
                const parsed = JSON.parse(cachedStr);
-               const today = Math.floor(Date.now() / 86400000);
-               const cacheDay = Math.floor(parsed.timestamp / 86400000);
-               if (today === cacheDay) {
-                  console.log(`[Cache Motor] ⚡ Datos cargados al instante desde LocalStorage (0ms).`);
+                const ageMs = Date.now() - parsed.timestamp;
+                if (ageMs < 30_000) { // Cache válido por 30 segundos (warm start, no fuente de verdad)
+                   console.log(`[Cache Motor] ⚡ Datos cargados al instante desde LocalStorage (${Math.round(ageMs / 1000)}s de antigüedad).`);
                   if (!queryClient.getQueryData(['userData', walletAddress])) {
                      queryClient.setQueryData(['userData', walletAddress], parsed.data);
                   }
@@ -232,6 +231,7 @@ export function useSignalContract(): ISignalContractHook {
       await new Promise(resolve => setTimeout(resolve, 2000));
       if (address) localStorage.removeItem(`signal_userdata_${address.toLowerCase()}`);
       queryClient.invalidateQueries({ queryKey: ['userData'] });
+      if (address) await fetchUserData(address);
       window.dispatchEvent(new CustomEvent('signal-data-refresh'));
       return true;
     } catch (error) {
@@ -258,6 +258,7 @@ export function useSignalContract(): ISignalContractHook {
       await publicClient!.waitForTransactionReceipt({ hash });
       if (address) localStorage.removeItem(`signal_userdata_${address.toLowerCase()}`);
       queryClient.invalidateQueries({ queryKey: ['userData'] });
+      if (address) await fetchUserData(address);
       window.dispatchEvent(new CustomEvent('signal-data-refresh'));
       return true;
     } catch (error) {
@@ -288,6 +289,7 @@ export function useSignalContract(): ISignalContractHook {
       await new Promise(resolve => setTimeout(resolve, 2500));
       if (address) localStorage.removeItem(`signal_userdata_${address.toLowerCase()}`);
       queryClient.invalidateQueries({ queryKey: ['userData'] });
+      if (address) await fetchUserData(address);
       window.dispatchEvent(new CustomEvent('signal-data-refresh'));
       return true;
     } catch (error) {
@@ -318,6 +320,7 @@ export function useSignalContract(): ISignalContractHook {
       await new Promise(resolve => setTimeout(resolve, 2500));
       if (address) localStorage.removeItem(`signal_userdata_${address.toLowerCase()}`);
       queryClient.invalidateQueries({ queryKey: ['userData'] });
+      if (address) await fetchUserData(address);
       window.dispatchEvent(new CustomEvent('signal-data-refresh'));
       return true;
     } catch (error) {
