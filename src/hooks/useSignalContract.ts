@@ -228,7 +228,7 @@ export function useSignalContract(): ISignalContractHook {
         functionName: 'doGM',
         value: payableAmount,
       });
-      await publicClient!.waitForTransactionReceipt({ hash, retryCount: 0, pollingInterval: 1500 });
+      await publicClient!.waitForTransactionReceipt({ hash });
       await new Promise(resolve => setTimeout(resolve, 2000));
       if (address) localStorage.removeItem(`signal_userdata_${address.toLowerCase()}`);
       queryClient.invalidateQueries({ queryKey: ['userData'] });
@@ -255,8 +255,7 @@ export function useSignalContract(): ISignalContractHook {
         abi: CONTRACT_ABI,
         functionName: 'resetToVIP',
       });
-      await publicClient!.waitForTransactionReceipt({ hash, retryCount: 0, pollingInterval: 1500 });
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await publicClient!.waitForTransactionReceipt({ hash });
       if (address) localStorage.removeItem(`signal_userdata_${address.toLowerCase()}`);
       queryClient.invalidateQueries({ queryKey: ['userData'] });
       window.dispatchEvent(new CustomEvent('signal-data-refresh'));
@@ -284,7 +283,7 @@ export function useSignalContract(): ISignalContractHook {
         args: [nodeId],
         value: costWei,
       });
-      await publicClient!.waitForTransactionReceipt({ hash, retryCount: 0, pollingInterval: 1500 });
+      await publicClient!.waitForTransactionReceipt({ hash });
       // Pequeño delay para que el RPC indexe el estado
       await new Promise(resolve => setTimeout(resolve, 2500));
       if (address) localStorage.removeItem(`signal_userdata_${address.toLowerCase()}`);
@@ -314,7 +313,7 @@ export function useSignalContract(): ISignalContractHook {
         args: [nodeId],
         value: CONSTANTS.BASE_GM_COST_WEI,
       });
-      await publicClient!.waitForTransactionReceipt({ hash, retryCount: 0, pollingInterval: 1500 });
+      await publicClient!.waitForTransactionReceipt({ hash });
       // Pequeño delay para que el RPC indexe el estado
       await new Promise(resolve => setTimeout(resolve, 2500));
       if (address) localStorage.removeItem(`signal_userdata_${address.toLowerCase()}`);

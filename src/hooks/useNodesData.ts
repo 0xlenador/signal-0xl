@@ -177,11 +177,18 @@ export function useNodesData(address: string | null | undefined): INodesData {
       void fetchNodesData();
     }, 800);
     
-    window.addEventListener('signal-data-refresh', fetchNodesData);
+    // Retraso de cortesía (1200ms) para no chocar con las lecturas de React Query post-GM
+    const handleRefresh = () => {
+      setTimeout(() => {
+        void fetchNodesData();
+      }, 1200);
+    };
+    
+    window.addEventListener('signal-data-refresh', handleRefresh);
     
     return () => {
       clearTimeout(timeoutId);
-      window.removeEventListener('signal-data-refresh', fetchNodesData);
+      window.removeEventListener('signal-data-refresh', handleRefresh);
     };
   }, [fetchNodesData]);
 
