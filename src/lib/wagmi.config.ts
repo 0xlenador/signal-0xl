@@ -45,7 +45,8 @@ export const wagmiConfig = getDefaultConfig({
   }),
   transports: {
     [arcTestnet.id]: fallback(
-      NETWORK.rpcUrls.map(url => http(url))
+      NETWORK.rpcUrls.map(url => http(url, { retryCount: 2, retryDelay: 500 })),
+      { rank: false } // Crucial: Evita que Wagmi bombardee todos los RPCs a la vez para "medir su velocidad"
     ),
   },
 });
