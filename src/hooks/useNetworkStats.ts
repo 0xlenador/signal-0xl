@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getNextWsRpc } from '@/lib/rpcEngine';
 
 export interface INetworkStats {
   gasPrice: string;
@@ -15,7 +16,6 @@ export interface INetworkStats {
   };
 }
 
-const WS_URL = 'wss://arc-testnet.drpc.org';
 const INITIAL_BACKOFF_MS = 1000;
 const MAX_BACKOFF_MS = 10000;
 const MAX_BUFFER = 60;
@@ -146,7 +146,8 @@ class NetworkStatsManager {
       this.ws = null;
     }
 
-    const ws = new WebSocket(WS_URL);
+    const wsUrl = getNextWsRpc();
+    const ws = new WebSocket(wsUrl);
     this.ws = ws;
 
     ws.onopen = () => {

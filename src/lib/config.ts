@@ -3,7 +3,15 @@ export const NETWORK = {
   chainIdHex: '0x4cef52',
   name: 'Arc Testnet',
   slug: 'arc-testnet',
-  rpcUrls: ['https://rpc.testnet.arc.network'],
+  rpcUrls: [
+    'https://rpc.testnet.arc.network',
+    'https://rpc.blockdaemon.testnet.arc.io',
+    'https://rpc.drpc.testnet.arc.io',
+    'https://rpc.quicknode.testnet.arc.io'
+  ],
+  wsUrls: [
+    'wss://arc-testnet.drpc.org'
+  ],
   nativeCurrency: {
     name: 'USDC',
     symbol: 'USDC',

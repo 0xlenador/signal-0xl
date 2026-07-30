@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { formatUnits } from 'viem';
-import { BLOCKSCOUT, CONSTANTS } from '@/lib/config';
+import { BLOCKSCOUT, CONSTANTS, NETWORK } from '@/lib/config';
+import { fetchWithFallback } from '@/lib/rpcEngine';
 
 export interface ICommitmentNode {
   totalTxs: number;
@@ -65,14 +66,13 @@ export function useNodesData(address: string | null | undefined): INodesData {
       let rpcNonce = 0;
       if (!addressRes || !countersRes) {
         try {
-          const HTTP_RPC_URL = 'https://rpc.testnet.arc.network';
           const [balRes, nonceRes] = await Promise.all([
-            fetch(HTTP_RPC_URL, {
+            fetchWithFallback(NETWORK.rpcUrls, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [address, 'latest'] })
             }).then(r => r.json()),
-            fetch(HTTP_RPC_URL, {
+            fetchWithFallback(NETWORK.rpcUrls, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'eth_getTransactionCount', params: [address, 'latest'] })

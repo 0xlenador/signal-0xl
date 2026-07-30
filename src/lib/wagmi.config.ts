@@ -1,4 +1,4 @@
-import { defineChain } from 'viem';
+import { defineChain, fallback, http } from 'viem';
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { cookieStorage, createStorage } from 'wagmi';
 import { NETWORK } from '@/lib/config';
@@ -43,4 +43,9 @@ export const wagmiConfig = getDefaultConfig({
   storage: createStorage({
     storage: cookieStorage,
   }),
+  transports: {
+    [arcTestnet.id]: fallback(
+      NETWORK.rpcUrls.map(url => http(url))
+    ),
+  },
 });

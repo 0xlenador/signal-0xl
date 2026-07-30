@@ -176,25 +176,28 @@ export default function RunestonePanel() {
     if (!address || gmLoading) return;
     setGmLoading(true);
     
-    // Fetch it fresh ALWAYS to ensure we have the absolute right cost before doing GM
-    // Esto evita el error de "insufficient payment" por usar el costo de la wallet anterior
-    const currentCost = await getGMCost(address);
-    
-    if (!currentCost) {
-      alert("Could not calculate GM cost due to network congestion. Try again.");
-      setGmLoading(false);
-      return;
-    }
+    try {
+      const currentCost = await getGMCost(address);
+      
+      if (!currentCost) {
+        alert("Could not calculate GM cost due to network congestion. Try again.");
+        if (isMountedRef.current) setGmLoading(false);
+        return;
+      }
 
-    const totalCost = currentCost.gmCost + currentCost.debtCost;
-    const success = await doGM(totalCost);
-    if (success && isMountedRef.current) {
-      // Refresh
-      fetchUserData(address).then(res => { if (isMountedRef.current) setUserData(res); });
-      getGMCost(address).then(res => { if (isMountedRef.current) setGmCostInfo(res); });
-      hasGMToday(address).then(res => { if (isMountedRef.current) setGmDoneToday(res); });
+      const totalCost = currentCost.gmCost + currentCost.debtCost;
+      const success = await doGM(totalCost);
+      if (success && isMountedRef.current) {
+        // Refresh
+        fetchUserData(address).then(res => { if (isMountedRef.current) setUserData(res); });
+        getGMCost(address).then(res => { if (isMountedRef.current) setGmCostInfo(res); });
+        hasGMToday(address).then(res => { if (isMountedRef.current) setGmDoneToday(res); });
+      }
+    } catch (e) {
+      console.error("Unhandled error in handleGM:", e);
+    } finally {
+      if (isMountedRef.current) setGmLoading(false);
     }
-    if (isMountedRef.current) setGmLoading(false);
   };
 
 

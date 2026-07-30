@@ -1,9 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { createPublicClient, http, formatUnits, parseUnits } from 'viem';
-import { useWriteContract } from 'wagmi';
+import { useWriteContract, usePublicClient, useAccount } from 'wagmi';
 import { useQueryClient } from '@tanstack/react-query';
 import { arcTestnet } from '@/lib/wagmi.config';
 import { CONTRACT_ADDRESS, CONTRACT_ABI, CONSTANTS } from '@/lib/config';
+import { getNextHttpRpc } from '@/lib/rpcEngine';
 
 export interface IUserData {
   totalPoints: number;
@@ -37,28 +38,30 @@ export interface ISignalContractHook {
   error: string | null;
 }
 
-const publicClient = createPublicClient({
-  chain: arcTestnet,
-  transport: http(),
-});
+// getPublicClient eliminated in favor of inline instantiation with logging
 
-async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 1000): Promise<T> {
+async function withRetry<T>(fn: () => Promise<T>, retries = 5, delayMs = 300): Promise<T> {
+  let lastErr;
   for (let i = 0; i < retries; i++) {
     try {
       return await fn();
     } catch (error) {
-      if (i === retries - 1) throw error;
+      lastErr = error;
+      console.warn(`[RPC Motor] Bucle de reintento atrapó error. Intento ${i + 1} de ${retries}.`);
+      if (i === retries - 1) break;
       await new Promise(r => setTimeout(r, delayMs));
     }
   }
-  throw new Error("Unreachable");
+  throw lastErr;
 }
 
 export function useSignalContract(): ISignalContractHook {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { address } = useAccount();
   const { writeContractAsync } = useWriteContract();
+  const publicClient = usePublicClient();
   const queryClient = useQueryClient();
 
   const isMountedRef = useRef(true);
@@ -70,18 +73,56 @@ export function useSignalContract(): ISignalContractHook {
   const fetchUserData = useCallback(async (walletAddress: string | null | undefined): Promise<IUserData | null> => {
     if (!walletAddress) return null;
 
+    const cacheKey = `signal_userdata_${walletAddress.toLowerCase()}`;
+    const queryState = queryClient.getQueryState(['userData', walletAddress]);
+    
+    if (!queryState?.isInvalidated) {
+      if (typeof window !== 'undefined') {
+         const cachedStr = localStorage.getItem(cacheKey);
+         if (cachedStr) {
+            try {
+               const parsed = JSON.parse(cachedStr);
+               const today = Math.floor(Date.now() / 86400000);
+               const cacheDay = Math.floor(parsed.timestamp / 86400000);
+               if (today === cacheDay) {
+                  console.log(`[Cache Motor] ⚡ Datos cargados al instante desde LocalStorage (0ms).`);
+                  if (!queryClient.getQueryData(['userData', walletAddress])) {
+                     queryClient.setQueryData(['userData', walletAddress], parsed.data);
+                  }
+                  return parsed.data;
+               }
+            } catch(e){}
+         }
+      }
+    }
+
     return queryClient.fetchQuery({
       queryKey: ['userData', walletAddress],
       staleTime: 5000,
       queryFn: async () => {
         try {
           return await withRetry(async () => {
-            const data = await publicClient.readContract({
-              address: CONTRACT_ADDRESS as `0x${string}`,
-              abi: CONTRACT_ABI,
-              functionName: 'users',
-              args: [walletAddress as `0x${string}`],
+            const url = getNextHttpRpc();
+            console.log(`[RPC Motor] 🔄 Probando lectura de contrato con: ${url}`);
+            
+            const client = createPublicClient({
+              chain: arcTestnet,
+              transport: http(url),
             });
+            
+            let data;
+            try {
+              data = await client.readContract({
+                address: CONTRACT_ADDRESS as `0x${string}`,
+                abi: CONTRACT_ABI,
+                functionName: 'users',
+                args: [walletAddress as `0x${string}`],
+              });
+              console.log(`[RPC Motor] ✅ ÉXITO. Datos cargados vía: ${url}`);
+            } catch (err: any) {
+              console.warn(`[RPC Motor] ❌ FALLÓ ${url} | Motivo: ${err.shortMessage || err.message || "Network Error"}`);
+              throw err;
+            }
             
             let totalPoints = Number(data[0]);
             let lastGmDay = Number(data[1]);
@@ -104,7 +145,7 @@ export function useSignalContract(): ISignalContractHook {
                 nodeLegacy = false;
             }
 
-            return {
+            const result = {
               totalPoints,
               lastGmDay,
               currentStreak,
@@ -117,6 +158,14 @@ export function useSignalContract(): ISignalContractHook {
               attachedAgentId,
               onChainForkLevel
             };
+            
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(cacheKey, JSON.stringify({
+                timestamp: Date.now(),
+                data: result
+              }));
+            }
+            return result;
           });
         } catch (err) {
           console.error("Error fetching user data:", err);
@@ -179,7 +228,9 @@ export function useSignalContract(): ISignalContractHook {
         functionName: 'doGM',
         value: payableAmount,
       });
-      await publicClient.waitForTransactionReceipt({ hash });
+      await publicClient!.waitForTransactionReceipt({ hash });
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (address) localStorage.removeItem(`signal_userdata_${address.toLowerCase()}`);
       queryClient.invalidateQueries({ queryKey: ['userData'] });
       window.dispatchEvent(new CustomEvent('signal-data-refresh'));
       return true;
@@ -204,7 +255,9 @@ export function useSignalContract(): ISignalContractHook {
         abi: CONTRACT_ABI,
         functionName: 'resetToVIP',
       });
-      await publicClient.waitForTransactionReceipt({ hash });
+      await publicClient!.waitForTransactionReceipt({ hash });
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (address) localStorage.removeItem(`signal_userdata_${address.toLowerCase()}`);
       queryClient.invalidateQueries({ queryKey: ['userData'] });
       window.dispatchEvent(new CustomEvent('signal-data-refresh'));
       return true;
@@ -231,9 +284,10 @@ export function useSignalContract(): ISignalContractHook {
         args: [nodeId],
         value: costWei,
       });
-      await publicClient.waitForTransactionReceipt({ hash });
+      await publicClient!.waitForTransactionReceipt({ hash });
       // Pequeño delay para que el RPC indexe el estado
       await new Promise(resolve => setTimeout(resolve, 2500));
+      if (address) localStorage.removeItem(`signal_userdata_${address.toLowerCase()}`);
       queryClient.invalidateQueries({ queryKey: ['userData'] });
       window.dispatchEvent(new CustomEvent('signal-data-refresh'));
       return true;
@@ -260,9 +314,10 @@ export function useSignalContract(): ISignalContractHook {
         args: [nodeId],
         value: CONSTANTS.BASE_GM_COST_WEI,
       });
-      await publicClient.waitForTransactionReceipt({ hash });
+      await publicClient!.waitForTransactionReceipt({ hash });
       // Pequeño delay para que el RPC indexe el estado
       await new Promise(resolve => setTimeout(resolve, 2500));
+      if (address) localStorage.removeItem(`signal_userdata_${address.toLowerCase()}`);
       queryClient.invalidateQueries({ queryKey: ['userData'] });
       window.dispatchEvent(new CustomEvent('signal-data-refresh'));
       return true;

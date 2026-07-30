@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Microscope, Gem, Landmark, Info, Loader2 } from 'lucide-react';
 import { useNodesData, useSignalContract, IUserData } from '@/hooks';
 import { useParams } from 'next/navigation';
@@ -22,7 +22,7 @@ export default function NodesGrid() {
 
   const [userData, setUserData] = useState<IUserData | null>(null);
   
-  const today = Math.floor(Date.now() / 86400000);
+  const today = useMemo(() => Math.floor(Date.now() / 86400000), []);
   const hasGMToday = userData?.lastGmDay === today;
 
   // Costs computed synchronously based on user on-chain fork level
