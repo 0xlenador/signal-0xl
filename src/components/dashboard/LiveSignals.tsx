@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export default function LiveSignals() {
   const [signals, setSignals] = useState<{ id: number; text: string; type: string }[]>([]);
@@ -51,18 +51,18 @@ export default function LiveSignals() {
           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-glow-cyan"></span>
           <span>Live Signals</span>
         </div>
-        <Tooltip>
-          <TooltipTrigger className="cursor-help flex items-center justify-center focus:outline-none">
+        <Popover>
+          <PopoverTrigger className="cursor-help flex items-center justify-center focus:outline-none">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
               <path d="M12 16v-4"></path>
               <path d="M12 8h.01"></path>
             </svg>
-          </TooltipTrigger>
-          <TooltipContent className="w-48 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-xl text-[0.65rem] text-slate-300 text-left font-normal normal-case tracking-normal z-[9999] whitespace-normal">
+          </PopoverTrigger>
+          <PopoverContent className="w-48 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-xl text-[0.65rem] text-slate-300 text-left font-normal normal-case tracking-normal z-[9999] whitespace-normal">
             Live Signals is currently under development. Displayed events are a simulation.
-          </TooltipContent>
-        </Tooltip>
+          </PopoverContent>
+        </Popover>
       </div>
       <div className="flex-grow w-full font-mono text-[0.6rem] text-slate-300/80 overflow-y-hidden flex flex-col justify-end relative mask-image-fade-top gap-1.5">
         {signals.map(signal => (

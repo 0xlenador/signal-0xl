@@ -9,7 +9,7 @@ import { formatUnits } from 'viem';
 import { useSignalContract, IUserData, IContractCost } from '@/hooks';
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 export default function RunestonePanel() {
@@ -351,14 +351,14 @@ export default function RunestonePanel() {
                   {countdown}
                 </div>
                 {/* Tooltip informativo GM */}
-                <Tooltip>
-                  <TooltipTrigger className="cursor-help flex items-center justify-center p-2 -m-2 focus:outline-none">
+                <Popover>
+                  <PopoverTrigger className="cursor-help flex items-center justify-center p-2 -m-2 focus:outline-none">
                     <Info className="w-4 h-4 text-slate-500 hover:text-accent-primary transition-colors" />
-                  </TooltipTrigger>
-                  <TooltipContent className="w-56 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-xl text-[0.65rem] text-slate-300 text-left font-normal normal-case tracking-normal z-[9999]">
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-xl text-[0.65rem] text-slate-300 text-left font-normal normal-case tracking-normal z-[9999]">
                     Send your daily signal to Arc Testnet. Window: 00:00–23:59 UTC. +1 point (+2 with Runestone).
-                  </TooltipContent>
-                </Tooltip>
+                  </PopoverContent>
+                </Popover>
               </div>
 
             </div>

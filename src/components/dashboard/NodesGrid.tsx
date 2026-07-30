@@ -9,7 +9,7 @@ import { formatUnits } from 'viem';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 export default function NodesGrid() {
   const { address } = useWeb3();
@@ -115,14 +115,14 @@ export default function NodesGrid() {
             <span>Node 1 — Commitment</span>
           </div>
           <div className="flex items-center gap-2">
-            <Tooltip>
-              <TooltipTrigger className="cursor-help flex items-center justify-center focus:outline-none">
+            <Popover>
+              <PopoverTrigger className="cursor-help flex items-center justify-center focus:outline-none">
                 <Info className="w-3.5 h-3.5 opacity-60 hover:opacity-100 transition-opacity" />
-              </TooltipTrigger>
-              <TooltipContent className="w-56 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-xl text-[0.65rem] text-slate-300 text-left font-normal normal-case tracking-normal z-[9999]">
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-xl text-[0.65rem] text-slate-300 text-left font-normal normal-case tracking-normal z-[9999]">
                 Analyzes historical transaction volume and gas spent on Arc Testnet. Calculates your activity tier and score multiplier.
-              </TooltipContent>
-            </Tooltip>
+              </PopoverContent>
+            </Popover>
             {userData?.nodeCommitment ? (
               <div className="w-2 h-2 rounded-full bg-green-500 shadow-sm"></div>
             ) : (
@@ -193,14 +193,14 @@ export default function NodesGrid() {
             <span>Node 2 — Conviction</span>
           </div>
           <div className="flex items-center gap-2">
-            <Tooltip>
-              <TooltipTrigger className="cursor-help flex items-center justify-center focus:outline-none">
+            <Popover>
+              <PopoverTrigger className="cursor-help flex items-center justify-center focus:outline-none">
                 <Info className="w-3.5 h-3.5 opacity-60 hover:opacity-100 transition-opacity" />
-              </TooltipTrigger>
-              <TooltipContent className="w-56 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-xl text-[0.65rem] text-slate-300 text-left font-normal normal-case tracking-normal z-[9999]">
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-xl text-[0.65rem] text-slate-300 text-left font-normal normal-case tracking-normal z-[9999]">
                 Calculates the percentage of the total native USDC supply held in your wallet. Measures your economic weight on the network.
-              </TooltipContent>
-            </Tooltip>
+              </PopoverContent>
+            </Popover>
             {userData?.nodeConviction ? (
               <div className="w-2 h-2 rounded-full bg-green-500 shadow-sm"></div>
             ) : (
@@ -273,14 +273,14 @@ export default function NodesGrid() {
             <span>Node 3 — Legacy</span>
           </div>
           <div className="flex items-center gap-2">
-            <Tooltip>
-              <TooltipTrigger className="cursor-help flex items-center justify-center focus:outline-none">
+            <Popover>
+              <PopoverTrigger className="cursor-help flex items-center justify-center focus:outline-none">
                 <Info className="w-3.5 h-3.5 opacity-60 hover:opacity-100 transition-opacity" />
-              </TooltipTrigger>
-              <TooltipContent className="w-56 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-xl text-[0.65rem] text-slate-300 text-left font-normal normal-case tracking-normal z-[9999]">
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-xl text-[0.65rem] text-slate-300 text-left font-normal normal-case tracking-normal z-[9999]">
                 Analyzes the timestamp of your first and last transaction on Arc Testnet. The older you are on the network, the higher your legacy multiplier.
-              </TooltipContent>
-            </Tooltip>
+              </PopoverContent>
+            </Popover>
             {userData?.nodeLegacy ? (
               <div className="w-2 h-2 rounded-full bg-green-500 shadow-sm"></div>
             ) : (
