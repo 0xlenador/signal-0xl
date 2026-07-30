@@ -32,6 +32,8 @@ export function getNextWsRpc(): string {
   return url;
 }
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 /**
  * Ejecuta un fetch y, si falla, reintenta automáticamente usando el siguiente RPC
  * de la lista proporcionada. Ideal para llamadas manuales como Blockscout fallback.
@@ -54,6 +56,8 @@ export async function fetchWithFallback(urls: readonly string[], requestOptions?
       lastError = error;
     }
     // Si falla, el loop continúa e intenta con la siguiente URL
+    // Se añade un retraso para evitar disparar el Rate Limit del próximo RPC y saturar la red
+    await sleep(300);
   }
 
   throw lastError || new Error("All fallback URLs failed");

@@ -66,18 +66,21 @@ export function useNodesData(address: string | null | undefined): INodesData {
       let rpcNonce = 0;
       if (!addressRes || !countersRes) {
         try {
-          const [balRes, nonceRes] = await Promise.all([
-            fetchWithFallback(NETWORK.rpcUrls, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [address, 'latest'] })
-            }).then(r => r.json()),
-            fetchWithFallback(NETWORK.rpcUrls, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'eth_getTransactionCount', params: [address, 'latest'] })
-            }).then(r => r.json())
-          ]);
+          const balRes = await fetchWithFallback(NETWORK.rpcUrls, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [address, 'latest'] })
+          }).then(r => r.json());
+          
+          // Esperamos un poco antes de pedir el nonce para no disparar el Rate Limit
+          await new Promise(resolve => setTimeout(resolve, 300));
+          
+          const nonceRes = await fetchWithFallback(NETWORK.rpcUrls, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'eth_getTransactionCount', params: [address, 'latest'] })
+          }).then(r => r.json());
+
           rpcBalance = balRes.result ? BigInt(balRes.result).toString() : "0";
           rpcNonce = nonceRes.result ? parseInt(nonceRes.result, 16) : 0;
         } catch { /* ignore fallback errors */ }
@@ -169,11 +172,15 @@ export function useNodesData(address: string | null | undefined): INodesData {
   }, [address]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void fetchNodesData();
+    // Aplicamos Debounce (espera 800ms antes de disparar las lecturas a blockscout/rpc)
+    const timeoutId = setTimeout(() => {
+      void fetchNodesData();
+    }, 800);
     
     window.addEventListener('signal-data-refresh', fetchNodesData);
+    
     return () => {
+      clearTimeout(timeoutId);
       window.removeEventListener('signal-data-refresh', fetchNodesData);
     };
   }, [fetchNodesData]);
