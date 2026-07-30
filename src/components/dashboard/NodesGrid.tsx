@@ -22,6 +22,9 @@ export default function NodesGrid() {
 
   const [userData, setUserData] = useState<IUserData | null>(null);
   
+  const today = Math.floor(Date.now() / 86400000);
+  const hasGMToday = userData?.lastGmDay === today;
+
   // Costs computed synchronously based on user on-chain fork level
   const isB2Plus = userData && userData.onChainForkLevel > 1;
   const cost1 = isB2Plus ? '0.01' : '0.51';
@@ -156,23 +159,27 @@ export default function NodesGrid() {
         {/* Acciones */}
         {!userData?.nodeCommitment && isOwner && (
           <div className="grid grid-cols-2 gap-2 mt-auto relative z-10">
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={() => handleActivateStreak(1, setLoadingNode1Streak)} 
-              disabled={loadingNode1Streak || loadingNode1Instant || (userData?.currentStreak || 0) < 3}
-              className="text-xs h-8"
-            >
-              {loadingNode1Streak ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Streak ({userData?.currentStreak || 0}/3)</span>}
-            </Button>
-            <Button 
-              size="sm"
-              onClick={() => handleActivateInstant(1, setLoadingNode1Instant)}
-              disabled={loadingNode1Streak || loadingNode1Instant}
-              className="text-xs h-8"
-            >
-              {loadingNode1Instant ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Buy ({cost1} USDC)</span>}
-            </Button>
+            <div title={!hasGMToday ? "Must do GM first" : ""} className={!hasGMToday ? "cursor-not-allowed" : ""}>
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => handleActivateStreak(1, setLoadingNode1Streak)} 
+                disabled={loadingNode1Streak || loadingNode1Instant || (userData?.currentStreak || 0) < 3 || !hasGMToday}
+                className={`text-xs h-8 w-full ${!hasGMToday ? "pointer-events-none" : ""}`}
+              >
+                {loadingNode1Streak ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Streak ({userData?.currentStreak || 0}/3)</span>}
+              </Button>
+            </div>
+            <div title={!hasGMToday ? "Must do GM first" : ""} className={!hasGMToday ? "cursor-not-allowed" : ""}>
+              <Button 
+                size="sm"
+                onClick={() => handleActivateInstant(1, setLoadingNode1Instant)}
+                disabled={loadingNode1Streak || loadingNode1Instant || !hasGMToday}
+                className={`text-xs h-8 w-full ${!hasGMToday ? "pointer-events-none" : ""}`}
+              >
+                {loadingNode1Instant ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Buy ({cost1} USDC)</span>}
+              </Button>
+            </div>
           </div>
         )}
       </Card>
@@ -232,23 +239,27 @@ export default function NodesGrid() {
         {/* Acciones */}
         {!userData?.nodeConviction && isOwner && (
           <div className="grid grid-cols-2 gap-2 mt-auto relative z-10">
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={() => handleActivateStreak(2, setLoadingNode2Streak)} 
-              disabled={loadingNode2Streak || loadingNode2Instant || (userData?.currentStreak || 0) < 12}
-              className="text-xs h-8"
-            >
-              {loadingNode2Streak ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Streak ({userData?.currentStreak || 0}/12)</span>}
-            </Button>
-            <Button 
-              size="sm"
-              onClick={() => handleActivateInstant(2, setLoadingNode2Instant)}
-              disabled={loadingNode2Streak || loadingNode2Instant}
-              className="text-xs h-8"
-            >
-              {loadingNode2Instant ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Buy ({cost2} USDC)</span>}
-            </Button>
+            <div title={!hasGMToday ? "Must do GM first" : ""} className={!hasGMToday ? "cursor-not-allowed" : ""}>
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => handleActivateStreak(2, setLoadingNode2Streak)} 
+                disabled={loadingNode2Streak || loadingNode2Instant || (userData?.currentStreak || 0) < 12 || !hasGMToday}
+                className={`text-xs h-8 w-full ${!hasGMToday ? "pointer-events-none" : ""}`}
+              >
+                {loadingNode2Streak ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Streak ({userData?.currentStreak || 0}/12)</span>}
+              </Button>
+            </div>
+            <div title={!hasGMToday ? "Must do GM first" : ""} className={!hasGMToday ? "cursor-not-allowed" : ""}>
+              <Button 
+                size="sm"
+                onClick={() => handleActivateInstant(2, setLoadingNode2Instant)}
+                disabled={loadingNode2Streak || loadingNode2Instant || !hasGMToday}
+                className={`text-xs h-8 w-full ${!hasGMToday ? "pointer-events-none" : ""}`}
+              >
+                {loadingNode2Instant ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Buy ({cost2} USDC)</span>}
+              </Button>
+            </div>
           </div>
         )}
       </Card>
@@ -316,23 +327,27 @@ export default function NodesGrid() {
         {/* Acciones */}
         {!userData?.nodeLegacy && isOwner && (
           <div className="grid grid-cols-2 gap-2 mt-auto relative z-10">
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={() => handleActivateStreak(3, setLoadingNode3Streak)} 
-              disabled={loadingNode3Streak || loadingNode3Instant || (userData?.currentStreak || 0) < 25}
-              className="text-xs h-8"
-            >
-              {loadingNode3Streak ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Streak ({userData?.currentStreak || 0}/25)</span>}
-            </Button>
-            <Button 
-              size="sm"
-              onClick={() => handleActivateInstant(3, setLoadingNode3Instant)}
-              disabled={loadingNode3Streak || loadingNode3Instant}
-              className="text-xs h-8"
-            >
-              {loadingNode3Instant ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Buy ({cost3} USDC)</span>}
-            </Button>
+            <div title={!hasGMToday ? "Must do GM first" : ""} className={!hasGMToday ? "cursor-not-allowed" : ""}>
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => handleActivateStreak(3, setLoadingNode3Streak)} 
+                disabled={loadingNode3Streak || loadingNode3Instant || (userData?.currentStreak || 0) < 25 || !hasGMToday}
+                className={`text-xs h-8 w-full ${!hasGMToday ? "pointer-events-none" : ""}`}
+              >
+                {loadingNode3Streak ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Streak ({userData?.currentStreak || 0}/25)</span>}
+              </Button>
+            </div>
+            <div title={!hasGMToday ? "Must do GM first" : ""} className={!hasGMToday ? "cursor-not-allowed" : ""}>
+              <Button 
+                size="sm"
+                onClick={() => handleActivateInstant(3, setLoadingNode3Instant)}
+                disabled={loadingNode3Streak || loadingNode3Instant || !hasGMToday}
+                className={`text-xs h-8 w-full ${!hasGMToday ? "pointer-events-none" : ""}`}
+              >
+                {loadingNode3Instant ? <Loader2 className="w-3 h-3 animate-spin" /> : <span>Buy ({cost3} USDC)</span>}
+              </Button>
+            </div>
           </div>
         )}
       </Card>
