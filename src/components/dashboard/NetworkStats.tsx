@@ -1,9 +1,10 @@
 'use client';
 import Image from 'next/image';
-import { Globe, Droplets, BookOpen, ExternalLink, Search } from 'lucide-react';
+import { Globe, Droplets, BookOpen, ExternalLink, Search, MoreVertical } from 'lucide-react';
 import { useNetworkStats } from '@/hooks';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const Sparkline = ({ color, data, glowColor }: { color: string, data: number[], glowColor: string }) => {
   const width = 48;
@@ -93,7 +94,7 @@ export default function NetworkStats() {
         </h3>
         
         {/* Quick Links Section */}
-        <div className="flex items-center gap-4 text-muted-foreground font-medium text-xs">
+        <div className="hidden md:flex items-center gap-4 text-muted-foreground font-medium text-xs">
           <a href="https://faucet.circle.com/" target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors group/link">
             <Droplets className="w-3.5 h-3.5" />
             <span>Faucet</span>
@@ -115,41 +116,84 @@ export default function NetworkStats() {
             <ExternalLink className="w-2 h-2 opacity-50 -ml-0.5 group-hover/link:opacity-100 transition-opacity" />
           </a>
         </div>
+
+        {/* Quick Links Dropdown (Mobile) */}
+        <div className="md:hidden">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="text-muted-foreground hover:text-foreground p-1.5 rounded-md bg-muted/40 border border-border">
+              <MoreVertical className="w-4 h-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40 z-[9999]">
+              <DropdownMenuItem>
+                <a href="https://faucet.circle.com/" target="_blank" rel="noreferrer" className="flex items-center gap-2 cursor-pointer text-xs w-full">
+                  <Droplets className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span>Faucet</span>
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <a href="https://docs.arc.io/" target="_blank" rel="noreferrer" className="flex items-center gap-2 cursor-pointer text-xs w-full">
+                  <BookOpen className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span>Docs</span>
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <a href="https://www.arc.io/" target="_blank" rel="noreferrer" className="flex items-center gap-2 cursor-pointer text-xs w-full">
+                  <Globe className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span>Website</span>
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <a href="https://testnet.arcscan.app/" target="_blank" rel="noreferrer" className="flex items-center gap-2 cursor-pointer text-xs w-full">
+                  <Search className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span>Explorer</span>
+                </a>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
       
       {/* Network Stats Grid */}
-      <div className="flex-grow w-full relative z-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="flex-grow w-full relative z-10 overflow-x-hidden">
+        <div className="grid grid-cols-4 gap-1.5 sm:gap-3">
           {/* GAS */}
-          <div className="bg-muted/40 border border-border rounded-lg p-3 flex flex-col justify-between hover:bg-muted/60 transition-colors shadow-sm">
-            <span className="text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center gap-1 font-semibold">⛽ GAS COST</span>
-            <div className="mt-2 flex items-end justify-between">
-              <span className="text-sm font-semibold text-foreground tracking-tight">{stats.gasPrice} <span className="text-[0.6rem] text-muted-foreground font-medium">USDC</span></span>
-              <Sparkline color="#64748b" glowColor="#64748b" data={stats.history.gas} />
+          <div className="bg-muted/40 border border-border rounded-lg p-1.5 sm:p-3 flex flex-col justify-center sm:justify-between hover:bg-muted/60 transition-colors shadow-sm">
+            <span className="text-[0.55rem] sm:text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 font-semibold truncate" title="GAS COST">
+              ⛽ GAS<span className="hidden sm:inline"> COST</span>
+            </span>
+            <div className="mt-1 sm:mt-2 flex items-end justify-center sm:justify-between">
+              <span className="text-[0.65rem] sm:text-sm font-semibold text-foreground tracking-tight truncate">{stats.gasPrice} <span className="text-[0.55rem] sm:text-[0.6rem] text-muted-foreground font-medium hidden lg:inline">USDC</span></span>
+              <div className="hidden sm:block"><Sparkline color="#64748b" glowColor="#64748b" data={stats.history.gas} /></div>
             </div>
           </div>
           {/* BLK TIME */}
-          <div className="bg-muted/40 border border-border rounded-lg p-3 flex flex-col justify-between hover:bg-muted/60 transition-colors shadow-sm">
-            <span className="text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center gap-1 font-semibold">⏱ AVG BLK TIME</span>
-            <div className="mt-2 flex items-end justify-between">
-              <span className="text-sm font-semibold text-foreground tracking-tight">{stats.blockTime} <span className="text-[0.6rem] text-muted-foreground font-medium">ms</span></span>
-              <Sparkline color="#8b5cf6" glowColor="#8b5cf6" data={stats.history.time} />
+          <div className="bg-muted/40 border border-border rounded-lg p-1.5 sm:p-3 flex flex-col justify-center sm:justify-between hover:bg-muted/60 transition-colors shadow-sm">
+            <span className="text-[0.55rem] sm:text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 font-semibold truncate" title="AVG BLK TIME">
+              ⏱ TIME
+            </span>
+            <div className="mt-1 sm:mt-2 flex items-end justify-center sm:justify-between">
+              <span className="text-[0.65rem] sm:text-sm font-semibold text-foreground tracking-tight truncate">{stats.blockTime} <span className="text-[0.55rem] sm:text-[0.6rem] text-muted-foreground font-medium hidden lg:inline">ms</span></span>
+              <div className="hidden sm:block"><Sparkline color="#8b5cf6" glowColor="#8b5cf6" data={stats.history.time} /></div>
             </div>
           </div>
           {/* BLOCKS */}
-          <div className="bg-muted/40 border border-border rounded-lg p-3 flex flex-col justify-between hover:bg-muted/60 transition-colors shadow-sm">
-            <span className="text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center gap-1 font-semibold">📦 BLOCKS</span>
-            <div className="mt-2 flex items-end justify-between">
-              <span className="text-sm font-semibold text-foreground tracking-tight">{stats.totalBlocks}</span>
-              <Sparkline color="#f59e0b" glowColor="#f59e0b" data={stats.history.blocks} />
+          <div className="bg-muted/40 border border-border rounded-lg p-1.5 sm:p-3 flex flex-col justify-center sm:justify-between hover:bg-muted/60 transition-colors shadow-sm">
+            <span className="text-[0.55rem] sm:text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 font-semibold truncate" title="BLOCKS">
+              📦 BLOCKS
+            </span>
+            <div className="mt-1 sm:mt-2 flex items-end justify-center sm:justify-between">
+              <span className="text-[0.65rem] sm:text-sm font-semibold text-foreground tracking-tight truncate">{stats.totalBlocks}</span>
+              <div className="hidden sm:block"><Sparkline color="#f59e0b" glowColor="#f59e0b" data={stats.history.blocks} /></div>
             </div>
           </div>
           {/* TXS */}
-          <div className="bg-muted/40 border border-border rounded-lg p-3 flex flex-col justify-between hover:bg-muted/60 transition-colors shadow-sm">
-            <span className="text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center gap-1 font-semibold">🔄 TXS / BLK</span>
-            <div className="mt-2 flex items-end justify-between">
-              <span className="text-sm font-semibold text-foreground tracking-tight">{stats.totalTxs}</span>
-              <Sparkline color="#10b981" glowColor="#10b981" data={stats.history.txs} />
+          <div className="bg-muted/40 border border-border rounded-lg p-1.5 sm:p-3 flex flex-col justify-center sm:justify-between hover:bg-muted/60 transition-colors shadow-sm">
+            <span className="text-[0.55rem] sm:text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 font-semibold truncate" title="TXS / BLK">
+              🔄 TXS<span className="hidden sm:inline">/BLK</span>
+            </span>
+            <div className="mt-1 sm:mt-2 flex items-end justify-center sm:justify-between">
+              <span className="text-[0.65rem] sm:text-sm font-semibold text-foreground tracking-tight truncate">{stats.totalTxs}</span>
+              <div className="hidden sm:block"><Sparkline color="#10b981" glowColor="#10b981" data={stats.history.txs} /></div>
             </div>
           </div>
         </div>
