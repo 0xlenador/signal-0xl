@@ -1,5 +1,5 @@
 'use client';
-import { use } from 'react';
+import { use, useEffect } from 'react';
 import RunestonePanel from '@/components/dashboard/RunestonePanel';
 import AgentPanel from '@/components/dashboard/AgentPanel';
 import LiveSignals from '@/components/dashboard/LiveSignals';
@@ -7,6 +7,7 @@ import NetworkStats from '@/components/dashboard/NetworkStats';
 import NodesGrid from '@/components/dashboard/NodesGrid';
 import RankingTable from '@/components/dashboard/RankingTable';
 import type { ILeaderboardUser } from '@/lib/leaderboardService';
+import { useUserDataStore } from '@/stores/userDataStore';
 
 interface DashboardPageProps {
   params: Promise<{ network: string; wallet: string }>;
@@ -15,6 +16,13 @@ interface DashboardPageProps {
 
 export default function ClientPage({ params, leaderboardData }: DashboardPageProps) {
   const { network, wallet } = use(params);
+
+  // Synchronize the URL wallet param with the central user data store.
+  // This is the SINGLE coordination point: all components read from the store
+  // reactively via Zustand selectors instead of fetching independently.
+  useEffect(() => {
+    useUserDataStore.getState().setWallet(wallet);
+  }, [wallet]);
 
   return (
     <main className="p-4 md:p-6 lg:p-8 w-full mx-auto flex flex-col gap-6">

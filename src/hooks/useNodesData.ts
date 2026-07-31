@@ -1,196 +1,31 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { formatUnits } from 'viem';
-import { BLOCKSCOUT, CONSTANTS, NETWORK } from '@/lib/config';
-import { fetchWithFallback } from '@/lib/rpcEngine';
+import { useEffect } from 'react';
+import { useNodesDataStore } from '@/stores/nodesDataStore';
 
-export interface ICommitmentNode {
-  totalTxs: number;
-  totalFeePaid: string | null;
-  tier: string;
-  multiplier: number;
-}
-
-export interface IConvictionNode {
-  balanceUSDC: string;
-  percentageOfSupply: string;
-  supplyTotal: number;
-  tier: string;
-}
-
-export interface ILegacyNode {
-  firstTxDate: Date | null;
-  lastTxDate: Date | null;
-  daysSinceGenesis: number;
-  tier: string;
-}
+// Re-export types from their canonical source
+export type { ICommitmentNode, IConvictionNode, ILegacyNode } from '@/stores/nodesDataStore';
 
 export interface INodesData {
-  commitment: ICommitmentNode | null;
-  conviction: IConvictionNode | null;
-  legacy: ILegacyNode | null;
+  commitment: import('@/stores/nodesDataStore').ICommitmentNode | null;
+  conviction: import('@/stores/nodesDataStore').IConvictionNode | null;
+  legacy: import('@/stores/nodesDataStore').ILegacyNode | null;
   isLoading: boolean;
 }
 
+/**
+ * Thin wrapper over nodesDataStore. Triggers a refresh when the address
+ * changes and subscribes reactively to store updates via Zustand selectors.
+ */
 export function useNodesData(address: string | null | undefined): INodesData {
-  const [nodesData, setNodesData] = useState<INodesData>({
-    commitment: null,
-    conviction: null,
-    legacy: null,
-    isLoading: true
-  });
+  const commitment = useNodesDataStore((s) => s.commitment);
+  const conviction = useNodesDataStore((s) => s.conviction);
+  const legacy = useNodesDataStore((s) => s.legacy);
+  const isLoading = useNodesDataStore((s) => s.isLoading);
 
-  const isMountedRef = useRef(true);
   useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
-  const fetchNodesData = useCallback(async () => {
-    if (!address) return;
-    
-    try {
-      const classicApiUrl = BLOCKSCOUT.baseUrl.replace('/api/v2', '/api');
-
-      // 1. Intentamos obtener datos del Blockscout (con .catch para no crashear Promise.all)
-      const [addressRes, countersRes, firstTxRes, lastTxRes] = await Promise.all([
-        fetch(`${BLOCKSCOUT.baseUrl}/addresses/${address}`).then(res => res.ok ? res.json() : null).catch(() => null),
-        fetch(`${BLOCKSCOUT.baseUrl}/addresses/${address}/counters`).then(res => res.ok ? res.json() : null).catch(() => null),
-        fetch(`${classicApiUrl}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=1&sort=asc`).then(res => res.ok ? res.json() : null).catch(() => null),
-        fetch(`${classicApiUrl}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=1&sort=desc`).then(res => res.ok ? res.json() : null).catch(() => null)
-      ]);
-
-      // 2. Fallback a RPC si el Blockscout falló
-      let rpcBalance = "0";
-      let rpcNonce = 0;
-      if (!addressRes || !countersRes) {
-        try {
-          const balRes = await fetchWithFallback(NETWORK.rpcUrls, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [address, 'latest'] })
-          }).then(r => r.json());
-          
-          // Esperamos un poco antes de pedir el nonce para no disparar el Rate Limit
-          await new Promise(resolve => setTimeout(resolve, 300));
-          
-          const nonceRes = await fetchWithFallback(NETWORK.rpcUrls, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'eth_getTransactionCount', params: [address, 'latest'] })
-          }).then(r => r.json());
-
-          rpcBalance = balRes.result ? BigInt(balRes.result).toString() : "0";
-          rpcNonce = nonceRes.result ? parseInt(nonceRes.result, 16) : 0;
-        } catch { /* ignore fallback errors */ }
-      }
-
-      // --- COMMITMENT NODE ---
-      // Si countersRes falla, usamos el nonce del RPC como aproximación de totalTxs
-      let totalTxs = countersRes?.transactions_count ?? rpcNonce;
-
-      let commitmentTier = "Beginner";
-      let cMultiplier = 1;
-      if (totalTxs >= 100) { commitmentTier = "Degen"; cMultiplier = 3; }
-      else if (totalTxs >= 50) { commitmentTier = "Active"; cMultiplier = 2; }
-      else if (totalTxs >= 10) { commitmentTier = "Explorer"; cMultiplier = 1.5; }
-
-      let totalFeePaid = null; // A futuro extraer de la API cuando funcione
-
-      const commitment: ICommitmentNode = {
-        totalTxs,
-        totalFeePaid,
-        tier: commitmentTier,
-        multiplier: cMultiplier
-      };
-
-      // --- CONVICTION NODE ---
-      // Si addressRes falla, usamos el balance del RPC
-      let balanceStr = addressRes?.coin_balance ?? rpcBalance;
-      let balanceUSDC = parseFloat(formatUnits(BigInt(balanceStr), CONSTANTS.DECIMALS));
-      
-      let percentageOfSupply = (balanceUSDC / CONSTANTS.TOTAL_SUPPLY) * 100;
-      let convictionTier = "Observer";
-      if (percentageOfSupply >= 1) convictionTier = "Whale";
-      else if (percentageOfSupply >= 0.1) convictionTier = "Investor";
-      else if (percentageOfSupply >= 0.01) convictionTier = "Holder";
-
-      const conviction: IConvictionNode = {
-        balanceUSDC: balanceUSDC.toFixed(4),
-        percentageOfSupply: percentageOfSupply.toFixed(6),
-        supplyTotal: CONSTANTS.TOTAL_SUPPLY,
-        tier: convictionTier
-      };
-
-      // --- LEGACY NODE ---
-      let firstTxDate: Date | null = null;
-      let lastTxDate: Date | null = null;
-      let daysSinceGenesis = 0;
-      let legacyBadge = "Newbie";
-
-      if (firstTxRes?.status === "1" && firstTxRes.result && firstTxRes.result.length > 0) {
-        firstTxDate = new Date(parseInt(firstTxRes.result[0].timeStamp) * 1000);
-      }
-      
-      if (lastTxRes?.status === "1" && lastTxRes.result && lastTxRes.result.length > 0) {
-        lastTxDate = new Date(parseInt(lastTxRes.result[0].timeStamp) * 1000);
-      }
-      
-      if (firstTxDate) {
-        const now = new Date();
-        const diffTime = Math.abs(now.getTime() - firstTxDate.getTime());
-        daysSinceGenesis = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      }
-
-      if (daysSinceGenesis >= 365) legacyBadge = "OG (1 Year+)";
-      else if (daysSinceGenesis >= 30) legacyBadge = "Early Adopter";
-      else if (daysSinceGenesis >= 7) legacyBadge = "Founder (Week 1)";
-
-      const legacy: ILegacyNode = {
-        firstTxDate,
-        lastTxDate,
-        daysSinceGenesis,
-        tier: legacyBadge
-      };
-
-      if (isMountedRef.current) {
-        setNodesData({
-          commitment,
-          conviction,
-          legacy,
-          isLoading: false
-        });
-      }
-      
-    } catch (error) {
-      console.error("Error fetching nodes data:", error);
-      if (isMountedRef.current) {
-        setNodesData(prev => ({ ...prev, isLoading: false }));
-      }
+    if (address) {
+      void useNodesDataStore.getState().refresh(address);
     }
   }, [address]);
 
-  useEffect(() => {
-    // Aplicamos Debounce (espera 800ms antes de disparar las lecturas a blockscout/rpc)
-    const timeoutId = setTimeout(() => {
-      void fetchNodesData();
-    }, 800);
-    
-    // Retraso de cortesía (1200ms) para no chocar con las lecturas de React Query post-GM
-    const handleRefresh = () => {
-      setTimeout(() => {
-        void fetchNodesData();
-      }, 1200);
-    };
-    
-    window.addEventListener('signal-data-refresh', handleRefresh);
-    
-    return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener('signal-data-refresh', handleRefresh);
-    };
-  }, [fetchNodesData]);
-
-  return nodesData;
+  return { commitment, conviction, legacy, isLoading };
 }

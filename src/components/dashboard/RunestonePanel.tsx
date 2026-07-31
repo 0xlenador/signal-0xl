@@ -5,12 +5,27 @@ import Image from 'next/image';
 import { Copy, Check, Info, Crown, Flame, Zap, Radio, X, AlertCircle } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/utils';
 import { useWeb3 } from '../Web3Provider';
-import { formatUnits } from 'viem';
-import { useSignalContract, IUserData, IContractCost } from '@/hooks';
+import { formatUnits, parseUnits } from 'viem';
+import { useSignalContract } from '@/hooks';
+import { useUserDataStore } from '@/stores/userDataStore';
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { CONSTANTS } from '@/lib/config';
+
+// Pure function: calculates node instant cost from userData, no RPC needed
+function calculateNodeInstantCost(
+  nodeId: number,
+  onChainForkLevel: number,
+): bigint {
+  const baseCost = CONSTANTS.BASE_GM_COST_WEI;
+  if (onChainForkLevel > 1) return baseCost; // B2+ pays only base cost
+  if (nodeId === 1) return baseCost + parseUnits('0.5', 18);
+  if (nodeId === 2) return baseCost + parseUnits('1.25', 18);
+  if (nodeId === 3) return baseCost + parseUnits('5', 18);
+  return baseCost;
+}
 
 export default function RunestonePanel() {
   const { address } = useWeb3();
@@ -18,12 +33,16 @@ export default function RunestonePanel() {
   const walletParam = params.wallet as string;
   const isOwner = address?.toLowerCase() === walletParam?.toLowerCase();
 
-  const { fetchUserData, getGMCost, hasGMToday, doGM, resetToVIP, activateNodeInstant, activateNodeByStreak, getNodeInstantCost, loading, error: contractError } = useSignalContract();
+  // Read from central store (reactive — re-renders when store changes)
+  const userData = useUserDataStore((s) => s.userData);
+  const gmCost = useUserDataStore((s) => s.gmCost);
+  const debtCost = useUserDataStore((s) => s.debtCost);
+  const hasGMToday = useUserDataStore((s) => s.hasGMToday);
+
+  // Write-only contract functions
+  const { doGM, resetToVIP, activateNodeInstant, activateNodeByStreak, loading, error: contractError } = useSignalContract();
   
-  const [userData, setUserData] = useState<IUserData | null>(null);
-  const [gmCostInfo, setGmCostInfo] = useState<IContractCost | null>(null);
   const [gmLoading, setGmLoading] = useState(false);
-  const [gmDoneToday, setGmDoneToday] = useState(false);
   const [countdown, setCountdown] = useState('');
   const [copied, setCopied] = useState(false);
 
@@ -45,14 +64,13 @@ export default function RunestonePanel() {
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (gmDoneToday) {
+    if (hasGMToday) {
       const updateCountdown = () => {
         const now = new Date();
         const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
         const diff = tomorrow.getTime() - now.getTime();
         if (diff <= 0) {
           setCountdown('');
-          setGmDoneToday(false);
           return;
         }
         const h = Math.floor((diff / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
@@ -63,11 +81,10 @@ export default function RunestonePanel() {
       updateCountdown();
       interval = setInterval(updateCountdown, 1000);
     } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCountdown('');
     }
     return () => clearInterval(interval);
-  }, [gmDoneToday]);
+  }, [hasGMToday]);
 
   const handleCopy = async () => {
     if (walletParam) {
@@ -85,31 +102,25 @@ export default function RunestonePanel() {
     if (!address || gmLoading) return;
 
     setGmLoading(true);
-    const success = await resetToVIP();
-    // No se necesita fetch manual: la función de escritura ya hizo el fetch fresco
-    // y el evento signal-data-refresh disparará loadData() automáticamente
-    setGmLoading(false);
+    await resetToVIP();
+    // No manual fetch needed: resetToVIP refreshes the store via handlePostTransaction
+    if (isMountedRef.current) setGmLoading(false);
   };
 
   useEffect(() => {
     if (contractError && isNodeModalOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActivationError(contractError);
     }
   }, [contractError, isNodeModalOpen]);
 
-  const handleNodeClick = async (nodeId: number, isActive: boolean) => {
-    if (!isOwner || isActive) return;
+  const handleNodeClick = (nodeId: number, isActive: boolean) => {
+    if (!isOwner || isActive || !userData) return;
     setActivationError(null);
-    setNodeInstantCost(null);
+    // Calculate cost locally — no RPC needed
+    const cost = calculateNodeInstantCost(nodeId, userData.onChainForkLevel);
+    setNodeInstantCost(cost);
     setSelectedNodeId(nodeId);
     setIsNodeModalOpen(true);
-    
-    // Fetch instant cost
-    const cost = await getNodeInstantCost(nodeId, address as string);
-    if (isMountedRef.current) {
-      setNodeInstantCost(cost);
-    }
   };
 
   const handleActivateByStreak = async () => {
@@ -142,57 +153,21 @@ export default function RunestonePanel() {
     return 0;
   };
 
-  useEffect(() => {
-    // Prevenir datos 'fantasma' y cobros erróneos al cambiar de perfil
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setUserData(null);
-    setGmCostInfo(null);
-    setGmDoneToday(false);
-
-    const loadData = () => {
-      if (walletParam) {
-        fetchUserData(walletParam).then(data => {
-          if (isMountedRef.current) setUserData(data);
-          if (data && isMountedRef.current) {
-            getGMCost(walletParam, data).then(c => { if (isMountedRef.current) setGmCostInfo(c) });
-            hasGMToday(walletParam, data).then(d => { if (isMountedRef.current) setGmDoneToday(d) });
-          }
-        });
-      }
-    };
-
-    loadData();
-
-    window.addEventListener('signal-data-refresh', loadData);
-    return () => {
-      window.removeEventListener('signal-data-refresh', loadData);
-    };
-  }, [walletParam, fetchUserData, getGMCost, hasGMToday]);
-
   const handleGM = async () => {
     if (!address || gmLoading) return;
     setGmLoading(true);
     
     try {
-      const currentCost = await getGMCost(address);
-      
-      if (!currentCost) {
-        alert("Could not calculate GM cost due to network congestion. Try again.");
-        if (isMountedRef.current) setGmLoading(false);
-        return;
-      }
-
-      const totalCost = currentCost.gmCost + currentCost.debtCost;
-      const success = await doGM(totalCost);
-      // No se necesita fetch manual: la función de escritura ya hizo el fetch fresco
-      // y el evento signal-data-refresh disparará loadData() automáticamente
+      // Use pre-computed costs from the store — no RPC call needed
+      const totalCost = gmCost + debtCost;
+      await doGM(totalCost);
+      // After doGM returns, store is already refreshed via handlePostTransaction
     } catch (e) {
       console.error("Unhandled error in handleGM:", e);
     } finally {
       if (isMountedRef.current) setGmLoading(false);
     }
   };
-
 
   // Helper to format address
   const formattedAddress = walletParam 
@@ -265,7 +240,6 @@ export default function RunestonePanel() {
         <div className="relative w-full flex-grow flex items-center justify-center min-h-[260px] mt-1 overflow-hidden rounded-[2rem]">
           <div className="runestone-core-container">
             {/* Nodos Satélite */}
-            {/* Nodos Satélite */}
             <div 
               onClick={() => handleNodeClick(1, !!userData?.nodeCommitment)}
               className={`satellite-node satellite-node-1 text-white ${userData?.nodeCommitment ? 'is-active' : ''} ${!userData?.nodeCommitment && isOwner ? 'is-interactive' : ''}`}
@@ -333,17 +307,17 @@ export default function RunestonePanel() {
               <div className="relative w-[170px] h-[44px] flex-shrink-0 mx-auto mb-2 pointer-events-auto" style={{ zIndex: 9999, transform: 'translateZ(10px)' }}>
                 <button 
                   onClick={handleGM}
-                  disabled={!isOwner || gmLoading || gmDoneToday}
-                  className={`gm-pedestal w-full h-full cursor-pointer disabled:cursor-not-allowed ${gmDoneToday ? 'gm-done' : ''}`}>
-                  <span className={`text-xs font-bold uppercase tracking-[0.2em] transition-opacity ${gmDoneToday ? 'text-slate-500' : 'text-white'}`}>
-                    {!isOwner ? 'READ ONLY' : gmDoneToday ? 'GM (REFRESH)' : (gmLoading ? 'SENDING...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'SUPER GM' : 'GM'))}
+                  disabled={!isOwner || gmLoading || hasGMToday}
+                  className={`gm-pedestal w-full h-full cursor-pointer disabled:cursor-not-allowed ${hasGMToday ? 'gm-done' : ''}`}>
+                  <span className={`text-xs font-bold uppercase tracking-[0.2em] transition-opacity ${hasGMToday ? 'text-slate-500' : 'text-white'}`}>
+                    {!isOwner ? 'READ ONLY' : hasGMToday ? 'GM (REFRESH)' : (gmLoading ? 'SENDING...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'SUPER GM' : 'GM'))}
                   </span>
                 </button>
               </div>
 
               {/* Contador GM Externo y Tooltip */}
               <div className="absolute top-[100%] mt-2 w-full flex items-center justify-center gap-2" style={{ zIndex: 10000, transform: 'translateZ(10px)' }}>
-                <div className={`text-lg font-bold font-mono text-white tracking-wider drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] empty:hidden ${gmDoneToday ? '' : 'hidden'}`}>
+                <div className={`text-lg font-bold font-mono text-white tracking-wider drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] empty:hidden ${hasGMToday ? '' : 'hidden'}`}>
                   {countdown}
                 </div>
                 {/* Tooltip informativo GM */}
@@ -402,7 +376,7 @@ export default function RunestonePanel() {
 
             {/* Content */}
             <div className="p-5 flex flex-col gap-5">
-              {!gmDoneToday && (
+              {!hasGMToday && (
                 <div className="bg-amber-500/10 border border-amber-500/30 p-3 rounded-lg flex items-start gap-2 text-sm text-amber-700 dark:text-amber-500 font-medium">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                   <span className="leading-tight">You must do your daily GM first before activating nodes.</span>
@@ -428,7 +402,7 @@ export default function RunestonePanel() {
                 </div>
                 <button
                   onClick={handleActivateByStreak}
-                  disabled={activationLoading || (userData?.currentStreak || 0) < getRequiredStreak(selectedNodeId || 1) || !gmDoneToday}
+                  disabled={activationLoading || (userData?.currentStreak || 0) < getRequiredStreak(selectedNodeId || 1) || !hasGMToday}
                   className="w-full bg-accent-runestone/10 hover:bg-accent-runestone/20 text-accent-runestone border border-accent-runestone/40 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm hover:shadow-md mt-1"
                 >
                   {activationLoading ? 'Processing...' : 'Activate by Streak'}
@@ -439,7 +413,7 @@ export default function RunestonePanel() {
               <div className="bg-muted/30 p-4 rounded-xl border border-border flex flex-col gap-3 transition-all hover:bg-muted/50 hover:border-accent-warning/30 hover:shadow-sm">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-bold text-foreground">Instant Activation</span>
-                  {nodeInstantCost ? (
+                  {nodeInstantCost !== null ? (
                     <span className="text-xs font-mono bg-background px-2 py-1 rounded-md text-accent-warning border border-accent-warning/30 font-bold shadow-sm">
                       {formatUnits(nodeInstantCost, 18)} USDC
                     </span>
@@ -452,7 +426,7 @@ export default function RunestonePanel() {
                 </div>
                 <button
                   onClick={handleActivateInstant}
-                  disabled={activationLoading || nodeInstantCost === null || !gmDoneToday}
+                  disabled={activationLoading || nodeInstantCost === null || !hasGMToday}
                   className="w-full bg-accent-warning/10 hover:bg-accent-warning/20 text-accent-warning border border-accent-warning/40 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm hover:shadow-md mt-1"
                 >
                   {activationLoading ? 'Processing...' : 'Activate Instantly'}

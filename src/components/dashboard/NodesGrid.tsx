@@ -1,15 +1,31 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Microscope, Gem, Landmark, Info, Loader2 } from 'lucide-react';
-import { useNodesData, useSignalContract, IUserData } from '@/hooks';
+import { useNodesData } from '@/hooks';
+import { useSignalContract } from '@/hooks';
+import { useUserDataStore } from '@/stores/userDataStore';
 import { useParams } from 'next/navigation';
 import { useWeb3 } from '../Web3Provider';
-import { formatUnits } from 'viem';
+import { formatUnits, parseUnits } from 'viem';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CONSTANTS } from '@/lib/config';
+
+// Pure function: calculates node instant cost from userData, no RPC needed
+function calculateNodeInstantCost(
+  nodeId: number,
+  onChainForkLevel: number,
+): bigint {
+  const baseCost = CONSTANTS.BASE_GM_COST_WEI;
+  if (onChainForkLevel > 1) return baseCost; // B2+ pays only base cost
+  if (nodeId === 1) return baseCost + parseUnits('0.5', 18);
+  if (nodeId === 2) return baseCost + parseUnits('1.25', 18);
+  if (nodeId === 3) return baseCost + parseUnits('5', 18);
+  return baseCost;
+}
 
 export default function NodesGrid() {
   const { address } = useWeb3();
@@ -17,13 +33,15 @@ export default function NodesGrid() {
   const walletParam = params.wallet as string;
   const isOwner = address?.toLowerCase() === walletParam?.toLowerCase();
 
+  // Node data from Blockscout (via nodesDataStore)
   const data = useNodesData(walletParam);
-  const { fetchUserData, getNodeInstantCost, activateNodeInstant, activateNodeByStreak } = useSignalContract();
-
-  const [userData, setUserData] = useState<IUserData | null>(null);
   
-  const today = useMemo(() => Math.floor(Date.now() / 86400000), []);
-  const hasGMToday = userData?.lastGmDay === today;
+  // User data from central store (reactive)
+  const userData = useUserDataStore((s) => s.userData);
+  const hasGMToday = useUserDataStore((s) => s.hasGMToday);
+  
+  // Write-only contract functions
+  const { activateNodeInstant, activateNodeByStreak } = useSignalContract();
 
   // Costs computed synchronously based on user on-chain fork level
   const isB2Plus = userData && userData.onChainForkLevel > 1;
@@ -45,62 +63,22 @@ export default function NodesGrid() {
     return () => { isMounted.current = false; };
   }, []);
 
-  const refreshData = useCallback(async () => {
-    if (!walletParam) return;
-    const ud = await fetchUserData(walletParam);
-    if (isMounted.current) setUserData(ud);
-  }, [walletParam, fetchUserData]);
-
-  useEffect(() => {
-    refreshData();
-    
-    window.addEventListener('signal-data-refresh', refreshData);
-    return () => {
-      window.removeEventListener('signal-data-refresh', refreshData);
-    };
-  }, [refreshData]);
-
   const handleActivateInstant = async (nodeId: number, setLoader: (l: boolean) => void) => {
-    if (!address) return;
+    if (!address || !userData) return;
     setLoader(true);
-    const costWei = await getNodeInstantCost(nodeId, address);
-    if (!costWei) {
-      alert("Error calculando el costo instantáneo.");
-      setLoader(false);
-      return;
-    }
+    // Calculate cost locally — no RPC needed
+    const costWei = calculateNodeInstantCost(nodeId, userData.onChainForkLevel);
     const success = await activateNodeInstant(nodeId, costWei);
-    if (success) {
-      // Actualización optimista de la UI
-      setUserData(prev => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          nodeCommitment: nodeId === 1 ? true : prev.nodeCommitment,
-          nodeConviction: nodeId === 2 ? true : prev.nodeConviction,
-          nodeLegacy:     nodeId === 3 ? true : prev.nodeLegacy,
-        };
-      });
-    }
+    // After activateNodeInstant returns, the store is already refreshed
+    // via handlePostTransaction — no manual state update needed.
     setLoader(false);
   };
 
   const handleActivateStreak = async (nodeId: number, setLoader: (l: boolean) => void) => {
     if (!address) return;
     setLoader(true);
-    const success = await activateNodeByStreak(nodeId);
-    if (success) {
-      // Actualización optimista de la UI
-      setUserData(prev => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          nodeCommitment: nodeId === 1 ? true : prev.nodeCommitment,
-          nodeConviction: nodeId === 2 ? true : prev.nodeConviction,
-          nodeLegacy:     nodeId === 3 ? true : prev.nodeLegacy,
-        };
-      });
-    }
+    await activateNodeByStreak(nodeId);
+    // After activateNodeByStreak returns, the store is already refreshed
     setLoader(false);
   };
 

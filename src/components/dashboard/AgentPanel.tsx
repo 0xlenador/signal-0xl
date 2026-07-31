@@ -1,43 +1,15 @@
 'use client';
 
-import { Bot, Info, AlertTriangle } from 'lucide-react';
-import { useSignalContract, IUserData } from '@/hooks';
-import { useWeb3 } from '../Web3Provider';
-import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { Bot } from 'lucide-react';
+import { useUserDataStore } from '@/stores/userDataStore';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 export default function AgentPanel() {
-  const { address } = useWeb3();
-  const params = useParams();
-  const walletParam = params.wallet as string;
-  const isOwner = address?.toLowerCase() === walletParam?.toLowerCase();
-
-  const { fetchUserData } = useSignalContract();
-  const [userData, setUserData] = useState<IUserData | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-    
-    const loadData = () => {
-      if (walletParam) {
-        fetchUserData(walletParam).then(data => {
-          if (isMounted) setUserData(data);
-        });
-      } else {
-        setUserData(null);
-      }
-    };
-
-    loadData();
-
-    window.addEventListener('signal-data-refresh', loadData);
-    return () => { 
-      isMounted = false; 
-      window.removeEventListener('signal-data-refresh', loadData);
-    };
-  }, [walletParam, fetchUserData]);
+  // Passive read from the central store — no RPC calls, no event listeners.
+  // This component updates automatically when any other component triggers
+  // a store refresh (e.g., after GM or node activation).
+  const userData = useUserDataStore((s) => s.userData);
 
   return (
     <div className="w-full mt-2 shrink-0 relative z-10 bg-black/40 rounded-xl border border-slate-800/80 p-3 flex flex-nowrap items-center justify-between gap-3 shadow-[inset_0_0_20px_rgba(0,0,0,0.3)]">
