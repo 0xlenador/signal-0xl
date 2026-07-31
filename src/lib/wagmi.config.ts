@@ -44,9 +44,13 @@ export const wagmiConfig = getDefaultConfig({
     storage: cookieStorage,
   }),
   transports: {
-    [arcTestnet.id]: fallback(
-      NETWORK.rpcUrls.map(url => http(url, { retryCount: 2, retryDelay: 500 })),
-      { rank: false } // Crucial: Evita que Wagmi bombardee todos los RPCs a la vez para "medir su velocidad"
-    ),
+    [arcTestnet.id]: fallback([
+      // Fast RPCs first (blocked by adblockers → fail instantly with retryCount: 0)
+      http(NETWORK.rpcUrls[1], { retryCount: 0 }), // blockdaemon — 100 req/s
+      http(NETWORK.rpcUrls[2], { retryCount: 0 }), // drpc       — 100 req/s
+      http(NETWORK.rpcUrls[3], { retryCount: 0 }), // quicknode  —   3 req/s
+      // Main RPC as final fallback (always available, worth retrying)
+      http(NETWORK.rpcUrls[0], { retryCount: 2, retryDelay: 500 }), // arc.network — 1 req/s
+    ], { rank: false }),
   },
 });
