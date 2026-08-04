@@ -13,6 +13,7 @@ import { useParams } from 'next/navigation';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { CONSTANTS } from '@/lib/config';
+import { useLeaderboardStore } from '@/stores/leaderboardStore';
 
 // Pure function: calculates node instant cost from userData, no RPC needed
 function calculateNodeInstantCost(
@@ -158,9 +159,18 @@ export default function RunestonePanel() {
     setGmLoading(true);
     
     try {
+      // Calcular super GM localmente (cero overhead)
+      const { userData } = useUserDataStore.getState();
+      const isSuperGM = !!(userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy);
+
       // Use pre-computed costs from the store — no RPC call needed
       const totalCost = gmCost + debtCost;
-      await doGM(totalCost);
+      const success = await doGM(totalCost);
+      
+      if (success) {
+        // Disparar optimistic update + secuencia de refrescos
+        useLeaderboardStore.getState().notifyGmConfirmed(address, isSuperGM);
+      }
       // After doGM returns, store is already refreshed via handlePostTransaction
     } catch (e) {
       console.error("Unhandled error in handleGM:", e);

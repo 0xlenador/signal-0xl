@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { useEffect } from 'react';
+import { useLeaderboardStore } from '@/stores/leaderboardStore';
 
 interface RankingTableProps {
   initialData: ILeaderboardUser[];
@@ -29,7 +31,15 @@ const SkeletonRow = () => (
 );
 
 export default function RankingTable({ initialData }: RankingTableProps) {
-  const leaderboard = initialData || [];
+  const { data: storeData, refreshState, hydrate } = useLeaderboardStore();
+
+  useEffect(() => {
+    if (initialData && initialData.length > 0) {
+      hydrate(initialData);
+    }
+  }, [initialData, hydrate]);
+
+  const leaderboard = storeData.length > 0 ? storeData : (initialData || []);
   const isLoading = false;
   const isScanning = false;
   const { address } = useWeb3();
@@ -55,6 +65,7 @@ export default function RankingTable({ initialData }: RankingTableProps) {
         </div>
         
         <Badge variant="secondary" className="font-mono text-xs px-3 py-1 shadow-sm flex items-center gap-2 transition-colors">
+          {refreshState !== 'idle' && <Loader2 className="w-3 h-3 text-muted-foreground animate-spin" />}
           {isScanning && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>}
           {isLoading ? 'Scanning...' : `${leaderboard.length} signalers`}
         </Badge>
