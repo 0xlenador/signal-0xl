@@ -108,7 +108,8 @@ export function getBestHttpRpc(): string {
     .filter((ep) => ep.available)
     .sort((a, b) => b.rateLimit - a.rateLimit);
 
-  return best.length > 0 ? best[0].url : NETWORK.rpcUrls[0];
+  // Intentamos devolver el mejor gratuito. Si todos fallaron, devolvemos la API privada o el fallback final.
+  return best.length > 0 ? best[0].url : (process.env.NEXT_PUBLIC_PRIVATE_RPC || NETWORK.rpcUrls[0]);
 }
 
 /**
@@ -116,13 +117,30 @@ export function getBestHttpRpc(): string {
  * Used for fallback iteration (try fastest first, fall through to slower).
  */
 export function getAvailableHttpRpcs(): string[] {
-  if (!probeComplete) return [NETWORK.rpcUrls[0]];
+  let available = [NETWORK.rpcUrls[0]];
 
-  const available = HTTP_ENDPOINTS
-    .filter((ep) => ep.available)
-    .sort((a, b) => b.rateLimit - a.rateLimit);
+  if (probeComplete) {
+    const sorted = HTTP_ENDPOINTS
+      .filter((ep) => ep.available)
+      .sort((a, b) => b.rateLimit - a.rateLimit);
+    
+    if (sorted.length > 0) {
+      available = sorted.map((ep) => ep.url);
+    }
+  }
 
-  return available.length > 0 ? available.map((ep) => ep.url) : [NETWORK.rpcUrls[0]];
+  // SIEMPRE que se invoque esta función (en cada refresh), la API Privada 
+  // se coloca *al final* del array, asegurando que se intenten los gratuitos primero.
+  // NOTA: Actualmente no estamos usando la API Privada.
+  // Confiamos en la Wallet inyectada (window.ethereum) como salvavidas principal
+  // ya que demostró ser suficiente para evadir Adblockers y CORS. 
+  // Sin embargo, dejamos esta lógica intacta para cuando escalemos a miles de DAU.
+  const privateRpc = process.env.NEXT_PUBLIC_PRIVATE_RPC;
+  if (privateRpc && !available.includes(privateRpc)) {
+    available.push(privateRpc);
+  }
+
+  return available;
 }
 
 // ---------------------------------------------------------------------------

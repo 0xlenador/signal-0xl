@@ -49,7 +49,7 @@ export const wagmiConfig = getDefaultConfig({
       http(NETWORK.rpcUrls[1], { retryCount: 0 }), // blockdaemon — 100 req/s
       http(NETWORK.rpcUrls[2], { retryCount: 0 }), // drpc       — 100 req/s
       http(NETWORK.rpcUrls[3], { retryCount: 0 }), // quicknode  —   3 req/s
-      // Main RPC as final fallback (always available, worth retrying)
+      // Main RPC as fallback (always available, worth retrying)
       http(NETWORK.rpcUrls[0], { retryCount: 2, retryDelay: 500 }), // arc.network — 1 req/s
     ], { rank: false }),
   },

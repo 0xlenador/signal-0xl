@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { createPublicClient, http } from 'viem';
+import { createPublicClient, http, custom } from 'viem';
 import { arcTestnet } from '@/lib/wagmi.config';
 import { CONTRACT_ADDRESS, CONTRACT_ABI, CONSTANTS } from '@/lib/config';
 import { getAvailableHttpRpcs } from '@/lib/rpcEngine';
@@ -196,6 +196,60 @@ export const useUserDataStore = create<UserDataState>((set, get) => ({
     set({ isLoading: true });
 
     inflightPromise = (async (): Promise<IUserData | null> => {
+      // 1. Intentar leer desde la wallet inyectada (Prioridad máxima, sin rate limits)
+      if (typeof window !== 'undefined' && (window as any).ethereum) {
+        try {
+          console.log(`[RPC Motor] 🔄 Reading contract via: INJECTED WALLET`);
+          const client = createPublicClient({
+            chain: arcTestnet,
+            transport: custom((window as any).ethereum),
+          });
+
+          const data = await client.readContract({
+            address: CONTRACT_ADDRESS as `0x${string}`,
+            abi: CONTRACT_ABI,
+            functionName: 'users',
+            args: [walletAddress as `0x${string}`],
+          });
+
+          console.log(`[RPC Motor] ✅ Success via: INJECTED WALLET`);
+
+          const raw: IUserData = {
+            totalPoints: Number(data[0]),
+            lastGmDay: Number(data[1]),
+            currentStreak: Number(data[2]),
+            forkLevel: Number(data[3] === 0n ? 1n : data[3]),
+            gmCount: Number(data[4]),
+            nodeCommitment: Boolean(data[5]),
+            nodeConviction: Boolean(data[6]),
+            nodeLegacy: Boolean(data[7]),
+            exists: Boolean(data[8]),
+            attachedAgentId: Number(data[9] || 0),
+            onChainForkLevel: Number(data[3] === 0n ? 1n : data[3]),
+          };
+
+          const corrected = applyForkPrediction(raw);
+          const derived = computeDerived(corrected);
+
+          writeCache(walletAddress, corrected);
+
+          set({
+            userData: corrected,
+            isLoading: false,
+            lastFetchedAt: Date.now(),
+            ...derived,
+          });
+
+          return corrected;
+        } catch (err: unknown) {
+          const error = err as { shortMessage?: string; message?: string };
+          console.warn(
+            `[RPC Motor] ❌ Failed INJECTED WALLET: ${error.shortMessage || error.message || 'Error'}, falling back to HTTP RPCs...`
+          );
+        }
+      }
+
+      // 2. Fallback a HTTP RPCs iterativos (El paracaídas)
       const rpcs = getAvailableHttpRpcs();
 
       for (const url of rpcs) {
