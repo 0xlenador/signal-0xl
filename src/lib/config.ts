@@ -1,14 +1,19 @@
+export const HTTP_RPC_ENDPOINTS = [
+  // Añade tus RPCs aquí. El motor los probará automáticamente y Wagmi los usará como fallback.
+  // 'rateLimit' ayuda al motor a decidir cuál usar primero si varios están disponibles.
+  // 'isMain: true' se usa para tu RPC más confiable que casi nunca es bloqueado por Adblockers.
+  { url: 'https://arc-testnet.drpc.org', rateLimit: 200, isMain: true },  
+  { url: 'https://rpc.blockdaemon.testnet.arc.io', rateLimit: 100 },
+  { url: 'https://rpc.drpc.testnet.arc.io', rateLimit: 100 },
+  { url: 'https://rpc.quicknode.testnet.arc.io', rateLimit: 3 }
+];
+
 export const NETWORK = {
   chainId: 5042002,
   chainIdHex: '0x4cef52',
   name: 'Arc Testnet',
   slug: 'arc-testnet',
-  rpcUrls: [
-    'https://rpc.testnet.arc.network',
-    'https://rpc.blockdaemon.testnet.arc.io',
-    'https://rpc.drpc.testnet.arc.io',
-    'https://rpc.quicknode.testnet.arc.io'
-  ],
+  rpcUrls: HTTP_RPC_ENDPOINTS.map((rpc) => rpc.url),
   wsUrls: [
     'wss://arc-testnet.drpc.org'
   ],

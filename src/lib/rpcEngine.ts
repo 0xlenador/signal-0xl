@@ -1,4 +1,4 @@
-import { NETWORK } from './config';
+import { NETWORK, HTTP_RPC_ENDPOINTS } from './config';
 
 /**
  * RPC Engine — Intelligent endpoint management with availability probing.
@@ -23,26 +23,12 @@ interface RpcEndpoint {
   available: boolean;
 }
 
-const RATE_LIMITS: Record<string, number> = {
-  'rpc.testnet.arc.network': 1,
-  'rpc.blockdaemon.testnet.arc.io': 100,
-  'rpc.drpc.testnet.arc.io': 100,
-  'rpc.quicknode.testnet.arc.io': 3,
-};
-
-function getRateLimit(url: string): number {
-  for (const [domain, limit] of Object.entries(RATE_LIMITS)) {
-    if (url.includes(domain)) return limit;
-  }
-  return 1; // Conservative default
-}
-
-// Build the endpoint registry from config
-const HTTP_ENDPOINTS: RpcEndpoint[] = (NETWORK.rpcUrls as readonly string[]).map((url) => ({
-  url,
-  rateLimit: getRateLimit(url),
-  // Main RPC (index 0) is always assumed available; others start as unknown
-  available: url === NETWORK.rpcUrls[0],
+// Build the endpoint registry directly from the unified config
+const HTTP_ENDPOINTS: RpcEndpoint[] = HTTP_RPC_ENDPOINTS.map((rpc) => ({
+  url: rpc.url,
+  rateLimit: rpc.rateLimit,
+  // isMain is assumed always available initially, others start as unknown
+  available: !!rpc.isMain,
 }));
 
 // ---------------------------------------------------------------------------
@@ -55,7 +41,8 @@ async function probeEndpoints(): Promise<void> {
   await Promise.allSettled(
     HTTP_ENDPOINTS.map(async (ep) => {
       // Main RPC is always available, skip the probe for it
-      if (ep.url === NETWORK.rpcUrls[0]) {
+      const isMain = HTTP_RPC_ENDPOINTS.find(r => r.url === ep.url)?.isMain;
+      if (isMain) {
         ep.available = true;
         return;
       }
@@ -102,14 +89,15 @@ if (typeof window !== 'undefined') {
  * Falls back to the main RPC if the probe hasn't completed yet.
  */
 export function getBestHttpRpc(): string {
-  if (!probeComplete) return NETWORK.rpcUrls[0];
+  const mainRpcUrl = HTTP_RPC_ENDPOINTS.find(r => r.isMain)?.url || NETWORK.rpcUrls[0];
+  if (!probeComplete) return mainRpcUrl;
 
   const best = HTTP_ENDPOINTS
     .filter((ep) => ep.available)
     .sort((a, b) => b.rateLimit - a.rateLimit);
 
   // Intentamos devolver el mejor gratuito. Si todos fallaron, devolvemos la API privada o el fallback final.
-  return best.length > 0 ? best[0].url : (process.env.NEXT_PUBLIC_PRIVATE_RPC || NETWORK.rpcUrls[0]);
+  return best.length > 0 ? best[0].url : (process.env.NEXT_PUBLIC_PRIVATE_RPC || mainRpcUrl);
 }
 
 /**
@@ -117,7 +105,8 @@ export function getBestHttpRpc(): string {
  * Used for fallback iteration (try fastest first, fall through to slower).
  */
 export function getAvailableHttpRpcs(): string[] {
-  let available = [NETWORK.rpcUrls[0]];
+  const mainRpcUrl = HTTP_RPC_ENDPOINTS.find(r => r.isMain)?.url || NETWORK.rpcUrls[0];
+  let available = [mainRpcUrl];
 
   if (probeComplete) {
     const sorted = HTTP_ENDPOINTS

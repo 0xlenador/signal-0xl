@@ -1,7 +1,7 @@
 import { defineChain, fallback, http } from 'viem';
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { cookieStorage, createStorage } from 'wagmi';
-import { NETWORK } from '@/lib/config';
+import { NETWORK, HTTP_RPC_ENDPOINTS } from '@/lib/config';
 
 /**
  * Definición de la cadena Arc Testnet usando los datos de NETWORK en config.ts.
@@ -44,13 +44,14 @@ export const wagmiConfig = getDefaultConfig({
     storage: cookieStorage,
   }),
   transports: {
-    [arcTestnet.id]: fallback([
-      // Fast RPCs first (blocked by adblockers → fail instantly with retryCount: 0)
-      http(NETWORK.rpcUrls[1], { retryCount: 0 }), // blockdaemon — 100 req/s
-      http(NETWORK.rpcUrls[2], { retryCount: 0 }), // drpc       — 100 req/s
-      http(NETWORK.rpcUrls[3], { retryCount: 0 }), // quicknode  —   3 req/s
-      // Main RPC as fallback (always available, worth retrying)
-      http(NETWORK.rpcUrls[0], { retryCount: 2, retryDelay: 500 }), // arc.network — 1 req/s
-    ], { rank: false }),
+    [arcTestnet.id]: fallback(
+      HTTP_RPC_ENDPOINTS.map(rpc => 
+        http(rpc.url, { 
+          retryCount: rpc.isMain ? 2 : 0, 
+          retryDelay: rpc.isMain ? 500 : undefined 
+        })
+      ),
+      { rank: false }
+    ),
   },
 });
