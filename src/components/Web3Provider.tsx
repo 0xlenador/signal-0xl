@@ -79,7 +79,18 @@ function Web3ContextManager({ children }: { children: ReactNode }) {
 }
 
 // Proveedor principal que envuelve con Wagmi, React Query y RainbowKit
-const queryClient = new QueryClient();
+// Configuramos el QueryClient para ser "silencioso". No queremos que RainbowKit sature
+// nuestros RPCs (ni consuma rate limits) haciendo polling cada vez que el usuario cambia de pestaña.
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // No recargar al cambiar de pestaña
+      refetchOnMount: false,       // No recargar al montar componentes repetidos
+      staleTime: 60 * 1000 * 5,    // Mantener caché intacta por 5 minutos (solo refrescamos con refresh() manual)
+      retry: 0,                    // Evitar tormentas de reintentos
+    },
+  },
+});
 
 interface Web3ProviderProps {
   children: ReactNode;

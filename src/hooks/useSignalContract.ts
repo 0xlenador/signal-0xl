@@ -1,5 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useWriteContract, usePublicClient, useAccount } from 'wagmi';
+import { createPublicClient, custom } from 'viem';
+import { arcTestnet } from '@/lib/wagmi.config';
 import { CONTRACT_ADDRESS, CONTRACT_ABI, CONSTANTS } from '@/lib/config';
 import { useUserDataStore, clearCache } from '@/stores/userDataStore';
 import { useNodesDataStore } from '@/stores/nodesDataStore';
@@ -39,8 +41,26 @@ export function useSignalContract(): ISignalContractHook {
    */
   const handlePostTransaction = useCallback(
     async (hash: `0x${string}`, delayMs = 2000) => {
-      // Wait for the transaction to be mined
-      await publicClient!.waitForTransactionReceipt({ hash });
+      // 1. Wait for the transaction to be mined using the Injected Wallet if possible
+      // Esto previene que waitForTransactionReceipt se quede pegado si los RPC públicos
+      // están bloqueados por un Adblocker.
+      let receiptFound = false;
+      if (typeof window !== 'undefined' && (window as any).ethereum) {
+        try {
+          const injectedClient = createPublicClient({
+            chain: arcTestnet,
+            transport: custom((window as any).ethereum),
+          });
+          await injectedClient.waitForTransactionReceipt({ hash });
+          receiptFound = true;
+        } catch (err) {
+          console.warn('[Tx Waiter] Injected wallet failed to get receipt, falling back to public RPC...');
+        }
+      }
+
+      if (!receiptFound) {
+        await publicClient!.waitForTransactionReceipt({ hash });
+      }
 
       // Give the RPC time to index the new state
       await new Promise((resolve) => setTimeout(resolve, delayMs));
