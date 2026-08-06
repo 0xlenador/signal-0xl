@@ -21,9 +21,9 @@ export default function ClientPage({ params, leaderboardData }: NetworkPageProps
     <main className="p-4 md:p-6 lg:p-8 w-full mx-auto flex flex-col gap-6 flex-1">
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
         
-        {/* COLUMNA IZQUIERDA (Span 4) - Muted Runestone/Agent Panel */}
-        <div className="xl:col-span-4 flex flex-col gap-4">
-          <div className="bg-slate-950 rounded-[2.5rem] border border-slate-800 shadow-2xl relative flex flex-col p-6 items-center justify-center flex-grow group min-h-[800px] overflow-hidden text-center">
+        {/* COLUMNA IZQUIERDA (Span 3) - Muted Runestone/Agent Panel */}
+        <div className="xl:col-span-3 flex flex-col gap-4">
+          <div className="bg-slate-950 rounded-[2.5rem] border border-slate-800 shadow-2xl relative flex flex-col p-4 xl:p-6 items-center justify-center flex-grow group min-h-[600px] xl:min-h-[700px] overflow-hidden text-center">
             {/* Real Content overlay / Connect message */}
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-8 bg-black/60 backdrop-blur-sm">
                <Lock className="w-12 h-12 text-accent-runestone mb-6 opacity-80" />
@@ -45,8 +45,8 @@ export default function ClientPage({ params, leaderboardData }: NetworkPageProps
           </div>
         </div>
 
-        {/* COLUMNA DERECHA (Span 8) */}
-        <div className="xl:col-span-8 flex flex-col gap-4 h-full min-h-[800px]">
+        {/* COLUMNA DERECHA (Span 9) */}
+        <div className="xl:col-span-9 flex flex-col gap-4 h-full min-h-[700px]">
           {/* Tarjeta de red (Normal) */}
           <NetworkStats />
           
