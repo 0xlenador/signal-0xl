@@ -201,32 +201,85 @@ export default function RunestonePanel() {
           </div>
         </h3>
         
-        {/* User Stats Grid (Reconstructed) */}
-        <div className="text-sm w-full">
-          <div className="grid grid-cols-4 gap-2">
-            <div className="flex flex-col items-center bg-slate-900/50 hover:bg-slate-900 transition-colors p-1.5 rounded-xl border border-slate-800/80 justify-center shadow-sm">
-              <div className="text-[0.55rem] text-slate-400 font-semibold uppercase tracking-wider mb-1 flex items-center justify-center gap-1.5 w-full"><Crown className="w-3.5 h-3.5" /> <span>STATUS</span></div>
-              <div className="text-sm font-bold flex items-center justify-center h-6 w-full">
+        {/* User Stats & GM Button Header (STACKED LEFT/RIGHT) */}
+        <div className="w-full flex items-center justify-center gap-5 px-1 mb-3 mt-4">
+          
+          {/* Left Stats (Stacked: Top/Bottom) */}
+          <div className="flex flex-col gap-3 items-end">
+            <div className="flex flex-col items-end group">
+              <div className="text-[0.45rem] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1 transition-colors group-hover:text-slate-400 mb-0.5">
+                <Crown className="w-2.5 h-2.5" /> <span>STATUS</span>
+              </div>
+              <div className="text-[0.65rem] font-black tracking-wider flex items-center">
                 {userData ? (
                   userData.forkLevel <= 1 ? (
-                    <span className="px-3 bg-slate-950 rounded-lg text-[0.65rem] font-bold uppercase text-accent-vip border border-accent-vip/30 shadow-sm flex items-center gap-1">VIP</span>
+                    <span className="text-accent-vip drop-shadow-[0_0_8px_rgba(255,215,0,0.4)]">VIP</span>
                   ) : (
-                    <span className="px-3 bg-slate-950 rounded-lg text-[0.65rem] font-bold uppercase text-accent-warning border border-accent-warning/30 flex items-center gap-1">B{userData.forkLevel}</span>
+                    <span className="text-accent-warning drop-shadow-[0_0_8px_rgba(255,170,0,0.4)]">B{userData.forkLevel}</span>
                   )
                 ) : '-'}
               </div>
             </div>
-            <div className="flex flex-col items-center bg-slate-900/50 hover:bg-slate-900 transition-colors p-1.5 rounded-xl border border-slate-800/80 justify-center shadow-sm">
-              <div className="text-[0.55rem] text-slate-400 font-semibold uppercase tracking-wider mb-1 flex items-center justify-center gap-1.5 w-full"><Flame className="w-3.5 h-3.5" /> <span>STREAK</span></div>
-              <div className="text-sm font-mono font-bold text-slate-100 h-6 flex items-center justify-center w-full">{userData ? userData.currentStreak : '-'}</div>
+            <div className="flex flex-col items-end group">
+              <div className="text-[0.45rem] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1 transition-colors group-hover:text-slate-400 mb-0.5">
+                <Flame className="w-2.5 h-2.5" /> <span>STREAK</span>
+              </div>
+              <div className="text-[0.65rem] font-mono font-bold text-slate-100">{userData ? userData.currentStreak : '-'}</div>
             </div>
-            <div className="flex flex-col items-center bg-slate-900/50 hover:bg-slate-900 transition-colors p-1.5 rounded-xl border border-slate-800/80 justify-center shadow-sm">
-              <div className="text-[0.55rem] text-slate-400 font-semibold uppercase tracking-wider mb-1 flex items-center justify-center gap-1.5 w-full"><Zap className="w-3.5 h-3.5" /> <span>SCORE</span></div>
-              <div className="text-sm font-mono font-bold text-slate-100 h-6 flex items-center justify-center w-full">{userData ? userData.totalPoints : '-'}</div>
+          </div>
+
+          {/* Center GM Button */}
+          <div className="flex flex-col items-center justify-center relative z-20 shrink-0">
+             <div className="relative">
+              {!hasGMToday && (
+                <div className="absolute -inset-2 bg-gradient-to-tr from-accent-primary/20 via-transparent to-accent-runestone/20 rounded-full blur-sm opacity-70 animate-pulse-slow"></div>
+              )}
+              
+              <button 
+                onClick={handleGM}
+                disabled={!isOwner || gmLoading || hasGMToday}
+                className={`w-[56px] h-[56px] rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(0,0,0,0.8)] transition-all duration-500 relative group overflow-hidden ${hasGMToday ? 'bg-slate-900 border border-slate-800 cursor-not-allowed opacity-80' : 'bg-slate-950 border border-slate-800/80 hover:border-accent-primary/50 hover:scale-[1.05] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'}`}
+              >
+                {!hasGMToday && (
+                  <>
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-accent-runestone/30 via-transparent to-transparent opacity-80 group-hover:from-accent-primary/40 group-hover:via-accent-runestone/20 transition-colors duration-500"></div>
+                    <div className="absolute inset-[2px] rounded-full bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none"></div>
+                  </>
+                )}
+                <span className={`relative z-10 text-[0.55rem] font-black uppercase tracking-widest text-center leading-tight ${hasGMToday ? 'text-slate-600' : 'bg-clip-text text-transparent bg-gradient-to-br from-white via-slate-100 to-slate-400 drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)] group-hover:from-white group-hover:to-white transition-colors duration-300'}`}>
+                  {!isOwner ? 'READ\nONLY' : hasGMToday ? 'DONE' : (gmLoading ? '...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'S. GM' : 'GM'))}
+                </span>
+              </button>
+
+              <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 flex flex-col items-center w-max">
+                 <div className={`text-[0.5rem] font-bold font-mono text-accent-runestone tracking-widest empty:hidden ${hasGMToday ? '' : 'hidden'}`}>
+                   {countdown}
+                 </div>
+                 <Popover>
+                   <PopoverTrigger className="cursor-help flex items-center justify-center focus:outline-none opacity-40 hover:opacity-100 transition-opacity">
+                     <Info className="w-3 h-3 text-slate-400" />
+                   </PopoverTrigger>
+                   <PopoverContent className="w-56 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-xl text-[0.65rem] text-slate-300 text-left font-normal normal-case tracking-normal z-[9999]">
+                     Send your daily signal to Arc Testnet. Window: 00:00–23:59 UTC. +1 point (+2 with Runestone).
+                   </PopoverContent>
+                 </Popover>
+              </div>
             </div>
-            <div className="flex flex-col items-center bg-slate-900/50 hover:bg-slate-900 transition-colors p-1.5 rounded-xl border border-slate-800/80 justify-center shadow-sm">
-              <div className="text-[0.55rem] text-slate-400 font-semibold uppercase tracking-wider mb-1 flex items-center justify-center gap-1.5 w-full"><Radio className="w-3.5 h-3.5" /> <span>GMS SENT</span></div>
-              <div className="text-sm font-mono font-bold text-slate-100 h-6 flex items-center justify-center w-full">{userData ? userData.gmCount : '-'}</div>
+          </div>
+
+          {/* Right Stats (Stacked: Top/Bottom) */}
+          <div className="flex flex-col gap-3 items-start">
+            <div className="flex flex-col items-start group">
+              <div className="text-[0.45rem] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1 transition-colors group-hover:text-slate-400 mb-0.5">
+                <Zap className="w-2.5 h-2.5" /> <span>SCORE</span>
+              </div>
+              <div className="text-[0.65rem] font-mono font-bold text-slate-100">{userData ? userData.totalPoints : '-'}</div>
+            </div>
+            <div className="flex flex-col items-start group">
+              <div className="text-[0.45rem] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1 transition-colors group-hover:text-slate-400 mb-0.5">
+                <Radio className="w-2.5 h-2.5" /> <span>SENT</span>
+              </div>
+              <div className="text-[0.65rem] font-mono font-bold text-slate-100">{userData ? userData.gmCount : '-'}</div>
             </div>
           </div>
         </div>
@@ -313,33 +366,8 @@ export default function RunestonePanel() {
                 </svg>
               </div>
 
-              {/* Botón GM como Pedestal Interactivo */}
-              <div className="relative w-[170px] h-[44px] flex-shrink-0 mx-auto mb-2 pointer-events-auto" style={{ zIndex: 9999, transform: 'translateZ(10px)' }}>
-                <button 
-                  onClick={handleGM}
-                  disabled={!isOwner || gmLoading || hasGMToday}
-                  className={`gm-pedestal w-full h-full cursor-pointer disabled:cursor-not-allowed ${hasGMToday ? 'gm-done' : ''}`}>
-                  <span className={`text-xs font-bold uppercase tracking-[0.2em] transition-opacity ${hasGMToday ? 'text-slate-500' : 'text-white'}`}>
-                    {!isOwner ? 'READ ONLY' : hasGMToday ? 'GM (REFRESH)' : (gmLoading ? 'SENDING...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'SUPER GM' : 'GM'))}
-                  </span>
-                </button>
-              </div>
-
-              {/* Contador GM Externo y Tooltip */}
-              <div className="absolute top-[100%] mt-2 w-full flex items-center justify-center gap-2" style={{ zIndex: 10000, transform: 'translateZ(10px)' }}>
-                <div className={`text-lg font-bold font-mono text-white tracking-wider drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] empty:hidden ${hasGMToday ? '' : 'hidden'}`}>
-                  {countdown}
-                </div>
-                {/* Tooltip informativo GM */}
-                <Popover>
-                  <PopoverTrigger className="cursor-help flex items-center justify-center p-2 -m-2 focus:outline-none">
-                    <Info className="w-4 h-4 text-slate-500 hover:text-accent-primary transition-colors" />
-                  </PopoverTrigger>
-                  <PopoverContent className="w-56 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-xl text-[0.65rem] text-slate-300 text-left font-normal normal-case tracking-normal z-[9999]">
-                    Send your daily signal to Arc Testnet. Window: 00:00–23:59 UTC. +1 point (+2 with Runestone).
-                  </PopoverContent>
-                </Popover>
-              </div>
+              {/* Empty space for where the GM pedestal used to be */}
+              <div className="h-[20px]"></div>
 
             </div>
 
