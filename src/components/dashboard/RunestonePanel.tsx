@@ -188,15 +188,15 @@ export default function RunestonePanel() {
     <>
       {/* Tu Señal */}
       <div className="relative z-10 w-full mb-4">
-        <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center justify-between">
-          <span>Your Signal</span>
-          <div className="flex items-center gap-2 bg-slate-900/80 px-2 py-1 rounded-full border border-slate-700 hover:border-accent-primary/50 transition-colors shadow-sm">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-accent-primary to-accent-runestone flex items-center justify-center overflow-hidden shadow-sm">
-              {walletParam && <Image unoptimized src={getAvatarUrl(walletParam)} alt="Avatar" width={24} height={24} className="w-full h-full opacity-90" />}
+        <h3 className="text-xs font-bold text-slate-400 tracking-wide mb-4 flex items-center justify-between">
+          <span>Hello! 👋</span>
+          <div className="flex items-center gap-1.5 bg-slate-900/80 px-1.5 py-0.5 rounded-full border border-slate-700 hover:border-accent-primary/50 transition-colors shadow-sm">
+            <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-accent-primary to-accent-runestone flex items-center justify-center overflow-hidden shadow-sm">
+              {walletParam && <Image unoptimized src={getAvatarUrl(walletParam)} alt="Avatar" width={20} height={20} className="w-full h-full opacity-90" />}
             </div>
-            <span className="text-xs font-mono font-bold text-slate-100 tracking-wider cursor-default pt-0.5">{formattedAddress}</span>
-            <button onClick={handleCopy} className="text-slate-400 hover:text-accent-primary transition-colors cursor-pointer ml-1" title="Copy Wallet">
-              {copied ? <Check className="w-3.5 h-3.5 text-accent-success" /> : <Copy className="w-3.5 h-3.5" />}
+            <span className="text-[0.65rem] font-mono font-bold text-slate-100 tracking-wider cursor-default pt-0.5">{formattedAddress}</span>
+            <button onClick={handleCopy} className="text-slate-400 hover:text-accent-primary transition-colors cursor-pointer ml-1 mr-0.5" title="Copy Wallet">
+              {copied ? <Check className="w-3 h-3 text-accent-success" /> : <Copy className="w-3 h-3" />}
             </button>
           </div>
         </h3>
@@ -207,10 +207,10 @@ export default function RunestonePanel() {
           {/* Left Stats (Aligned Left) */}
           <div className="flex-1 flex flex-col gap-3 items-start">
             <div className="flex flex-col items-start group">
-              <div className="text-[0.45rem] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1 transition-colors group-hover:text-slate-400 mb-0.5">
-                <Crown className="w-2.5 h-2.5" /> <span>STATUS</span>
+              <div className="text-[0.5rem] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1 transition-colors group-hover:text-slate-400 mb-0.5">
+                <Crown className="w-3 h-3" /> <span>STATUS</span>
               </div>
-              <div className="text-[0.65rem] font-black tracking-wider flex items-center">
+              <div className="text-[0.75rem] font-black tracking-wider flex items-center">
                 {userData ? (
                   userData.forkLevel <= 1 ? (
                     <span className="text-accent-vip drop-shadow-[0_0_8px_rgba(255,215,0,0.4)]">VIP</span>
@@ -221,10 +221,10 @@ export default function RunestonePanel() {
               </div>
             </div>
             <div className="flex flex-col items-start group">
-              <div className="text-[0.45rem] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1 transition-colors group-hover:text-slate-400 mb-0.5">
-                <Flame className="w-2.5 h-2.5" /> <span>STREAK</span>
+              <div className="text-[0.5rem] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1 transition-colors group-hover:text-slate-400 mb-0.5">
+                <Flame className="w-3 h-3" /> <span>STREAK</span>
               </div>
-              <div className="text-[0.65rem] font-mono font-bold text-slate-100">{userData ? userData.currentStreak : '-'}</div>
+              <div className="text-[0.75rem] font-mono font-bold text-slate-100">{userData ? userData.currentStreak : '-'}</div>
             </div>
           </div>
 
@@ -238,7 +238,7 @@ export default function RunestonePanel() {
               <button 
                 onClick={handleGM}
                 disabled={!isOwner || gmLoading || hasGMToday}
-                className={`w-[56px] h-[56px] rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(0,0,0,0.8)] transition-all duration-500 relative group overflow-hidden ${hasGMToday ? 'bg-slate-900 border border-slate-800 cursor-not-allowed opacity-80' : 'bg-slate-950 border border-slate-800/80 hover:border-accent-primary/50 hover:scale-[1.05] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'}`}
+                className={`w-[68px] h-[68px] rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(0,0,0,0.8)] transition-all duration-500 relative group overflow-hidden ${hasGMToday ? 'bg-slate-900 border border-slate-800 cursor-not-allowed opacity-80' : 'bg-slate-950 border border-slate-800/80 hover:border-accent-primary/50 hover:scale-[1.05] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'}`}
               >
                 {!hasGMToday && (
                   <>
@@ -246,7 +246,7 @@ export default function RunestonePanel() {
                     <div className="absolute inset-[2px] rounded-full bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none"></div>
                   </>
                 )}
-                <span className={`relative z-10 text-[0.55rem] font-black uppercase tracking-widest text-center leading-tight ${hasGMToday ? 'text-slate-600' : 'bg-clip-text text-transparent bg-gradient-to-br from-white via-slate-100 to-slate-400 drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)] group-hover:from-white group-hover:to-white transition-colors duration-300'}`}>
+                <span className={`relative z-10 text-[0.6rem] font-black uppercase tracking-widest text-center leading-tight ${hasGMToday ? 'text-slate-600' : 'bg-clip-text text-transparent bg-gradient-to-br from-white via-slate-100 to-slate-400 drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)] group-hover:from-white group-hover:to-white transition-colors duration-300'}`}>
                   {!isOwner ? 'READ\nONLY' : hasGMToday ? 'DONE' : (gmLoading ? '...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'GM+' : 'GM'))}
                 </span>
               </button>
@@ -270,16 +270,16 @@ export default function RunestonePanel() {
           {/* Right Stats (Aligned Right) */}
           <div className="flex-1 flex flex-col gap-3 items-end">
             <div className="flex flex-col items-end group">
-              <div className="text-[0.45rem] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1 transition-colors group-hover:text-slate-400 mb-0.5">
-                <Zap className="w-2.5 h-2.5" /> <span>SCORE</span>
+              <div className="text-[0.5rem] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1 transition-colors group-hover:text-slate-400 mb-0.5">
+                <Zap className="w-3 h-3" /> <span>SCORE</span>
               </div>
-              <div className="text-[0.65rem] font-mono font-bold text-slate-100">{userData ? userData.totalPoints : '-'}</div>
+              <div className="text-[0.75rem] font-mono font-bold text-slate-100">{userData ? userData.totalPoints : '-'}</div>
             </div>
             <div className="flex flex-col items-end group">
-              <div className="text-[0.45rem] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1 transition-colors group-hover:text-slate-400 mb-0.5">
-                <Radio className="w-2.5 h-2.5" /> <span>SENT</span>
+              <div className="text-[0.5rem] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1 transition-colors group-hover:text-slate-400 mb-0.5">
+                <Radio className="w-3 h-3" /> <span>SENT</span>
               </div>
-              <div className="text-[0.65rem] font-mono font-bold text-slate-100">{userData ? userData.gmCount : '-'}</div>
+              <div className="text-[0.75rem] font-mono font-bold text-slate-100">{userData ? userData.gmCount : '-'}</div>
             </div>
           </div>
         </div>
@@ -287,38 +287,38 @@ export default function RunestonePanel() {
       </div>
 
       {/* Runestone Section */}
-      <div className="flex flex-col items-center w-full relative z-10 flex-grow justify-center mt-4">
-        <div className="relative w-full flex-grow flex items-center justify-center min-h-[260px] overflow-hidden rounded-[2rem]">
+      <div className="flex flex-col items-center w-full relative z-10 flex-grow justify-center mt-0">
+        <div className="relative w-full flex-grow flex items-center justify-center min-h-[200px] overflow-visible rounded-[2rem]">
           <div className="runestone-core-container">
             {/* Nodos Satélite */}
             <div 
               onClick={() => handleNodeClick(1, !!userData?.nodeCommitment)}
               className={`satellite-node satellite-node-1 text-white ${userData?.nodeCommitment ? 'is-active' : ''} ${!userData?.nodeCommitment && isOwner ? 'is-interactive' : ''}`}
             >
-              <div className={`w-1.5 h-1.5 rounded-full ${userData?.nodeCommitment ? 'bg-accent-success shadow-sm' : 'bg-slate-500'}`}></div>
+              <div className={`w-1 h-1 rounded-full ${userData?.nodeCommitment ? 'bg-accent-success shadow-sm' : 'bg-slate-500'}`}></div>
               <span>COMMITMENT</span>
             </div>
             <div 
               onClick={() => handleNodeClick(2, !!userData?.nodeConviction)}
               className={`satellite-node satellite-node-2 text-white ${userData?.nodeConviction ? 'is-active' : ''} ${!userData?.nodeConviction && isOwner ? 'is-interactive' : ''}`}
             >
-              <div className={`w-1.5 h-1.5 rounded-full ${userData?.nodeConviction ? 'bg-accent-success shadow-sm' : 'bg-slate-500'}`}></div>
+              <div className={`w-1 h-1 rounded-full ${userData?.nodeConviction ? 'bg-accent-success shadow-sm' : 'bg-slate-500'}`}></div>
               <span>CONVICTION</span>
             </div>
             <div 
               onClick={() => handleNodeClick(3, !!userData?.nodeLegacy)}
               className={`satellite-node satellite-node-3 text-white ${userData?.nodeLegacy ? 'is-active' : ''} ${!userData?.nodeLegacy && isOwner ? 'is-interactive' : ''}`}
             >
-              <div className={`w-1.5 h-1.5 rounded-full ${userData?.nodeLegacy ? 'bg-accent-success shadow-sm' : 'bg-slate-500'}`}></div>
+              <div className={`w-1 h-1 rounded-full ${userData?.nodeLegacy ? 'bg-accent-success shadow-sm' : 'bg-slate-500'}`}></div>
               <span>LEGACY</span>
             </div>
 
             {/* Estructura Central Absoluta */}
-            <div className="relative w-[180px] h-[220px] mx-auto flex flex-col items-center justify-end" style={{ zIndex: 70, transformStyle: 'preserve-3d' }}>
+            <div className="relative w-[180px] h-[160px] mx-auto flex flex-col items-center justify-end" style={{ zIndex: 70, transformStyle: 'preserve-3d' }}>
               
               {/* SVG Cristal (Runestone) */}
-              <div className="absolute bottom-[35px] pointer-events-none" style={{ zIndex: 1, transform: 'translateZ(-10px)' }}>
-                <svg className={`crystal-svg w-16 h-28 drop-shadow-2xl ${userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? '' : 'is-inactive'}`} viewBox="0 0 100 180" xmlns="http://www.w3.org/2000/svg">
+              <div className={`absolute bottom-[35px] pointer-events-none ${userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'animate-node-float' : ''}`} style={{ zIndex: 1, transform: 'translateZ(-10px)' }}>
+                <svg className={`crystal-svg w-12 h-20 drop-shadow-2xl ${userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? '' : 'is-inactive'}`} viewBox="0 0 100 180" xmlns="http://www.w3.org/2000/svg">
                   <defs>
                     <linearGradient id="crystalMain" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#ff1493" />
