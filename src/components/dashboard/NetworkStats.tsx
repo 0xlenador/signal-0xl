@@ -5,6 +5,7 @@ import { useNetworkStats } from '@/hooks';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import MiniSwap from './MiniSwap';
 
 const Sparkline = ({ color, data, glowColor }: { color: string, data: number[], glowColor: string }) => {
   const width = 48;
@@ -156,15 +157,9 @@ export default function NetworkStats() {
       {/* Split Layout Container */}
       <div className="flex-grow w-full relative z-10 flex flex-col xl:flex-row gap-4 mt-2">
         
-        {/* Left Section: Mini Swap (Coming Soon) */}
+        {/* Left Section: Mini Swap */}
         <div className="w-full xl:w-4/12 bg-muted/20 border border-border/60 rounded-xl p-4 flex flex-col items-center justify-center min-h-[100px] shadow-inner relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-accent-runestone/5 via-transparent to-transparent pointer-events-none group-hover:from-accent-runestone/10 transition-colors duration-500"></div>
-          <h4 className="text-sm font-bold text-foreground/90 mb-1.5 relative z-10 flex items-center gap-1.5">
-            Mini Swap
-          </h4>
-          <Badge variant="outline" className="bg-background/80 text-[0.65rem] font-medium border-border/60 text-muted-foreground relative z-10 uppercase tracking-wider">
-            In Construction
-          </Badge>
+          <MiniSwap />
         </div>
 
         {/* Right Section: Network Stats Grid */}
