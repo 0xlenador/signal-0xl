@@ -4,7 +4,6 @@ import RunestonePanel from '@/components/dashboard/RunestonePanel';
 import AgentPanel from '@/components/dashboard/AgentPanel';
 import LiveSignals from '@/components/dashboard/LiveSignals';
 import NetworkStats from '@/components/dashboard/NetworkStats';
-import NodesGrid from '@/components/dashboard/NodesGrid';
 import RankingTable from '@/components/dashboard/RankingTable';
 import type { ILeaderboardUser } from '@/lib/leaderboardService';
 import { useUserDataStore } from '@/stores/userDataStore';
@@ -46,7 +45,6 @@ export default function ClientPage({ params, leaderboardData }: DashboardPagePro
         {/* COLUMNA DERECHA (Span 9) */}
         <div className="xl:col-span-9 flex flex-col gap-4 h-full min-h-[700px]">
           <NetworkStats />
-          <NodesGrid />
           <RankingTable initialData={leaderboardData} />
         </div>
 
