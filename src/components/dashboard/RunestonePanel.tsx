@@ -317,7 +317,7 @@ export default function RunestonePanel() {
             <div className="relative w-[180px] h-[160px] mx-auto flex flex-col items-center justify-end" style={{ zIndex: 70, transformStyle: 'preserve-3d' }}>
               
               {/* SVG Cristal (Runestone) */}
-              <div className={`absolute bottom-[35px] pointer-events-none ${userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'animate-node-float' : ''}`} style={{ zIndex: 1, transform: 'translateZ(-10px)' }}>
+              <div className={`absolute bottom-[35px] pointer-events-none ${userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'animate-node-float' : ''}`} style={{ zIndex: 1, transform: 'translateZ(-10px)', animationDuration: '5s', animationDelay: '-5s' }}>
                 <svg className={`crystal-svg w-12 h-20 drop-shadow-2xl ${userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? '' : 'is-inactive'}`} viewBox="0 0 100 180" xmlns="http://www.w3.org/2000/svg">
                   <defs>
                     <linearGradient id="crystalMain" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -356,13 +356,13 @@ export default function RunestonePanel() {
 
               {/* Badge Runestone Active/Inactive */}
               {userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? (
-                <div className="relative text-[0.45rem] uppercase tracking-[0.2em] font-bold text-white bg-accent-runestone/20 px-3 py-1 rounded-full border border-accent-runestone/50 backdrop-blur-md z-10 shadow-[0_0_10px_rgba(255,0,127,0.4)] flex items-center gap-1.5 mb-2 whitespace-nowrap">
-                  <Flame className="w-2.5 h-2.5 text-white" />
+                <div className="relative text-[0.5rem] uppercase tracking-[0.3em] font-black text-white/90 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] z-10 flex items-center gap-2 mb-3 whitespace-nowrap">
+                  <Flame className="w-3 h-3 text-orange-500 fill-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
                   RUNESTONE ACTIVE
-                  <Flame className="w-2.5 h-2.5 text-white" />
+                  <Flame className="w-3 h-3 text-orange-500 fill-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
                 </div>
               ) : (
-                <div className="relative text-[0.45rem] uppercase tracking-[0.2em] font-bold text-slate-500 bg-slate-900/50 px-3 py-1 rounded-full border border-slate-800/80 backdrop-blur-md z-10 flex items-center gap-1.5 mb-2 whitespace-nowrap">
+                <div className="relative text-[0.45rem] uppercase tracking-[0.3em] font-bold text-slate-600/80 z-10 flex items-center gap-1.5 mb-3 whitespace-nowrap">
                   RUNESTONE INACTIVE
                 </div>
               )}
