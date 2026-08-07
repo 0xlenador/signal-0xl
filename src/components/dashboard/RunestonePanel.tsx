@@ -201,12 +201,12 @@ export default function RunestonePanel() {
           </div>
         </h3>
         
-        {/* User Stats & GM Button Header (STACKED LEFT/RIGHT) */}
-        <div className="w-full flex items-center justify-center gap-5 px-1 mb-3 mt-4">
+        {/* User Stats & GM Button Header (FULL WIDTH) */}
+        <div className="w-full flex items-center justify-between px-2 mb-4 mt-5 relative">
           
-          {/* Left Stats (Stacked: Top/Bottom) */}
-          <div className="flex flex-col gap-3 items-end">
-            <div className="flex flex-col items-end group">
+          {/* Left Stats (Aligned Left) */}
+          <div className="flex-1 flex flex-col gap-3 items-start">
+            <div className="flex flex-col items-start group">
               <div className="text-[0.45rem] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1 transition-colors group-hover:text-slate-400 mb-0.5">
                 <Crown className="w-2.5 h-2.5" /> <span>STATUS</span>
               </div>
@@ -220,7 +220,7 @@ export default function RunestonePanel() {
                 ) : '-'}
               </div>
             </div>
-            <div className="flex flex-col items-end group">
+            <div className="flex flex-col items-start group">
               <div className="text-[0.45rem] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1 transition-colors group-hover:text-slate-400 mb-0.5">
                 <Flame className="w-2.5 h-2.5" /> <span>STREAK</span>
               </div>
@@ -247,7 +247,7 @@ export default function RunestonePanel() {
                   </>
                 )}
                 <span className={`relative z-10 text-[0.55rem] font-black uppercase tracking-widest text-center leading-tight ${hasGMToday ? 'text-slate-600' : 'bg-clip-text text-transparent bg-gradient-to-br from-white via-slate-100 to-slate-400 drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)] group-hover:from-white group-hover:to-white transition-colors duration-300'}`}>
-                  {!isOwner ? 'READ\nONLY' : hasGMToday ? 'DONE' : (gmLoading ? '...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'S. GM' : 'GM'))}
+                  {!isOwner ? 'READ\nONLY' : hasGMToday ? 'DONE' : (gmLoading ? '...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'GM+' : 'GM'))}
                 </span>
               </button>
 
@@ -267,15 +267,15 @@ export default function RunestonePanel() {
             </div>
           </div>
 
-          {/* Right Stats (Stacked: Top/Bottom) */}
-          <div className="flex flex-col gap-3 items-start">
-            <div className="flex flex-col items-start group">
+          {/* Right Stats (Aligned Right) */}
+          <div className="flex-1 flex flex-col gap-3 items-end">
+            <div className="flex flex-col items-end group">
               <div className="text-[0.45rem] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1 transition-colors group-hover:text-slate-400 mb-0.5">
                 <Zap className="w-2.5 h-2.5" /> <span>SCORE</span>
               </div>
               <div className="text-[0.65rem] font-mono font-bold text-slate-100">{userData ? userData.totalPoints : '-'}</div>
             </div>
-            <div className="flex flex-col items-start group">
+            <div className="flex flex-col items-end group">
               <div className="text-[0.45rem] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1 transition-colors group-hover:text-slate-400 mb-0.5">
                 <Radio className="w-2.5 h-2.5" /> <span>SENT</span>
               </div>
@@ -288,19 +288,7 @@ export default function RunestonePanel() {
 
       {/* Runestone Section */}
       <div className="flex flex-col items-center w-full relative z-10 flex-grow justify-center mt-4">
-        {userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? (
-          <div className="relative text-[0.65rem] uppercase tracking-[0.2em] font-bold text-white bg-accent-runestone/20 px-5 py-1.5 rounded-full border border-accent-runestone/50 backdrop-blur-md z-10 shadow-[0_0_15px_rgba(255,0,127,0.4)] flex items-center gap-2">
-            <Flame className="w-3 h-3 text-white" />
-            RUNESTONE ACTIVE
-            <Flame className="w-3 h-3 text-white" />
-          </div>
-        ) : (
-          <div className="relative text-[0.65rem] uppercase tracking-[0.2em] font-bold text-slate-500 bg-slate-900/50 px-5 py-1.5 rounded-full border border-slate-800/80 backdrop-blur-md z-10 flex items-center gap-2">
-            RUNESTONE INACTIVE
-          </div>
-        )}
-
-        <div className="relative w-full flex-grow flex items-center justify-center min-h-[260px] mt-1 overflow-hidden rounded-[2rem]">
+        <div className="relative w-full flex-grow flex items-center justify-center min-h-[260px] overflow-hidden rounded-[2rem]">
           <div className="runestone-core-container">
             {/* Nodos Satélite */}
             <div 
@@ -330,7 +318,7 @@ export default function RunestonePanel() {
               
               {/* SVG Cristal (Runestone) */}
               <div className="absolute bottom-[35px] pointer-events-none" style={{ zIndex: 1, transform: 'translateZ(-10px)' }}>
-                <svg className={`crystal-svg w-24 h-40 drop-shadow-2xl ${userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? '' : 'is-inactive'}`} viewBox="0 0 100 180" xmlns="http://www.w3.org/2000/svg">
+                <svg className={`crystal-svg w-16 h-28 drop-shadow-2xl ${userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? '' : 'is-inactive'}`} viewBox="0 0 100 180" xmlns="http://www.w3.org/2000/svg">
                   <defs>
                     <linearGradient id="crystalMain" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#ff1493" />
@@ -366,8 +354,18 @@ export default function RunestonePanel() {
                 </svg>
               </div>
 
-              {/* Empty space for where the GM pedestal used to be */}
-              <div className="h-[20px]"></div>
+              {/* Badge Runestone Active/Inactive */}
+              {userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? (
+                <div className="relative text-[0.45rem] uppercase tracking-[0.2em] font-bold text-white bg-accent-runestone/20 px-3 py-1 rounded-full border border-accent-runestone/50 backdrop-blur-md z-10 shadow-[0_0_10px_rgba(255,0,127,0.4)] flex items-center gap-1.5 mb-2 whitespace-nowrap">
+                  <Flame className="w-2.5 h-2.5 text-white" />
+                  RUNESTONE ACTIVE
+                  <Flame className="w-2.5 h-2.5 text-white" />
+                </div>
+              ) : (
+                <div className="relative text-[0.45rem] uppercase tracking-[0.2em] font-bold text-slate-500 bg-slate-900/50 px-3 py-1 rounded-full border border-slate-800/80 backdrop-blur-md z-10 flex items-center gap-1.5 mb-2 whitespace-nowrap">
+                  RUNESTONE INACTIVE
+                </div>
+              )}
 
             </div>
 
