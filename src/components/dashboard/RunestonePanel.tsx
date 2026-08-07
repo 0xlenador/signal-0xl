@@ -6,7 +6,7 @@ import { Copy, Check, Info, Crown, Flame, Zap, Radio, X, AlertCircle } from 'luc
 import { getAvatarUrl } from '@/lib/utils';
 import { useWeb3 } from '../Web3Provider';
 import { formatUnits, parseUnits } from 'viem';
-import { useSignalContract } from '@/hooks';
+import { useSignalContract, useNodesData } from '@/hooks';
 import { useUserDataStore } from '@/stores/userDataStore';
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
@@ -36,6 +36,7 @@ export default function RunestonePanel() {
 
   // Read from central store (reactive — re-renders when store changes)
   const userData = useUserDataStore((s) => s.userData);
+  const data = useNodesData(walletParam);
   const gmCost = useUserDataStore((s) => s.gmCost);
   const debtCost = useUserDataStore((s) => s.debtCost);
   const hasGMToday = useUserDataStore((s) => s.hasGMToday);
@@ -246,15 +247,17 @@ export default function RunestonePanel() {
                     <div className="absolute inset-[2px] rounded-full bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none"></div>
                   </>
                 )}
-                <span className={`relative z-10 text-[0.6rem] font-black uppercase tracking-widest text-center leading-tight ${hasGMToday ? 'text-slate-600' : 'bg-clip-text text-transparent bg-gradient-to-br from-white via-slate-100 to-slate-400 drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)] group-hover:from-white group-hover:to-white transition-colors duration-300'}`}>
-                  {!isOwner ? 'READ\nONLY' : hasGMToday ? 'DONE' : (gmLoading ? '...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'GM+' : 'GM'))}
+                <span className={`relative z-10 text-[0.6rem] font-black uppercase tracking-widest text-center leading-tight flex flex-col items-center justify-center ${hasGMToday ? 'text-slate-600' : 'bg-clip-text text-transparent bg-gradient-to-br from-white via-slate-100 to-slate-400 drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)] group-hover:from-white group-hover:to-white transition-colors duration-300'}`}>
+                  <span>{!isOwner ? 'READ\nONLY' : hasGMToday ? 'DONE' : (gmLoading ? '...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'GM+' : 'GM'))}</span>
+                  {hasGMToday && (
+                    <span className="text-[0.6rem] font-bold font-mono text-accent-runestone tracking-widest mt-0.5 opacity-100">
+                      {countdown}
+                    </span>
+                  )}
                 </span>
               </button>
 
-              <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 flex flex-col items-center w-max">
-                 <div className={`text-[0.5rem] font-bold font-mono text-accent-runestone tracking-widest empty:hidden ${hasGMToday ? '' : 'hidden'}`}>
-                   {countdown}
-                 </div>
+              <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 flex flex-col items-center w-max">
                  <Popover>
                    <PopoverTrigger className="cursor-help flex items-center justify-center focus:outline-none opacity-40 hover:opacity-100 transition-opacity">
                      <Info className="w-3 h-3 text-slate-400" />
@@ -287,7 +290,7 @@ export default function RunestonePanel() {
       </div>
 
       {/* Runestone Section */}
-      <div className="flex flex-col items-center w-full relative z-10 flex-grow justify-center mt-0">
+      <div className="flex flex-col items-center w-full relative z-10 flex-grow justify-center mt-9">
         <div className="relative w-full flex-grow flex items-center justify-center min-h-[200px] overflow-visible rounded-[2rem]">
           <div className="runestone-core-container">
             {/* Nodos Satélite */}
@@ -295,21 +298,63 @@ export default function RunestonePanel() {
               onClick={() => handleNodeClick(1, !!userData?.nodeCommitment)}
               className={`satellite-node satellite-node-1 text-white ${userData?.nodeCommitment ? 'is-active' : ''} ${!userData?.nodeCommitment && isOwner ? 'is-interactive' : ''}`}
             >
-              <div className={`w-1 h-1 rounded-full ${userData?.nodeCommitment ? 'bg-accent-success shadow-sm' : 'bg-slate-500'}`}></div>
+              <div className="relative flex items-center justify-center">
+                <div className={`w-1 h-1 rounded-full ${userData?.nodeCommitment ? 'bg-accent-success shadow-sm' : 'bg-slate-500'}`}></div>
+                {userData?.nodeCommitment && (
+                  <svg className="absolute w-[200px] h-[200px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none" viewBox="-100 -100 200 200">
+                     <path className="elastic-path-1" fill="none" stroke="rgba(74,222,128,0.5)" strokeWidth="0.75" />
+                     <g className="static-map-content">
+                       <circle cx="-45" cy="20" r="1.5" fill="rgba(74,222,128,0.8)" />
+                       <text x="-49" y="22.5" fill="#64748b" fontSize="9" fontFamily="monospace" textAnchor="end">
+                         TXs <tspan fill="#94a3b8" fontWeight="bold" fontSize="15">{data.isLoading ? '...' : data.commitment?.totalTxs?.toLocaleString() || 0}</tspan>
+                       </text>
+                     </g>
+                  </svg>
+                )}
+              </div>
               <span>COMMITMENT</span>
             </div>
             <div 
               onClick={() => handleNodeClick(2, !!userData?.nodeConviction)}
               className={`satellite-node satellite-node-2 text-white ${userData?.nodeConviction ? 'is-active' : ''} ${!userData?.nodeConviction && isOwner ? 'is-interactive' : ''}`}
             >
-              <div className={`w-1 h-1 rounded-full ${userData?.nodeConviction ? 'bg-accent-success shadow-sm' : 'bg-slate-500'}`}></div>
+              <div className="relative flex items-center justify-center">
+                <div className={`w-1 h-1 rounded-full ${userData?.nodeConviction ? 'bg-accent-success shadow-sm' : 'bg-slate-500'}`}></div>
+                {userData?.nodeConviction && (
+                  <svg className="absolute w-[200px] h-[200px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none" viewBox="-100 -100 200 200">
+                     <path className="elastic-path-2" fill="none" stroke="rgba(74,222,128,0.5)" strokeWidth="0.75" />
+                     <g className="static-map-content">
+                       <circle cx="15" cy="25" r="1.5" fill="rgba(74,222,128,0.8)" />
+                       <text x="19" y="27.5" fill="#64748b" fontSize="9" fontFamily="monospace" textAnchor="start">
+                         BAL <tspan fill="#94a3b8" fontWeight="bold" fontSize="15">{data.isLoading ? '...' : String(data.conviction?.balanceUSDC || 0).split('.')[0]}</tspan> USDC
+                       </text>
+                     </g>
+                  </svg>
+                )}
+              </div>
               <span>CONVICTION</span>
             </div>
             <div 
               onClick={() => handleNodeClick(3, !!userData?.nodeLegacy)}
               className={`satellite-node satellite-node-3 text-white ${userData?.nodeLegacy ? 'is-active' : ''} ${!userData?.nodeLegacy && isOwner ? 'is-interactive' : ''}`}
             >
-              <div className={`w-1 h-1 rounded-full ${userData?.nodeLegacy ? 'bg-accent-success shadow-sm' : 'bg-slate-500'}`}></div>
+              <div className="relative flex items-center justify-center">
+                <div className={`w-1 h-1 rounded-full ${userData?.nodeLegacy ? 'bg-accent-success shadow-sm' : 'bg-slate-500'}`}></div>
+                {userData?.nodeLegacy && (
+                  <svg className="absolute w-[200px] h-[200px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none" viewBox="-100 -100 200 200">
+                     <path className="elastic-path-3" fill="none" stroke="rgba(74,222,128,0.5)" strokeWidth="0.75" />
+                     <g className="static-map-content">
+                       <circle cx="2" cy="-75" r="1.5" fill="rgba(74,222,128,0.8)" />
+                       <text x="6" y="-75" fill="#64748b" fontSize="9" fontFamily="monospace" textAnchor="start">
+                         1st TX
+                       </text>
+                       <text x="6" y="-60" fill="#94a3b8" fontWeight="bold" fontSize="15" fontFamily="monospace" textAnchor="start">
+                         {data.isLoading ? '...' : `${data.legacy?.daysSinceGenesis || 0}d`} <tspan fontSize="10" fontWeight="normal">ago</tspan>
+                       </text>
+                     </g>
+                  </svg>
+                )}
+              </div>
               <span>LEGACY</span>
             </div>
 
@@ -318,7 +363,7 @@ export default function RunestonePanel() {
               
               {/* SVG Cristal (Runestone) */}
               <div className={`absolute bottom-[35px] pointer-events-none ${userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'animate-node-float' : ''}`} style={{ zIndex: 1, transform: 'translateZ(-10px)', animationDuration: '5s', animationDelay: '-5s' }}>
-                <svg className={`crystal-svg w-12 h-20 drop-shadow-2xl ${userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? '' : 'is-inactive'}`} viewBox="0 0 100 180" xmlns="http://www.w3.org/2000/svg">
+                <svg className={`crystal-svg w-16 h-28 drop-shadow-2xl ${userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? '' : 'is-inactive'}`} viewBox="0 0 100 180" xmlns="http://www.w3.org/2000/svg">
                   <defs>
                     <linearGradient id="crystalMain" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#ff1493" />
@@ -356,13 +401,13 @@ export default function RunestonePanel() {
 
               {/* Badge Runestone Active/Inactive */}
               {userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? (
-                <div className="relative text-[0.5rem] uppercase tracking-[0.3em] font-black text-white/90 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] z-10 flex items-center gap-2 mb-3 whitespace-nowrap">
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[0.5rem] uppercase tracking-[0.3em] font-black text-white/90 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] z-10 flex items-center gap-2 whitespace-nowrap w-max">
                   <Flame className="w-3 h-3 text-orange-500 fill-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
                   RUNESTONE ACTIVE
                   <Flame className="w-3 h-3 text-orange-500 fill-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
                 </div>
               ) : (
-                <div className="relative text-[0.45rem] uppercase tracking-[0.3em] font-bold text-slate-600/80 z-10 flex items-center gap-1.5 mb-3 whitespace-nowrap">
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[0.45rem] uppercase tracking-[0.3em] font-bold text-slate-600/80 z-10 flex items-center gap-1.5 whitespace-nowrap w-max">
                   RUNESTONE INACTIVE
                 </div>
               )}

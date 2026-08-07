@@ -116,6 +116,53 @@
   cursor: pointer;
 }
 
+@keyframes nodeFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes inverseFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+
+.static-map-content {
+  animation: inverseFloat 4s ease-in-out infinite;
+}
+
+/* Node 1 Elasticity */
+@keyframes elasticPath1 {
+  0%, 100% { d: path("M 0,0 L -15,20 L -45,20"); }
+  50% { d: path("M 0,0 L -15,28 L -45,28"); }
+}
+.elastic-path-1 {
+  animation: elasticPath1 4s ease-in-out infinite;
+  animation-delay: 0s;
+}
+.satellite-node-1 .static-map-content { animation-delay: 0s; }
+
+/* Node 2 Elasticity */
+@keyframes elasticPath2 {
+  0%, 100% { d: path("M 0,0 L 5,25 L 15,25"); }
+  50% { d: path("M 0,0 L 5,33 L 15,33"); }
+}
+.elastic-path-2 {
+  animation: elasticPath2 4s ease-in-out infinite;
+  animation-delay: 1.2s;
+}
+.satellite-node-2 .static-map-content { animation-delay: 1.2s; }
+
+/* Node 3 Elasticity */
+@keyframes elasticPath3 {
+  0%, 100% { d: path("M 0,0 L -5,-75 L 2,-75"); }
+  50% { d: path("M 0,0 L -5,-67 L 2,-67"); }
+}
+.elastic-path-3 {
+  animation: elasticPath3 4s ease-in-out infinite;
+  animation-delay: 2.4s;
+}
+.satellite-node-3 .static-map-content { animation-delay: 2.4s; }
+
 .satellite-node.is-interactive:hover {
   transform: scale(1.1);
   border-color: rgba(0, 229, 255, 0.5);
@@ -123,9 +170,9 @@
   opacity: 0.8;
 }
 
-.satellite-node-1 { top: 3%; right: 25%; animation-delay: 0s; } /* Compromiso */
-.satellite-node-2 { top: 40%; left: 0%; animation-delay: 1.2s; } /* Convicción */
-.satellite-node-3 { bottom: 40%; right: 0%; animation-delay: 2.4s; } /* Legado */
+.satellite-node-1 { top: -10%; right: 25%; animation-delay: 0s; } /* Compromiso */
+.satellite-node-2 { top: 25%; left: 0%; animation-delay: 1.2s; } /* Convicción */
+.satellite-node-3 { bottom: 50%; right: 12%; animation-delay: 2.4s; } /* Legado */
 
 
 .crystal-svg {
