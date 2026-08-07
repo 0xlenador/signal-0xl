@@ -78,7 +78,7 @@ module.exports = {
       keyframes: {
         'node-float': {
           '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-10px)' },
+          '50%': { transform: 'translateY(-4px)' },
         },
         'pulse-glow': {
           'from': { filter: 'drop-shadow(0 0 10px rgba(255, 0, 127, 0.4))' },
@@ -89,7 +89,7 @@ module.exports = {
         }
       },
       animation: {
-        'node-float': 'node-float 4s ease-in-out infinite',
+        'node-float': 'node-float 8s ease-in-out infinite',
         'pulse-glow': 'pulse-glow 4s ease-in-out infinite alternate',
         'signal-entry': 'signal-entry 0.3s ease-out forwards',
       }

@@ -7,6 +7,7 @@ import { getAvatarUrl } from '@/lib/utils';
 import { useWeb3 } from '../Web3Provider';
 import { formatUnits, parseUnits } from 'viem';
 import { useSignalContract, useNodesData } from '@/hooks';
+import NodesGrid from './NodesGrid';
 import { useUserDataStore } from '@/stores/userDataStore';
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
@@ -116,35 +117,8 @@ export default function RunestonePanel() {
   }, [contractError, isNodeModalOpen]);
 
   const handleNodeClick = (nodeId: number, isActive: boolean) => {
-    if (!isOwner || isActive || !userData) return;
-    setActivationError(null);
-    // Calculate cost locally — no RPC needed
-    const cost = calculateNodeInstantCost(nodeId, userData.onChainForkLevel);
-    setNodeInstantCost(cost);
-    setSelectedNodeId(nodeId);
+    if (!isOwner) return;
     setIsNodeModalOpen(true);
-  };
-
-  const handleActivateByStreak = async () => {
-    if (!selectedNodeId) return;
-    setActivationLoading(true);
-    setActivationError(null);
-    const success = await activateNodeByStreak(selectedNodeId);
-    if (success && isMountedRef.current) {
-      setIsNodeModalOpen(false);
-    }
-    if (isMountedRef.current) setActivationLoading(false);
-  };
-
-  const handleActivateInstant = async () => {
-    if (!selectedNodeId || nodeInstantCost === null) return;
-    setActivationLoading(true);
-    setActivationError(null);
-    const success = await activateNodeInstant(selectedNodeId, nodeInstantCost);
-    if (success && isMountedRef.current) {
-      setIsNodeModalOpen(false);
-    }
-    if (isMountedRef.current) setActivationLoading(false);
   };
 
   // Helper para requerimientos de racha
@@ -296,7 +270,7 @@ export default function RunestonePanel() {
             {/* Nodos Satélite */}
             <div 
               onClick={() => handleNodeClick(1, !!userData?.nodeCommitment)}
-              className={`satellite-node satellite-node-1 text-white ${userData?.nodeCommitment ? 'is-active' : ''} ${!userData?.nodeCommitment && isOwner ? 'is-interactive' : ''}`}
+              className={`satellite-node satellite-node-1 text-white ${userData?.nodeCommitment ? 'is-active' : ''} ${isOwner ? 'is-interactive cursor-pointer' : ''}`}
             >
               <div className="relative flex items-center justify-center">
                 <div className={`w-1 h-1 rounded-full ${userData?.nodeCommitment ? 'bg-accent-success shadow-sm' : 'bg-slate-500'}`}></div>
@@ -316,7 +290,7 @@ export default function RunestonePanel() {
             </div>
             <div 
               onClick={() => handleNodeClick(2, !!userData?.nodeConviction)}
-              className={`satellite-node satellite-node-2 text-white ${userData?.nodeConviction ? 'is-active' : ''} ${!userData?.nodeConviction && isOwner ? 'is-interactive' : ''}`}
+              className={`satellite-node satellite-node-2 text-white ${userData?.nodeConviction ? 'is-active' : ''} ${isOwner ? 'is-interactive cursor-pointer' : ''}`}
             >
               <div className="relative flex items-center justify-center">
                 <div className={`w-1 h-1 rounded-full ${userData?.nodeConviction ? 'bg-accent-success shadow-sm' : 'bg-slate-500'}`}></div>
@@ -336,7 +310,7 @@ export default function RunestonePanel() {
             </div>
             <div 
               onClick={() => handleNodeClick(3, !!userData?.nodeLegacy)}
-              className={`satellite-node satellite-node-3 text-white ${userData?.nodeLegacy ? 'is-active' : ''} ${!userData?.nodeLegacy && isOwner ? 'is-interactive' : ''}`}
+              className={`satellite-node satellite-node-3 text-white ${userData?.nodeLegacy ? 'is-active' : ''} ${isOwner ? 'is-interactive cursor-pointer' : ''}`}
             >
               <div className="relative flex items-center justify-center">
                 <div className={`w-1 h-1 rounded-full ${userData?.nodeLegacy ? 'bg-accent-success shadow-sm' : 'bg-slate-500'}`}></div>
@@ -431,90 +405,21 @@ export default function RunestonePanel() {
 
       </div>
 
-      {/* Modal de Activación de Nodos */}
-      <Dialog open={isNodeModalOpen && selectedNodeId !== null} onOpenChange={(open) => {
-        if (!open && !activationLoading) setIsNodeModalOpen(false);
-      }}>
-        <DialogContent className="p-0 border-none bg-transparent shadow-none" showCloseButton={false}>
-          <DialogTitle className="sr-only">Activate Node</DialogTitle>
-          <DialogDescription className="sr-only">Activate your Runestone node</DialogDescription>
-          <div className="bg-card text-card-foreground border border-border rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative flex flex-col mx-auto">
-            
-            {/* Header */}
-            <div className="p-4 border-b border-border flex justify-between items-center bg-muted/40">
-              <h3 className="font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-                <Flame className="w-4 h-4 text-accent-runestone drop-shadow-sm" />
-                Activate Node {selectedNodeId === 1 ? 'Commitment' : selectedNodeId === 2 ? 'Conviction' : 'Legacy'}
-              </h3>
-              <button 
-                onClick={() => !activationLoading && setIsNodeModalOpen(false)}
-                className="text-muted-foreground hover:text-foreground hover:bg-muted p-1 rounded-md transition-colors disabled:opacity-50"
-                disabled={activationLoading}
-              >
-                <X className="w-5 h-5" />
-              </button>
+      {/* Modal General de Nodos */}
+      <Dialog open={isNodeModalOpen} onOpenChange={setIsNodeModalOpen}>
+        <DialogContent className="sm:max-w-4xl bg-slate-50/95 backdrop-blur-xl border-slate-200 p-6 overflow-hidden shadow-2xl">
+          <DialogTitle className="text-xl font-bold text-slate-800 mb-2">Runestone Nodes</DialogTitle>
+          <DialogDescription className="text-slate-500 text-sm mb-4">
+            Activate these satellite nodes to complete your Runestone.
+          </DialogDescription>
+          {!hasGMToday && (
+            <div className="bg-amber-100 border border-amber-300 p-3 mb-4 rounded-lg flex items-center gap-2 text-sm text-amber-800 font-medium shadow-sm">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <span className="leading-tight">You must do your daily GM first before activating any nodes.</span>
             </div>
-
-            {/* Content */}
-            <div className="p-5 flex flex-col gap-5">
-              {!hasGMToday && (
-                <div className="bg-amber-500/10 border border-amber-500/30 p-3 rounded-lg flex items-start gap-2 text-sm text-amber-700 dark:text-amber-500 font-medium">
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span className="leading-tight">You must do your daily GM first before activating nodes.</span>
-                </div>
-              )}
-
-              {activationError && (
-                <div className="bg-destructive/10 border border-destructive/30 p-3 rounded-lg flex items-start gap-2 text-sm text-destructive font-medium">
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span className="leading-tight">{activationError}</span>
-                </div>
-              )}
-
-              {/* Opción 1: Racha */}
-              <div className="bg-muted/30 p-4 rounded-xl border border-border flex flex-col gap-3 transition-all hover:bg-muted/50 hover:border-accent-runestone/30 hover:shadow-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-bold text-foreground">By Streak</span>
-                  <span className="text-xs font-mono bg-background px-2 py-1 rounded-md text-accent-success border border-accent-success/30 font-bold shadow-sm">0.01 USDC</span>
-                </div>
-                <div className="text-sm text-foreground/80 leading-relaxed font-medium">
-                  Requires an active streak of {getRequiredStreak(selectedNodeId || 1)} days. 
-                  Your current streak is: <span className="text-foreground font-black bg-background px-1.5 py-0.5 rounded border border-border shadow-sm ml-1">{userData?.currentStreak || 0}</span>
-                </div>
-                <button
-                  onClick={handleActivateByStreak}
-                  disabled={activationLoading || (userData?.currentStreak || 0) < getRequiredStreak(selectedNodeId || 1) || !hasGMToday}
-                  className="w-full bg-accent-runestone/10 hover:bg-accent-runestone/20 text-accent-runestone border border-accent-runestone/40 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm hover:shadow-md mt-1"
-                >
-                  {activationLoading ? 'Processing...' : 'Activate by Streak'}
-                </button>
-              </div>
-
-              {/* Opción 2: Instantáneo */}
-              <div className="bg-muted/30 p-4 rounded-xl border border-border flex flex-col gap-3 transition-all hover:bg-muted/50 hover:border-accent-warning/30 hover:shadow-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-bold text-foreground">Instant Activation</span>
-                  {nodeInstantCost !== null ? (
-                    <span className="text-xs font-mono bg-background px-2 py-1 rounded-md text-accent-warning border border-accent-warning/30 font-bold shadow-sm">
-                      {formatUnits(nodeInstantCost, 18)} USDC
-                    </span>
-                  ) : (
-                    <span className="text-xs animate-pulse text-muted-foreground font-semibold">Calculating...</span>
-                  )}
-                </div>
-                <div className="text-sm text-foreground/80 leading-relaxed font-medium">
-                  Pay the premium fee and activate this node immediately, regardless of your current streak.
-                </div>
-                <button
-                  onClick={handleActivateInstant}
-                  disabled={activationLoading || nodeInstantCost === null || !hasGMToday}
-                  className="w-full bg-accent-warning/10 hover:bg-accent-warning/20 text-accent-warning border border-accent-warning/40 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm hover:shadow-md mt-1"
-                >
-                  {activationLoading ? 'Processing...' : 'Activate Instantly'}
-                </button>
-              </div>
-
-            </div>
+          )}
+          <div className="max-h-[75vh] overflow-y-auto custom-scrollbar pr-2 pb-4">
+            <NodesGrid />
           </div>
         </DialogContent>
       </Dialog>
