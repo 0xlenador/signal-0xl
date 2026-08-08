@@ -158,7 +158,7 @@ export default function NetworkStats() {
       <div className="flex-grow w-full relative z-10 flex flex-col xl:flex-row gap-4 mt-2">
         
         {/* Left Section: Mini Swap */}
-        <div className="w-full xl:w-4/12 bg-muted/20 border border-border/60 rounded-xl p-4 flex flex-col items-center justify-center min-h-[100px] shadow-inner relative overflow-hidden group">
+        <div className="w-full xl:w-4/12 flex flex-col min-h-[100px]">
           <MiniSwap />
         </div>
 
