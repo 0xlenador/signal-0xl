@@ -25,6 +25,15 @@ const ROUTER_ABI = [
 
 const DECIMALS: Record<string, number> = { USDC: 18, EURC: 6, cirBTC: 8 };
 
+// Approximate exchange rates used as fallback when SwapKit estimate fails.
+// Arc Testnet pools can be unstable / low on liquidity for larger amounts,
+// causing the simulation to revert. These rates let the UI show an approximate
+// value instead of "N/A" so the user can still attempt the swap.
+const FALLBACK_RATES: Record<string, Record<string, number>> = {
+  USDC: { EURC: 1 / 1.09 },  // ~0.917 EURC per USDC
+  EURC: { USDC: 1.09 },       // ~1.09 USDC per EURC
+};
+
 export default function MiniSwap() {
   const { address, connector } = useAccount();
   const { data: walletClient } = useWalletClient();
@@ -135,9 +144,19 @@ export default function MiniSwap() {
           }
         }
       } catch (err: unknown) {
-        // En lugar de console.error, usamos warn u omitimos para no disparar el overlay de Next.js
-        console.warn('Estimate not available for route:', (err as Error)?.message || err);
-        if (active) setEstimatedOutput('N/A');
+        // Arc Testnet pools can be low on liquidity, causing SwapKit estimates to
+        // revert for larger amounts. Fall back to an approximate rate so the UI
+        // remains usable. The prefix '~' signals this is an approximation.
+        console.warn('SwapKit estimate unavailable (likely testnet liquidity):', (err as Error)?.message || err);
+        if (active) {
+          const rate = FALLBACK_RATES[tokenIn]?.[tokenOut];
+          if (rate) {
+            const approx = (Number(amountIn) * rate).toFixed(6);
+            setEstimatedOutput(`~${approx}`);
+          } else {
+            setEstimatedOutput('N/A');
+          }
+        }
       } finally {
         if (active) setIsEstimating(false);
       }
@@ -207,7 +226,7 @@ export default function MiniSwap() {
         },
       });
 
-      // 4. Execute the swap via SwapKit (using the typed SwapChain enum)
+      // 4. Execute the swap via SwapKit (human-readable amountIn)
       const kit = new SwapKit();
       const result = await kit.swap({
         from: { adapter, chain: SwapChain.Arc_Testnet },
