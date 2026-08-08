@@ -164,7 +164,7 @@ export default function RunestonePanel() {
       {/* Tu Señal */}
       <div className="relative z-10 w-full mb-4">
         <h3 className="text-xs font-bold text-slate-400 tracking-wide mb-4 flex items-center justify-between">
-          <span>Hello! 👋</span>
+          <span className="text-sm">Hello! 👋</span>
           <div className="flex items-center gap-1.5 bg-slate-900/80 px-1.5 py-0.5 rounded-full border border-slate-700 hover:border-accent-primary/50 transition-colors shadow-sm">
             <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-accent-primary to-accent-runestone flex items-center justify-center overflow-hidden shadow-sm">
               {walletParam && <Image unoptimized src={getAvatarUrl(walletParam)} alt="Avatar" width={20} height={20} className="w-full h-full opacity-90" />}
@@ -213,7 +213,7 @@ export default function RunestonePanel() {
               <button 
                 onClick={handleGM}
                 disabled={!isOwner || gmLoading || hasGMToday}
-                className={`w-[68px] h-[68px] rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(0,0,0,0.8)] transition-all duration-500 relative group overflow-hidden ${hasGMToday ? 'bg-slate-900 border border-slate-800 cursor-not-allowed opacity-80' : 'bg-slate-950 border border-slate-800/80 hover:border-accent-primary/50 hover:scale-[1.05] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'}`}
+                className={`w-[84px] h-[84px] rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(0,0,0,0.8)] transition-all duration-500 relative group overflow-hidden ${hasGMToday ? 'bg-slate-900 border border-slate-800 cursor-not-allowed opacity-80' : 'bg-slate-950 border border-slate-800/80 hover:border-accent-primary/50 hover:scale-[1.05] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'}`}
               >
                 {!hasGMToday && (
                   <>
@@ -221,10 +221,10 @@ export default function RunestonePanel() {
                     <div className="absolute inset-[2px] rounded-full bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none"></div>
                   </>
                 )}
-                <span className={`relative z-10 text-[0.6rem] font-black uppercase tracking-widest text-center leading-tight flex flex-col items-center justify-center ${hasGMToday ? 'text-slate-600' : 'bg-clip-text text-transparent bg-gradient-to-br from-white via-slate-100 to-slate-400 drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)] group-hover:from-white group-hover:to-white transition-colors duration-300'}`}>
+                <span className={`relative z-10 text-[0.7rem] font-black uppercase tracking-widest text-center leading-tight flex flex-col items-center justify-center ${hasGMToday ? 'text-slate-600' : 'bg-clip-text text-transparent bg-gradient-to-br from-white via-slate-100 to-slate-400 drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)] group-hover:from-white group-hover:to-white transition-colors duration-300'}`}>
                   <span>{!isOwner ? 'READ\nONLY' : hasGMToday ? 'DONE' : (gmLoading ? '...' : (userData?.nodeCommitment && userData?.nodeConviction && userData?.nodeLegacy ? 'GM+' : 'GM'))}</span>
                   {hasGMToday && (
-                    <span className="text-[0.6rem] font-bold font-mono text-accent-runestone tracking-widest mt-0.5 opacity-100">
+                    <span className="text-[0.65rem] font-bold font-mono text-accent-runestone tracking-widest mt-0.5 opacity-100">
                       {countdown}
                     </span>
                   )}

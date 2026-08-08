@@ -74,7 +74,7 @@ export default function NetworkStats() {
 
   return (
     <Card className="p-4 shadow-sm flex flex-col justify-between group transition-shadow duration-300 relative">
-      <div className="flex items-center justify-between mb-4 relative z-10 pb-1">
+      <div className="flex items-center justify-between mb-2 relative z-10 pb-1">
         <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
           <span className="flex items-center gap-2">
             <Image src="/assets/arc-logo.jpg" alt="Arc" width={22} height={22} className="rounded-full object-cover border border-border" />
@@ -163,47 +163,79 @@ export default function NetworkStats() {
         </div>
 
         {/* Right Section: Network Stats Grid */}
-        <div className="w-full xl:w-8/12 flex flex-col justify-center overflow-x-hidden">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 h-full">
+        <div className="w-full xl:w-8/12 flex flex-col gap-3 overflow-x-hidden">
+          {/* Top Row: 4 Stats */}
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-3">
             {/* GAS */}
-            <div className="bg-muted/40 border border-border rounded-lg p-2 sm:p-3 flex flex-col justify-center sm:justify-between hover:bg-muted/60 transition-colors shadow-sm">
-              <span className="text-[0.6rem] sm:text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center justify-start gap-1 font-semibold truncate" title="GAS COST">
-                ⛽ GAS<span className="hidden sm:inline"> COST</span>
+            <div className="bg-muted/40 border border-border rounded-lg p-1.5 sm:p-3 flex flex-col justify-center items-center sm:items-stretch hover:bg-muted/60 transition-colors shadow-sm">
+              <span className="text-[0.55rem] sm:text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 font-semibold truncate w-full" title="GAS COST">
+                ⛽ GAS<span className="hidden sm:inline"> COST</span> <span className="hidden sm:inline text-[0.65rem] opacity-70 tracking-normal ml-0.5">(USDC)</span>
               </span>
-              <div className="mt-2 flex items-end justify-between">
-                <span className="text-sm font-semibold text-foreground tracking-tight truncate">{stats.gasPrice} <span className="text-[0.6rem] text-muted-foreground font-medium hidden lg:inline">USDC</span></span>
+              <div className="mt-1 w-full flex items-center justify-center sm:justify-between">
+                <span className="text-xs sm:text-sm font-semibold text-foreground tracking-tight truncate">{stats.gasPrice}</span>
                 <div className="hidden sm:block"><Sparkline color="#64748b" glowColor="#64748b" data={stats.history.gas} /></div>
               </div>
             </div>
             {/* BLK TIME */}
-            <div className="bg-muted/40 border border-border rounded-lg p-2 sm:p-3 flex flex-col justify-center sm:justify-between hover:bg-muted/60 transition-colors shadow-sm">
-              <span className="text-[0.6rem] sm:text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center justify-start gap-1 font-semibold truncate" title="AVG BLK TIME">
+            <div className="bg-muted/40 border border-border rounded-lg p-1.5 sm:p-3 flex flex-col justify-center items-center sm:items-stretch hover:bg-muted/60 transition-colors shadow-sm">
+              <span className="text-[0.55rem] sm:text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 font-semibold truncate w-full" title="AVG BLK TIME">
                 ⏱ TIME
               </span>
-              <div className="mt-2 flex items-end justify-between">
-                <span className="text-sm font-semibold text-foreground tracking-tight truncate">{stats.blockTime} <span className="text-[0.6rem] text-muted-foreground font-medium hidden lg:inline">ms</span></span>
+              <div className="mt-1 w-full flex items-center justify-center sm:justify-between">
+                <span className="text-xs sm:text-sm font-semibold text-foreground tracking-tight truncate">{stats.blockTime} <span className="text-[0.6rem] text-muted-foreground font-medium hidden lg:inline">ms</span></span>
                 <div className="hidden sm:block"><Sparkline color="#8b5cf6" glowColor="#8b5cf6" data={stats.history.time} /></div>
               </div>
             </div>
             {/* BLOCKS */}
-            <div className="bg-muted/40 border border-border rounded-lg p-2 sm:p-3 flex flex-col justify-center sm:justify-between hover:bg-muted/60 transition-colors shadow-sm">
-              <span className="text-[0.6rem] sm:text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center justify-start gap-1 font-semibold truncate" title="BLOCKS">
+            <div className="bg-muted/40 border border-border rounded-lg p-1.5 sm:p-3 flex flex-col justify-center items-center sm:items-stretch hover:bg-muted/60 transition-colors shadow-sm">
+              <span className="text-[0.55rem] sm:text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 font-semibold truncate w-full" title="BLOCKS">
                 📦 BLOCKS
               </span>
-              <div className="mt-2 flex items-end justify-between">
-                <span className="text-sm font-semibold text-foreground tracking-tight truncate">{stats.totalBlocks}</span>
+              <div className="mt-1 w-full flex items-center justify-center sm:justify-between">
+                <span className="text-xs sm:text-sm font-semibold text-foreground tracking-tight truncate">{stats.totalBlocks}</span>
                 <div className="hidden sm:block"><Sparkline color="#f59e0b" glowColor="#f59e0b" data={stats.history.blocks} /></div>
               </div>
             </div>
             {/* TXS */}
-            <div className="bg-muted/40 border border-border rounded-lg p-2 sm:p-3 flex flex-col justify-center sm:justify-between hover:bg-muted/60 transition-colors shadow-sm">
-              <span className="text-[0.6rem] sm:text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center justify-start gap-1 font-semibold truncate" title="TXS / BLK">
+            <div className="bg-muted/40 border border-border rounded-lg p-1.5 sm:p-3 flex flex-col justify-center items-center sm:items-stretch hover:bg-muted/60 transition-colors shadow-sm">
+              <span className="text-[0.55rem] sm:text-[0.65rem] text-muted-foreground uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1 font-semibold truncate w-full" title="TXS / BLK">
                 🔄 TXS<span className="hidden sm:inline">/BLK</span>
               </span>
-              <div className="mt-2 flex items-end justify-between">
-                <span className="text-sm font-semibold text-foreground tracking-tight truncate">{stats.totalTxs}</span>
+              <div className="mt-1 w-full flex items-center justify-center sm:justify-between">
+                <span className="text-xs sm:text-sm font-semibold text-foreground tracking-tight truncate">{stats.totalTxs}</span>
                 <div className="hidden sm:block"><Sparkline color="#10b981" glowColor="#10b981" data={stats.history.txs} /></div>
               </div>
+            </div>
+          </div>
+
+          {/* Bottom Row: Placeholder Charts */}
+          <div className="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-3 min-h-0">
+            {/* Placeholder 1 */}
+            <div className="bg-muted/20 border border-border/50 rounded-xl p-4 flex flex-col items-center justify-center relative overflow-hidden group">
+              <div className="absolute inset-0 flex items-end gap-1.5 px-4 py-4 opacity-20 group-hover:opacity-30 transition-opacity">
+                <div className="flex-1 bg-muted-foreground rounded-t-sm h-[30%] animate-pulse" style={{ animationDelay: '0ms' }}></div>
+                <div className="flex-1 bg-muted-foreground rounded-t-sm h-[50%] animate-pulse" style={{ animationDelay: '150ms' }}></div>
+                <div className="flex-1 bg-muted-foreground rounded-t-sm h-[80%] animate-pulse" style={{ animationDelay: '300ms' }}></div>
+                <div className="flex-1 bg-muted-foreground rounded-t-sm h-[40%] animate-pulse" style={{ animationDelay: '450ms' }}></div>
+                <div className="flex-1 bg-muted-foreground rounded-t-sm h-[60%] animate-pulse" style={{ animationDelay: '600ms' }}></div>
+                <div className="flex-1 bg-muted-foreground rounded-t-sm h-[90%] animate-pulse" style={{ animationDelay: '750ms' }}></div>
+                <div className="flex-1 bg-muted-foreground rounded-t-sm h-[70%] animate-pulse" style={{ animationDelay: '900ms' }}></div>
+              </div>
+              <span className="text-xs font-semibold text-muted-foreground/60 z-10 uppercase tracking-wider bg-background/50 px-2 py-1 rounded-md backdrop-blur-sm border border-border/30">Network Activity</span>
+            </div>
+            
+            {/* Placeholder 2 */}
+            <div className="bg-muted/20 border border-border/50 rounded-xl p-4 flex flex-col items-center justify-center relative overflow-hidden group">
+              <div className="absolute inset-0 flex items-end gap-1.5 px-4 py-4 opacity-20 group-hover:opacity-30 transition-opacity">
+                <div className="flex-1 bg-muted-foreground rounded-t-sm h-[60%] animate-pulse" style={{ animationDelay: '900ms' }}></div>
+                <div className="flex-1 bg-muted-foreground rounded-t-sm h-[40%] animate-pulse" style={{ animationDelay: '750ms' }}></div>
+                <div className="flex-1 bg-muted-foreground rounded-t-sm h-[70%] animate-pulse" style={{ animationDelay: '600ms' }}></div>
+                <div className="flex-1 bg-muted-foreground rounded-t-sm h-[30%] animate-pulse" style={{ animationDelay: '450ms' }}></div>
+                <div className="flex-1 bg-muted-foreground rounded-t-sm h-[50%] animate-pulse" style={{ animationDelay: '300ms' }}></div>
+                <div className="flex-1 bg-muted-foreground rounded-t-sm h-[80%] animate-pulse" style={{ animationDelay: '150ms' }}></div>
+                <div className="flex-1 bg-muted-foreground rounded-t-sm h-[100%] animate-pulse" style={{ animationDelay: '0ms' }}></div>
+              </div>
+              <span className="text-xs font-semibold text-muted-foreground/60 z-10 uppercase tracking-wider bg-background/50 px-2 py-1 rounded-md backdrop-blur-sm border border-border/30">Volume Overview</span>
             </div>
           </div>
         </div>

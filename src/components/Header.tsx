@@ -159,7 +159,7 @@ export function Header({ networkParam }: { networkParam?: string }) {
                           </div>
                           
                           {/* Address */}
-                          <span className="text-xs font-mono font-medium text-foreground tracking-wider pt-0.5">
+                          <span className="hidden sm:block text-xs font-mono font-medium text-foreground tracking-wider pt-0.5">
                             {account.displayName}
                           </span>
                           
