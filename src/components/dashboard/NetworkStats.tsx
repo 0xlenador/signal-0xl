@@ -5,7 +5,8 @@ import { useNetworkStats } from '@/hooks';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import MiniSwap from './MiniSwap';
+import dynamic from 'next/dynamic';
+const MiniSwap = dynamic(() => import('./MiniSwap'), { ssr: false });
 
 const Sparkline = ({ color, data, glowColor }: { color: string, data: number[], glowColor: string }) => {
   const width = 48;
