@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { NETWORK } from '@/lib/config';
+import { EVM_NETWORKS } from '@/lib/config';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 export default function HomePage() {
+  const networks = Object.values(EVM_NETWORKS);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4">
       {/* Hero Header */}
@@ -19,55 +21,66 @@ export default function HomePage() {
       </div>
 
       {/* Network Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
-        
-        {/* Network Card */}
-        <Link href={`/${NETWORK.slug}`} className="block transition-transform hover:scale-[1.02]">
-          <Card className="h-full hover:border-accent-runestone/50 transition-colors cursor-pointer overflow-hidden relative group">
-            <CardContent className="p-8 flex flex-col items-center text-center">
-              <div className="w-20 h-20 mb-6 rounded-full overflow-hidden border border-border shadow-sm group-hover:border-accent-runestone/30 transition-colors">
-                <Image src="/assets/arc-logo.jpg" alt="Arc Testnet" width={80} height={80} className="w-full h-full object-cover" />
-              </div>
-              
-              <h2 className="text-2xl font-bold mb-2 text-foreground group-hover:text-accent-runestone transition-colors">
-                Arc Testnet
-              </h2>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Testing and validation environment. Active network for daily signal broadcasting.
-              </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
+        {networks.map((network) => {
+          // Si el contractAddress es el "0x00..." significa que aún no está desplegado en mainnet y se muestra deshabilitado
+          const isComingSoon = network.contractAddress === '0x0000000000000000000000000000000000000000';
 
-              <div className="mt-6">
-                <Badge variant="outline" className="gap-2 px-3 py-1 bg-green-50/50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-900 font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                  Online
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+          if (isComingSoon) {
+            return (
+              <Card key={network.chainId} className="h-full opacity-60 cursor-not-allowed bg-muted/30">
+                <CardContent className="p-8 flex flex-col items-center text-center">
+                  <div className="w-20 h-20 mb-6 rounded-full overflow-hidden border border-border grayscale">
+                    {network.iconUrl && (
+                      <Image src={network.iconUrl} alt={network.name} width={80} height={80} className="w-full h-full object-cover opacity-60" />
+                    )}
+                  </div>
+                  
+                  <h2 className="text-2xl font-bold mb-2 text-foreground">
+                    {network.name}
+                  </h2>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    Main production network. Official deployment.
+                  </p>
 
-        {/* Arc Mainnet Card (Disabled) */}
-        <Card className="h-full opacity-60 cursor-not-allowed bg-muted/30">
-          <CardContent className="p-8 flex flex-col items-center text-center">
-            <div className="w-20 h-20 mb-6 rounded-full overflow-hidden border border-border grayscale">
-              <Image src="/assets/arc-logo.jpg" alt="Arc Mainnet" width={80} height={80} className="w-full h-full object-cover opacity-60" />
-            </div>
-            
-            <h2 className="text-2xl font-bold mb-2 text-foreground">
-              Arc Mainnet
-            </h2>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Main production network. Official deployment.
-            </p>
+                  <div className="mt-6">
+                    <Badge variant="secondary" className="px-3 py-1 font-medium">
+                      Coming Soon
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          }
 
-            <div className="mt-6">
-              <Badge variant="secondary" className="px-3 py-1 font-medium">
-                Coming Soon
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+          return (
+            <Link key={network.chainId} href={`/${network.slug}`} className="block transition-transform hover:scale-[1.02]">
+              <Card className="h-full hover:border-accent-runestone/50 transition-colors cursor-pointer overflow-hidden relative group">
+                <CardContent className="p-8 flex flex-col items-center text-center">
+                  <div className="w-20 h-20 mb-6 rounded-full overflow-hidden border border-border shadow-sm group-hover:border-accent-runestone/30 transition-colors">
+                    {network.iconUrl && (
+                      <Image src={network.iconUrl} alt={network.name} width={80} height={80} className="w-full h-full object-cover" />
+                    )}
+                  </div>
+                  
+                  <h2 className="text-2xl font-bold mb-2 text-foreground group-hover:text-accent-runestone transition-colors">
+                    {network.name}
+                  </h2>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    Testing and validation environment. Active network for daily signal broadcasting.
+                  </p>
 
+                  <div className="mt-6">
+                    <Badge variant="outline" className="gap-2 px-3 py-1 bg-green-50/50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-900 font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                      Online
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

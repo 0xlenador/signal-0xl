@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { ILeaderboardUser } from '@/lib/leaderboardService';
-import { INDEXER } from '@/lib/config';
+import { EVM_NETWORKS, DEFAULT_CHAIN_ID } from '@/lib/config';
 
 interface LeaderboardState {
   data: ILeaderboardUser[];
@@ -8,7 +8,7 @@ interface LeaderboardState {
   
   // Acciones
   hydrate: (serverData: ILeaderboardUser[]) => void;
-  notifyGmConfirmed: (address: string, isSuperGM: boolean) => void;
+  notifyGmConfirmed: (address: string, isSuperGM: boolean, chainId?: number) => void;
 }
 
 // Variable para guardar el controller del fetch actual y poder abortarlo si hay otro GM
@@ -32,8 +32,9 @@ export const useLeaderboardStore = create<LeaderboardState>((set, get) => ({
     }
   },
 
-  notifyGmConfirmed: (address: string, isSuperGM: boolean) => {
+  notifyGmConfirmed: (address: string, isSuperGM: boolean, chainId: number = DEFAULT_CHAIN_ID) => {
     const currentState = get();
+    const config = EVM_NETWORKS[chainId] || EVM_NETWORKS[DEFAULT_CHAIN_ID];
     
     // 1. Optimistic Update Inmediato
     let newData = [...currentState.data];
@@ -90,7 +91,7 @@ export const useLeaderboardStore = create<LeaderboardState>((set, get) => ({
       set({ refreshState: 'fetching' });
       
       try {
-        const res = await fetch(`${INDEXER.baseUrl}/api/leaderboard`, {
+        const res = await fetch(`${config.indexerUrl}/api/leaderboard`, {
           cache: 'no-store', // Muy importante, queremos datos frescos saltando la cache
           signal
         });

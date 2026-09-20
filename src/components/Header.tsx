@@ -6,8 +6,9 @@ import { useRouter, useParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { Link, ChevronDown, LayoutDashboard } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/utils';
-import { NETWORK, SUPPORTED_NETWORKS } from '@/lib/config';
+import { EVM_NETWORKS } from '@/lib/config';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuGroup } from '@/components/ui/dropdown-menu';
 
@@ -19,10 +20,15 @@ const GithubIcon = ({ className }: { className?: string }) => (
 
 export function Header({ networkParam }: { networkParam?: string }) {
   const { address, connect, isInitializing, status, isReconnecting } = useWeb3();
+  const { chain } = useAccount();
   const router = useRouter();
 
   const params = useParams();
   const isOnOwnDashboard = address && params.wallet && (params.wallet as string).toLowerCase() === address.toLowerCase();
+
+  const networksList = Object.values(EVM_NETWORKS);
+  const supportedSlugs = networksList.map(n => n.slug);
+  const activeNetworkConfig = networksList.find(n => n.slug === networkParam) || networksList.find(n => n.chainId === chain?.id) || networksList[0];
 
   useEffect(() => {
     if (isInitializing) return;
@@ -52,7 +58,7 @@ export function Header({ networkParam }: { networkParam?: string }) {
               if (!address) {
                 connect();
               } else if (!isOnOwnDashboard) {
-                router.push(`/${networkParam || 'arc-testnet'}/${address}`);
+                router.push(`/${activeNetworkConfig.slug}/${address}`);
               }
             }}
           >
@@ -72,27 +78,38 @@ export function Header({ networkParam }: { networkParam?: string }) {
         <div className="h-5 w-[1px] bg-border mx-1 hidden sm:block"></div>
 
         {/* Network Dropdown */}
-        {networkParam && SUPPORTED_NETWORKS.includes(networkParam) && (
+        {networkParam && supportedSlugs.includes(networkParam) && (
           <DropdownMenu>
             <DropdownMenuTrigger className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.65rem] shadow-sm font-semibold bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors focus-visible:outline-none">
-              <Image src="/assets/arc-logo.jpg" alt="Logo de Arc (Circle)" width={16} height={16} className="rounded-full object-cover" />
-              {NETWORK.name}
+              {activeNetworkConfig.iconUrl && (
+                <Image src={activeNetworkConfig.iconUrl} alt={`${activeNetworkConfig.name} Logo`} width={16} height={16} className="rounded-full object-cover" />
+              )}
+              {activeNetworkConfig.name}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48 rounded-2xl">
               <DropdownMenuGroup>
                 <DropdownMenuLabel className="text-xs text-muted-foreground">Select Network</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-xs font-medium cursor-pointer rounded-xl">
-                  <Image src="/assets/arc-logo.jpg" alt="Arc Testnet" width={16} height={16} className="rounded-full mr-2" />
-                  {NETWORK.name}
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-xs font-medium opacity-50 cursor-not-allowed rounded-xl flex justify-between items-center" onSelect={(e) => e.preventDefault()}>
-                  <div className="flex items-center">
-                    <Image src="/assets/arc-logo.jpg" alt="Arc Mainnet" width={16} height={16} className="rounded-full mr-2 grayscale" />
-                    Arc Mainnet
-                  </div>
-                  <span className="text-[0.6rem] uppercase tracking-wider text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded-md font-semibold">Soon</span>
-                </DropdownMenuItem>
+                {networksList.map(network => (
+                  <DropdownMenuItem 
+                    key={network.chainId} 
+                    className="text-xs font-medium cursor-pointer rounded-xl flex justify-between items-center"
+                    onClick={() => {
+                      if (network.slug !== networkParam) {
+                        const path = window.location.pathname;
+                        const newPath = path.replace(`/${networkParam}`, `/${network.slug}`);
+                        router.push(newPath);
+                      }
+                    }}
+                  >
+                    <div className="flex items-center">
+                      {network.iconUrl && (
+                        <Image src={network.iconUrl} alt={network.name} width={16} height={16} className="rounded-full mr-2" />
+                      )}
+                      {network.name}
+                    </div>
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>

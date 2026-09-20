@@ -1,8 +1,8 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useWriteContract, usePublicClient, useAccount } from 'wagmi';
 import { createPublicClient, custom } from 'viem';
-import { arcTestnet } from '@/lib/wagmi.config';
-import { CONTRACT_ADDRESS, CONTRACT_ABI, CONSTANTS } from '@/lib/config';
+import { supportedChains } from '@/lib/wagmi.config';
+import { EVM_NETWORKS, CONTRACT_ABI, CONSTANTS, DEFAULT_CHAIN_ID } from '@/lib/config';
 import { useUserDataStore, clearCache } from '@/stores/userDataStore';
 import { useNodesDataStore } from '@/stores/nodesDataStore';
 
@@ -22,9 +22,13 @@ export function useSignalContract(): ISignalContractHook {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { address } = useAccount();
+  const { address, chain } = useAccount();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
+
+  const activeChainId = chain?.id || DEFAULT_CHAIN_ID;
+  const config = EVM_NETWORKS[activeChainId] || EVM_NETWORKS[DEFAULT_CHAIN_ID];
+  const contractAddress = config.contractAddress;
 
   const isMountedRef = useRef(true);
   useEffect(() => {
@@ -47,8 +51,9 @@ export function useSignalContract(): ISignalContractHook {
       let receiptFound = false;
       if (typeof window !== 'undefined' && (window as any).ethereum) {
         try {
+          const chainConfig = supportedChains.find(c => c.id === activeChainId) || supportedChains[0];
           const injectedClient = createPublicClient({
-            chain: arcTestnet,
+            chain: chainConfig,
             transport: custom((window as any).ethereum),
           });
           await injectedClient.waitForTransactionReceipt({ hash });
@@ -67,7 +72,7 @@ export function useSignalContract(): ISignalContractHook {
 
       // Invalidate the localStorage cache for this wallet
       if (address) {
-        clearCache(address);
+        clearCache(address, activeChainId);
       }
 
       // Refresh the central user data store (single RPC call, deduped)
@@ -75,10 +80,10 @@ export function useSignalContract(): ISignalContractHook {
 
       // Refresh nodes data (skips if still fresh within 60s TTL)
       if (address) {
-        void useNodesDataStore.getState().refresh(address);
+        void useNodesDataStore.getState().refresh(address, activeChainId);
       }
     },
-    [publicClient, address],
+    [publicClient, address, activeChainId],
   );
 
   const doGM = useCallback(
@@ -89,7 +94,7 @@ export function useSignalContract(): ISignalContractHook {
       }
       try {
         const hash = await writeContractAsync({
-          address: CONTRACT_ADDRESS as `0x${string}`,
+          address: contractAddress as `0x${string}`,
           abi: CONTRACT_ABI,
           functionName: 'doGM',
           value: payableAmount,
@@ -106,7 +111,7 @@ export function useSignalContract(): ISignalContractHook {
         if (isMountedRef.current) setLoading(false);
       }
     },
-    [writeContractAsync, handlePostTransaction],
+    [writeContractAsync, handlePostTransaction, contractAddress],
   );
 
   const resetToVIP = useCallback(async (): Promise<boolean> => {
@@ -116,7 +121,7 @@ export function useSignalContract(): ISignalContractHook {
     }
     try {
       const hash = await writeContractAsync({
-        address: CONTRACT_ADDRESS as `0x${string}`,
+        address: contractAddress as `0x${string}`,
         abi: CONTRACT_ABI,
         functionName: 'resetToVIP',
       });
@@ -131,7 +136,7 @@ export function useSignalContract(): ISignalContractHook {
     } finally {
       if (isMountedRef.current) setLoading(false);
     }
-  }, [writeContractAsync, handlePostTransaction]);
+  }, [writeContractAsync, handlePostTransaction, contractAddress]);
 
   const activateNodeInstant = useCallback(
     async (nodeId: number, costWei: bigint): Promise<boolean> => {
@@ -141,7 +146,7 @@ export function useSignalContract(): ISignalContractHook {
       }
       try {
         const hash = await writeContractAsync({
-          address: CONTRACT_ADDRESS as `0x${string}`,
+          address: contractAddress as `0x${string}`,
           abi: CONTRACT_ABI,
           functionName: 'activateNodeInstant',
           args: [nodeId],
@@ -162,7 +167,7 @@ export function useSignalContract(): ISignalContractHook {
         if (isMountedRef.current) setLoading(false);
       }
     },
-    [writeContractAsync, handlePostTransaction],
+    [writeContractAsync, handlePostTransaction, contractAddress],
   );
 
   const activateNodeByStreak = useCallback(
@@ -173,7 +178,7 @@ export function useSignalContract(): ISignalContractHook {
       }
       try {
         const hash = await writeContractAsync({
-          address: CONTRACT_ADDRESS as `0x${string}`,
+          address: contractAddress as `0x${string}`,
           abi: CONTRACT_ABI,
           functionName: 'activateNodeByStreak',
           args: [nodeId],
@@ -194,7 +199,7 @@ export function useSignalContract(): ISignalContractHook {
         if (isMountedRef.current) setLoading(false);
       }
     },
-    [writeContractAsync, handlePostTransaction],
+    [writeContractAsync, handlePostTransaction, contractAddress],
   );
 
   return {

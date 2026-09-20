@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getNextWsRpc } from '@/lib/rpcEngine';
+import { DEFAULT_CHAIN_ID } from '@/lib/config';
+import { useAccount } from 'wagmi';
 
 export interface INetworkStats {
   gasPrice: string;
@@ -50,6 +52,8 @@ class NetworkStatsManager {
   private backoffMs: number = INITIAL_BACKOFF_MS;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private disconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+  
+  constructor(private chainId: number) {}
 
   public subscribe = (callback: (stats: INetworkStats) => void) => {
     this.subscribers.add(callback);
@@ -146,7 +150,9 @@ class NetworkStatsManager {
       this.ws = null;
     }
 
-    const wsUrl = getNextWsRpc();
+    const wsUrl = getNextWsRpc(this.chainId);
+    if (!wsUrl) return;
+
     const ws = new WebSocket(wsUrl);
     this.ws = ws;
 
@@ -241,14 +247,25 @@ class NetworkStatsManager {
   }
 }
 
-const manager = new NetworkStatsManager();
+const managers: Record<number, NetworkStatsManager> = {};
+
+function getManager(chainId: number) {
+  if (!managers[chainId]) {
+    managers[chainId] = new NetworkStatsManager(chainId);
+  }
+  return managers[chainId];
+}
 
 export function useNetworkStats(): INetworkStats {
+  const { chain } = useAccount();
+  const activeChainId = chain?.id || DEFAULT_CHAIN_ID;
+  
+  const manager = getManager(activeChainId);
   const [stats, setStats] = useState<INetworkStats>(manager.stats);
 
   useEffect(() => {
     return manager.subscribe(setStats);
-  }, []);
+  }, [manager]);
 
   return stats;
 }

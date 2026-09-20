@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { formatUnits } from 'viem';
-import { BLOCKSCOUT, CONSTANTS, NETWORK } from '@/lib/config';
+import { EVM_NETWORKS, CONSTANTS, DEFAULT_CHAIN_ID } from '@/lib/config';
 import { fetchWithFallback } from '@/lib/rpcEngine';
 
 // ---------------------------------------------------------------------------
@@ -35,9 +35,10 @@ interface NodesDataState {
   isLoading: boolean;
   lastFetchedAt: number;
   walletAddress: string | null;
+  chainId: number;
 
-  fetchNodes: (address: string) => Promise<void>;
-  refresh: (address: string) => Promise<void>;
+  fetchNodes: (address: string, chainId?: number) => Promise<void>;
+  refresh: (address: string, chainId?: number) => Promise<void>;
   clear: () => void;
 }
 
@@ -67,25 +68,28 @@ export const useNodesDataStore = create<NodesDataState>((set, get) => ({
   isLoading: false,
   lastFetchedAt: 0,
   walletAddress: null,
+  chainId: DEFAULT_CHAIN_ID,
 
-  fetchNodes: async (address: string) => {
+  fetchNodes: async (address: string, chainId: number = DEFAULT_CHAIN_ID) => {
     // Single-flight: deduplicate concurrent calls
     if (inflightPromise) return inflightPromise;
 
-    set({ isLoading: true, walletAddress: address });
+    set({ isLoading: true, walletAddress: address, chainId });
 
     inflightPromise = (async () => {
       try {
-        const classicApiUrl = BLOCKSCOUT.baseUrl.replace('/api/v2', '/api');
+        const config = EVM_NETWORKS[chainId] || EVM_NETWORKS[DEFAULT_CHAIN_ID];
+        const blockscoutApi = config.blockscoutApi;
+        const classicApiUrl = blockscoutApi.replace('/api/v2', '/api');
 
         // Serialized Blockscout requests with delays to avoid saturating the indexer
-        const addressRes = await fetch(`${BLOCKSCOUT.baseUrl}/addresses/${address}`)
+        const addressRes = await fetch(`${blockscoutApi}/addresses/${address}`)
           .then((r) => (r.ok ? r.json() : null))
           .catch(() => null);
 
         await sleep(SERIAL_DELAY_MS);
 
-        const countersRes = await fetch(`${BLOCKSCOUT.baseUrl}/addresses/${address}/counters`)
+        const countersRes = await fetch(`${blockscoutApi}/addresses/${address}/counters`)
           .then((r) => (r.ok ? r.json() : null))
           .catch(() => null);
 
@@ -110,7 +114,7 @@ export const useNodesDataStore = create<NodesDataState>((set, get) => ({
         let rpcNonce = 0;
         if (!addressRes || !countersRes) {
           try {
-            const balRes = await fetchWithFallback(NETWORK.rpcUrls, {
+            const balRes = await fetchWithFallback(config.rpcUrls, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -123,7 +127,7 @@ export const useNodesDataStore = create<NodesDataState>((set, get) => ({
 
             await sleep(300);
 
-            const nonceRes = await fetchWithFallback(NETWORK.rpcUrls, {
+            const nonceRes = await fetchWithFallback(config.rpcUrls, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -230,22 +234,22 @@ export const useNodesDataStore = create<NodesDataState>((set, get) => ({
     return inflightPromise;
   },
 
-  refresh: async (address: string) => {
-    const { lastFetchedAt, walletAddress } = get();
+  refresh: async (address: string, chainId: number = DEFAULT_CHAIN_ID) => {
+    const { lastFetchedAt, walletAddress, chainId: currentChain } = get();
 
-    // Different wallet: clear stale data and fetch
-    if (walletAddress !== address) {
-      set({ commitment: null, conviction: null, legacy: null, walletAddress: address });
-      return get().fetchNodes(address);
+    // Different wallet or chain: clear stale data and fetch
+    if (walletAddress !== address || currentChain !== chainId) {
+      set({ commitment: null, conviction: null, legacy: null, walletAddress: address, chainId });
+      return get().fetchNodes(address, chainId);
     }
 
-    // Same wallet, fresh data: skip
+    // Same wallet and chain, fresh data: skip
     if (Date.now() - lastFetchedAt < CACHE_TTL_MS) {
       return;
     }
 
-    // Same wallet, stale data: refetch
-    return get().fetchNodes(address);
+    // Same wallet and chain, stale data: refetch
+    return get().fetchNodes(address, chainId);
   },
 
   clear: () => {

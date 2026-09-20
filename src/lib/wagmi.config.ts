@@ -1,57 +1,60 @@
-import { defineChain, fallback, http } from 'viem';
+import { defineChain, fallback, http, type Chain } from 'viem';
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { cookieStorage, createStorage } from 'wagmi';
-import { NETWORK, HTTP_RPC_ENDPOINTS } from '@/lib/config';
+import { EVM_NETWORKS, SUPPORTED_CHAIN_IDS } from '@/lib/config';
 
 /**
- * Definición de la cadena Arc Testnet usando los datos de NETWORK en config.ts.
- * Se registra como cadena personalizada para viem/wagmi ya que no existe en el catálogo estándar.
+ * Mapeo dinámico de todas las redes configuradas en EVM_NETWORKS
  */
-export const arcTestnet = defineChain({
-  id: NETWORK.chainId,
-  name: NETWORK.name,
-  nativeCurrency: {
-    name: NETWORK.nativeCurrency.name,
-    symbol: NETWORK.nativeCurrency.symbol,
-    decimals: NETWORK.nativeCurrency.decimals,
-  },
-  rpcUrls: {
-    default: {
-      http: [...NETWORK.rpcUrls],
+export const supportedChains = SUPPORTED_CHAIN_IDS.map(chainId => {
+  const config = EVM_NETWORKS[chainId];
+  return defineChain({
+    id: config.chainId,
+    name: config.name,
+    nativeCurrency: config.nativeCurrency,
+    rpcUrls: {
+      default: { http: [...config.rpcUrls] },
     },
-  },
-  blockExplorers: {
-    default: {
-      name: 'ArcScan',
-      url: NETWORK.blockExplorer,
+    blockExplorers: {
+      default: {
+        name: 'Explorer',
+        url: config.blockExplorer,
+      },
     },
-  },
-  testnet: true,
-});
+    iconUrl: config.iconUrl,
+    testnet: config.chainId === 5042002, // O usar una property explícita en config
+  });
+}) as unknown as [Chain, ...Chain[]];
+
+/**
+ * Transports dinámicos basados en la lista de endpoints de cada red.
+ */
+const dynamicTransports = SUPPORTED_CHAIN_IDS.reduce((acc, chainId) => {
+  const endpoints = EVM_NETWORKS[chainId].httpRpcEndpoints;
+  acc[chainId] = fallback(
+    endpoints.map(rpc => 
+      http(rpc.url, { 
+        retryCount: rpc.isMain ? 2 : 0, 
+        retryDelay: rpc.isMain ? 500 : undefined 
+      })
+    ),
+    { rank: false }
+  );
+  return acc;
+}, {} as Record<number, any>);
 
 /**
  * Configuración central de Wagmi + RainbowKit.
  * - `ssr: true` para compatibilidad con Next.js App Router (previene hydration mismatch).
  * - `projectId` de WalletConnect es requerido por RainbowKit para conectores como WalletConnect.
- *    Se lee desde una variable de entorno, con un fallback de desarrollo.
  */
 export const wagmiConfig = getDefaultConfig({
   appName: 'Signal 0xL',
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'signal0xl-dev',
-  chains: [arcTestnet],
+  chains: supportedChains,
   ssr: true,
   storage: createStorage({
     storage: cookieStorage,
   }),
-  transports: {
-    [arcTestnet.id]: fallback(
-      HTTP_RPC_ENDPOINTS.map(rpc => 
-        http(rpc.url, { 
-          retryCount: rpc.isMain ? 2 : 0, 
-          retryDelay: rpc.isMain ? 500 : undefined 
-        })
-      ),
-      { rank: false }
-    ),
-  },
+  transports: dynamicTransports,
 });

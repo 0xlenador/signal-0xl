@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createPublicClient, http, custom } from 'viem';
-import { arcTestnet } from '@/lib/wagmi.config';
-import { CONTRACT_ADDRESS, CONTRACT_ABI, CONSTANTS } from '@/lib/config';
+import { supportedChains } from '@/lib/wagmi.config';
+import { EVM_NETWORKS, CONSTANTS, CONTRACT_ABI, DEFAULT_CHAIN_ID } from '@/lib/config';
 import { getAvailableHttpRpcs } from '@/lib/rpcEngine';
 
 // ---------------------------------------------------------------------------
@@ -26,6 +26,7 @@ interface UserDataState {
   // Core state
   userData: IUserData | null;
   walletAddress: string | null;
+  chainId: number;
   isLoading: boolean;
   lastFetchedAt: number;
 
@@ -35,7 +36,7 @@ interface UserDataState {
   hasGMToday: boolean;
 
   // Actions
-  setWallet: (address: string | null) => void;
+  setWallet: (address: string | null, chainId?: number) => void;
   refresh: () => Promise<IUserData | null>;
   clear: () => void;
 }
@@ -46,14 +47,14 @@ interface UserDataState {
 
 const CACHE_TTL_MS = 30_000;
 
-function getCacheKey(address: string): string {
-  return `signal_userdata_${address.toLowerCase()}`;
+function getCacheKey(address: string, chainId: number): string {
+  return `signal_userdata_${chainId}_${address.toLowerCase()}`;
 }
 
-function readCache(address: string): IUserData | null {
+function readCache(address: string, chainId: number): IUserData | null {
   if (typeof window === 'undefined') return null;
   try {
-    const raw = localStorage.getItem(getCacheKey(address));
+    const raw = localStorage.getItem(getCacheKey(address, chainId));
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (Date.now() - parsed.timestamp < CACHE_TTL_MS) {
@@ -66,16 +67,16 @@ function readCache(address: string): IUserData | null {
   return null;
 }
 
-function writeCache(address: string, data: IUserData): void {
+function writeCache(address: string, chainId: number, data: IUserData): void {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(getCacheKey(address), JSON.stringify({ timestamp: Date.now(), data }));
+    localStorage.setItem(getCacheKey(address, chainId), JSON.stringify({ timestamp: Date.now(), data }));
   } catch { /* storage full, ignore */ }
 }
 
-export function clearCache(address: string): void {
+export function clearCache(address: string, chainId: number): void {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem(getCacheKey(address));
+  localStorage.removeItem(getCacheKey(address, chainId));
 }
 
 // ---------------------------------------------------------------------------
@@ -143,17 +144,19 @@ export const useUserDataStore = create<UserDataState>((set, get) => ({
   // Initial state
   userData: null,
   walletAddress: null,
+  chainId: DEFAULT_CHAIN_ID,
   isLoading: false,
   lastFetchedAt: 0,
   gmCost: 0n,
   debtCost: 0n,
   hasGMToday: false,
 
-  setWallet: (address) => {
-    const current = get().walletAddress;
+  setWallet: (address, chainId = DEFAULT_CHAIN_ID) => {
+    const currentAddress = get().walletAddress;
+    const currentChain = get().chainId;
 
-    // Same wallet — no-op
-    if (address && current?.toLowerCase() === address.toLowerCase()) return;
+    // Same wallet and chain — no-op
+    if (address && currentAddress?.toLowerCase() === address.toLowerCase() && currentChain === chainId) return;
 
     // No wallet — clear everything
     if (!address) {
@@ -161,10 +164,11 @@ export const useUserDataStore = create<UserDataState>((set, get) => ({
       return;
     }
 
-    // New wallet — reset state
+    // New wallet or chain — reset state
     set({
       userData: null,
       walletAddress: address,
+      chainId,
       isLoading: true,
       lastFetchedAt: 0,
       gmCost: 0n,
@@ -173,7 +177,7 @@ export const useUserDataStore = create<UserDataState>((set, get) => ({
     });
 
     // Try warm start from localStorage
-    const cached = readCache(address);
+    const cached = readCache(address, chainId);
     if (cached) {
       const derived = computeDerived(cached);
       set({ userData: cached, isLoading: false, lastFetchedAt: Date.now(), ...derived });
@@ -184,7 +188,7 @@ export const useUserDataStore = create<UserDataState>((set, get) => ({
   },
 
   refresh: async () => {
-    const { walletAddress } = get();
+    const { walletAddress, chainId } = get();
     if (!walletAddress) return null;
 
     // Single-flight: deduplicate concurrent calls
@@ -194,19 +198,23 @@ export const useUserDataStore = create<UserDataState>((set, get) => ({
     }
 
     set({ isLoading: true });
+    
+    const config = EVM_NETWORKS[chainId] || EVM_NETWORKS[DEFAULT_CHAIN_ID];
+    const contractAddress = config.contractAddress;
+    const chainConfig = supportedChains.find(c => c.id === chainId) || supportedChains[0];
 
     inflightPromise = (async (): Promise<IUserData | null> => {
       // 1. Intentar leer desde la wallet inyectada (Prioridad máxima, sin rate limits)
       if (typeof window !== 'undefined' && (window as any).ethereum) {
         try {
-          console.log(`[RPC Motor] 🔄 Reading contract via: INJECTED WALLET`);
+          console.log(`[RPC Motor] 🔄 Reading contract via: INJECTED WALLET on Chain ${chainId}`);
           const client = createPublicClient({
-            chain: arcTestnet,
+            chain: chainConfig,
             transport: custom((window as any).ethereum),
           });
 
           const data = await client.readContract({
-            address: CONTRACT_ADDRESS as `0x${string}`,
+            address: contractAddress,
             abi: CONTRACT_ABI,
             functionName: 'users',
             args: [walletAddress as `0x${string}`],
@@ -231,7 +239,7 @@ export const useUserDataStore = create<UserDataState>((set, get) => ({
           const corrected = applyForkPrediction(raw);
           const derived = computeDerived(corrected);
 
-          writeCache(walletAddress, corrected);
+          writeCache(walletAddress, chainId, corrected);
 
           set({
             userData: corrected,
@@ -250,19 +258,19 @@ export const useUserDataStore = create<UserDataState>((set, get) => ({
       }
 
       // 2. Fallback a HTTP RPCs iterativos (El paracaídas)
-      const rpcs = getAvailableHttpRpcs();
+      const rpcs = getAvailableHttpRpcs(chainId);
 
       for (const url of rpcs) {
         try {
-          console.log(`[RPC Motor] 🔄 Reading contract via: ${url}`);
+          console.log(`[RPC Motor] 🔄 Reading contract via: ${url} on Chain ${chainId}`);
 
           const client = createPublicClient({
-            chain: arcTestnet,
+            chain: chainConfig,
             transport: http(url),
           });
 
           const data = await client.readContract({
-            address: CONTRACT_ADDRESS as `0x${string}`,
+            address: contractAddress,
             abi: CONTRACT_ABI,
             functionName: 'users',
             args: [walletAddress as `0x${string}`],
@@ -287,7 +295,7 @@ export const useUserDataStore = create<UserDataState>((set, get) => ({
           const corrected = applyForkPrediction(raw);
           const derived = computeDerived(corrected);
 
-          writeCache(walletAddress, corrected);
+          writeCache(walletAddress, chainId, corrected);
 
           set({
             userData: corrected,

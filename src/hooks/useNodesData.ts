@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { useNodesDataStore } from '@/stores/nodesDataStore';
+import { useAccount } from 'wagmi';
+import { DEFAULT_CHAIN_ID } from '@/lib/config';
 
 // Re-export types from their canonical source
 export type { ICommitmentNode, IConvictionNode, ILegacyNode } from '@/stores/nodesDataStore';
@@ -16,6 +18,9 @@ export interface INodesData {
  * changes and subscribes reactively to store updates via Zustand selectors.
  */
 export function useNodesData(address: string | null | undefined): INodesData {
+  const { chain } = useAccount();
+  const activeChainId = chain?.id || DEFAULT_CHAIN_ID;
+
   const commitment = useNodesDataStore((s) => s.commitment);
   const conviction = useNodesDataStore((s) => s.conviction);
   const legacy = useNodesDataStore((s) => s.legacy);
@@ -23,9 +28,9 @@ export function useNodesData(address: string | null | undefined): INodesData {
 
   useEffect(() => {
     if (address) {
-      void useNodesDataStore.getState().refresh(address);
+      void useNodesDataStore.getState().refresh(address, activeChainId);
     }
-  }, [address]);
+  }, [address, activeChainId]);
 
   return { commitment, conviction, legacy, isLoading };
 }

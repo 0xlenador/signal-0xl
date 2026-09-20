@@ -1,7 +1,7 @@
 import { Web3Provider } from '@/components/Web3Provider';
 import { Header } from '@/components/Header';
 import { ReactNode } from 'react';
-import { SUPPORTED_NETWORKS } from '@/lib/config';
+import { EVM_NETWORKS } from '@/lib/config';
 import { headers } from 'next/headers';
 import { cookieToInitialState, createConfig, createStorage, cookieStorage, http } from 'wagmi';
 import { mainnet } from 'viem/chains';
@@ -24,12 +24,13 @@ const serverConfig = createConfig({
 
 export default async function NetworkLayout({ children, params }: NetworkLayoutProps) {
   const p = await params;
+  const supportedSlugs = Object.values(EVM_NETWORKS).map(n => n.slug);
   
-  if (!SUPPORTED_NETWORKS.includes(p.network)) {
+  if (!supportedSlugs.includes(p.network)) {
     return (
       <main className="flex-1 flex flex-col items-center justify-center p-8 text-center h-full flex-grow">
         <h1 className="text-3xl font-bold text-white mb-4">Red no soportada</h1>
-        <p className="text-text-muted">Actualmente solo soportamos Arc Testnet.</p>
+        <p className="text-text-muted">La red especificada no está soportada actualmente.</p>
       </main>
     );
   }
@@ -44,4 +45,3 @@ export default async function NetworkLayout({ children, params }: NetworkLayoutP
     </Web3Provider>
   );
 }
-
