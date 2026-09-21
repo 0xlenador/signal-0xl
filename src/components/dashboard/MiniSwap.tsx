@@ -61,12 +61,14 @@ export default function MiniSwap({ config }: { config: NetworkConfig }) {
   const { data: balanceIn, refetch: refetchBalanceIn } = useBalance({
     address,
     token: tokenAddresses[tokenIn],
+    chainId: config.chainId,
     query: { enabled: !!address }
   });
 
   const { data: balanceOut, refetch: refetchBalanceOut } = useBalance({
     address,
     token: tokenAddresses[tokenOut],
+    chainId: config.chainId,
     query: { enabled: !!address }
   });
 
