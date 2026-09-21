@@ -252,8 +252,9 @@ export default function MiniSwap({ config }: { config: NetworkConfig }) {
       });
       
       // Attempt to wait for transaction if result is a hash
-      if (typeof result === 'string' && result.startsWith('0x') && publicClient) {
-        await publicClient.waitForTransactionReceipt({ hash: result as `0x${string}` });
+      const txHash = result as any;
+      if (typeof txHash === 'string' && txHash.startsWith('0x') && publicClient) {
+        await publicClient.waitForTransactionReceipt({ hash: txHash as `0x${string}` });
       } else {
         // Wait an arbitrary time if we couldn't get a hash
         await new Promise(res => setTimeout(res, 3000));
