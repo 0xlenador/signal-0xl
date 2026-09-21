@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getNextWsRpc } from '@/lib/rpcEngine';
-import { DEFAULT_CHAIN_ID } from '@/lib/config';
+import { DEFAULT_CHAIN_ID, EVM_NETWORKS } from '@/lib/config';
 
 export interface INetworkStats {
   gasPrice: string;
@@ -55,6 +55,7 @@ class NetworkStatsManager {
   private fallbackTimer: ReturnType<typeof setInterval> | null = null;
   private connectionTimeout: ReturnType<typeof setTimeout> | null = null;
   private isFallbackMode = false;
+  private wsAttempts = 0;
   
   constructor(private chainId: number) {}
 
@@ -145,6 +146,7 @@ class NetworkStatsManager {
       clearTimeout(this.connectionTimeout);
       this.connectionTimeout = null;
     }
+    this.wsAttempts = 0; // Reset WS attempts on successful data reception
 
     const blockNumber = header.number ? hexToNumber(header.number) : 0;
     const baseFeePerGas = header.baseFeePerGas ? hexToBigInt(header.baseFeePerGas) : 0n;
@@ -242,6 +244,7 @@ class NetworkStatsManager {
       this.ws = null;
     }
 
+    this.wsAttempts++;
     const wsUrl = getNextWsRpc(this.chainId);
     if (!wsUrl) {
       this.startFallbackMode();
@@ -255,7 +258,12 @@ class NetworkStatsManager {
     if (this.connectionTimeout) clearTimeout(this.connectionTimeout);
     this.connectionTimeout = setTimeout(() => {
       if (this.stats.isLoading) {
-        this.startFallbackMode();
+        const maxWsAttempts = EVM_NETWORKS[this.chainId]?.wsUrls.length || 0;
+        if (this.wsAttempts >= maxWsAttempts) {
+          this.startFallbackMode();
+        } else {
+          this.connect(); // Try the next WS immediately on timeout
+        }
       }
     }, 8000);
 
@@ -315,8 +323,12 @@ class NetworkStatsManager {
     ws.onclose = () => {
       if (this.ws !== ws) return;
       if (this.stats.isLoading) {
-        // Closed before receiving data
-        this.startFallbackMode();
+        const maxWsAttempts = EVM_NETWORKS[this.chainId]?.wsUrls.length || 0;
+        if (this.wsAttempts >= maxWsAttempts) {
+          this.startFallbackMode();
+        } else {
+          this.scheduleReconnect();
+        }
       } else {
         this.updateStats(prev => ({ ...prev, isError: true }));
         this.scheduleReconnect();
@@ -326,7 +338,12 @@ class NetworkStatsManager {
     ws.onerror = () => {
       if (this.ws !== ws) return;
       if (this.stats.isLoading) {
-        this.startFallbackMode();
+        const maxWsAttempts = EVM_NETWORKS[this.chainId]?.wsUrls.length || 0;
+        if (this.wsAttempts >= maxWsAttempts) {
+          this.startFallbackMode();
+        } else {
+          this.scheduleReconnect();
+        }
       } else {
         this.updateStats(prev => ({ ...prev, isError: true }));
       }

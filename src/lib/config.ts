@@ -68,7 +68,8 @@ export const EVM_NETWORKS: Record<number, NetworkConfig> = {
       'https://rpc.mainnet.arc.io'
     ],
     wsUrls: [
-      'wss://rpc.blockdaemon.mainnet.arc.io/websocket'
+      'wss://rpc.blockdaemon.mainnet.arc.io/websocket',
+      'wss://rpc.quicknode.mainnet.arc.io'
     ],
     nativeCurrency: {
       name: 'USDC',
