@@ -13,8 +13,29 @@ CONTRACT_ADDRESS = "0x108E51F9af4aF2D8CAa1f41E81b91B84B1304d36"
 GENESIS_BLOCK = "52000000"
 CHAIN_ID = "5042002"
 
-# Binding de D1
+# Binding de D1 (Testnet)
 [[d1_databases]]
 binding = "RANKING_DB"
 database_name = "signal0xl-db"
 database_id = "8878bd59-8a2f-4a7a-9999-32a10251ec0d"
+
+# -- MAINNET ENVIRONMENT --
+[env.mainnet]
+name = "signal0xl-ranking-mainnet"
+compatibility_date = "2024-03-20"
+compatibility_flags = ["nodejs_compat"]
+
+[env.mainnet.triggers]
+crons = ["* * * * *"]
+
+[env.mainnet.vars]
+RPC_URL = "https://rpc.mainnet.arc.io"
+CONTRACT_ADDRESS = "0x9582A2D84b762719217814B93E33a9c4E2545c8b"
+GENESIS_BLOCK = "21800000" # Seguro para capturar todo
+CHAIN_ID = "5042"
+
+[[env.mainnet.d1_databases]]
+binding = "RANKING_DB"
+database_name = "signal0xl-mainnet-db"
+database_id = "87172832-93b8-4c2d-8133-6b232919a139"
+

@@ -7,8 +7,10 @@
     "dev": "wrangler dev",
     "dev:cron": "wrangler dev --test-scheduled",
     "deploy": "wrangler deploy",
+    "deploy:mainnet": "wrangler deploy --env mainnet",
     "db:init": "wrangler d1 execute RANKING_DB --local --file=./schema.sql",
-    "db:deploy": "wrangler d1 execute RANKING_DB --remote --file=./schema.sql"
+    "db:deploy": "wrangler d1 execute RANKING_DB --remote --file=./schema.sql",
+    "db:deploy:mainnet": "wrangler d1 execute RANKING_DB --env mainnet --remote --file=./schema.sql"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.2.2",
