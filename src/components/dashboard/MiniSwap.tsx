@@ -98,7 +98,7 @@ export default function MiniSwap({ config }: { config: NetworkConfig }) {
       if (active) setError(null);
 
       // cirBTC fallback for Testnet, or if SwapKit doesn't natively support it yet
-      if (tokenIn === 'cirBTC' || tokenOut === 'cirBTC') {
+      if ((tokenIn === 'cirBTC' || tokenOut === 'cirBTC') && config.chainId === 5042002) {
         setTimeout(() => {
           if (!active) return;
           try {
@@ -182,8 +182,8 @@ export default function MiniSwap({ config }: { config: NetworkConfig }) {
     setSuccess(false);
 
     try {
-      // DEX Router Fallback para cirBTC
-      if (tokenIn === 'cirBTC' || tokenOut === 'cirBTC') {
+      // DEX Router Fallback para cirBTC (Solo Testnet)
+      if ((tokenIn === 'cirBTC' || tokenOut === 'cirBTC') && config.chainId === 5042002) {
         const amountInWei = parseUnits(amountIn, DECIMALS[tokenIn]);
         // 1. Aprobar el token de entrada si es ERC20
         if (tokenAddresses[tokenIn] !== tokenAddresses['USDC']) { 
@@ -213,7 +213,10 @@ export default function MiniSwap({ config }: { config: NetworkConfig }) {
         });
 
         if (publicClient && result) {
-          await publicClient.waitForTransactionReceipt({ hash: result });
+          const receipt = await publicClient.waitForTransactionReceipt({ hash: result });
+          if (receipt.status === 'reverted') {
+            throw new Error('Transaction reverted by the network. Please check slippage, funds or router compatibility.');
+          }
         }
 
         console.log('DEX Swap executed:', result);
