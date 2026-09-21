@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNodesDataStore } from '@/stores/nodesDataStore';
-import { useAccount } from 'wagmi';
+import { useUserDataStore } from '@/stores/userDataStore';
 import { DEFAULT_CHAIN_ID } from '@/lib/config';
 
 // Re-export types from their canonical source
@@ -18,8 +18,7 @@ export interface INodesData {
  * changes and subscribes reactively to store updates via Zustand selectors.
  */
 export function useNodesData(address: string | null | undefined): INodesData {
-  const { chain } = useAccount();
-  const activeChainId = chain?.id || DEFAULT_CHAIN_ID;
+  const activeChainId = useUserDataStore((s) => s.chainId) || DEFAULT_CHAIN_ID;
 
   const commitment = useNodesDataStore((s) => s.commitment);
   const conviction = useNodesDataStore((s) => s.conviction);

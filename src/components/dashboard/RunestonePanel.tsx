@@ -14,6 +14,7 @@ import { useParams } from 'next/navigation';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { CONSTANTS } from '@/lib/config';
+import type { NetworkConfig } from '@/lib/config';
 import { useLeaderboardStore } from '@/stores/leaderboardStore';
 
 // Pure function: calculates node instant cost from userData, no RPC needed
@@ -29,7 +30,7 @@ function calculateNodeInstantCost(
   return baseCost;
 }
 
-export default function RunestonePanel() {
+export default function RunestonePanel({ config }: { config: NetworkConfig }) {
   const { address } = useWeb3();
   const params = useParams();
   const walletParam = params.wallet as string;
@@ -237,7 +238,7 @@ export default function RunestonePanel() {
                      <Info className="w-3 h-3 text-slate-400" />
                    </PopoverTrigger>
                    <PopoverContent className="w-56 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 shadow-xl text-[0.65rem] text-slate-300 text-left font-normal normal-case tracking-normal z-[9999]">
-                     Send your daily signal to Arc Testnet. Window: 00:00–23:59 UTC. +1 point (+2 with Runestone).
+                     Send your daily signal to {config.name}. Window: 00:00–23:59 UTC. +1 point (+2 with Runestone).
                    </PopoverContent>
                  </Popover>
               </div>

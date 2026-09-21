@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { useWriteContract, usePublicClient, useAccount } from 'wagmi';
+import { useWriteContract, usePublicClient, useAccount, useSwitchChain } from 'wagmi';
 import { createPublicClient, custom } from 'viem';
 import { supportedChains } from '@/lib/wagmi.config';
 import { EVM_NETWORKS, CONTRACT_ABI, CONSTANTS, DEFAULT_CHAIN_ID } from '@/lib/config';
@@ -24,9 +24,10 @@ export function useSignalContract(): ISignalContractHook {
 
   const { address, chain } = useAccount();
   const { writeContractAsync } = useWriteContract();
+  const { switchChainAsync } = useSwitchChain();
   const publicClient = usePublicClient();
 
-  const activeChainId = chain?.id || DEFAULT_CHAIN_ID;
+  const activeChainId = useUserDataStore((s) => s.chainId) || DEFAULT_CHAIN_ID;
   const config = EVM_NETWORKS[activeChainId] || EVM_NETWORKS[DEFAULT_CHAIN_ID];
   const contractAddress = config.contractAddress;
 
@@ -37,6 +38,16 @@ export function useSignalContract(): ISignalContractHook {
       isMountedRef.current = false;
     };
   }, []);
+
+  const ensureChain = async () => {
+    if (chain?.id !== activeChainId) {
+      if (switchChainAsync) {
+        await switchChainAsync({ chainId: activeChainId });
+      } else {
+        throw new Error("Cannot switch network automatically. Please switch it in your wallet.");
+      }
+    }
+  };
 
   /**
    * Shared post-transaction handler: waits for the receipt, then refreshes
@@ -93,7 +104,9 @@ export function useSignalContract(): ISignalContractHook {
         setError(null);
       }
       try {
+        await ensureChain();
         const hash = await writeContractAsync({
+          chainId: activeChainId,
           address: contractAddress as `0x${string}`,
           abi: CONTRACT_ABI,
           functionName: 'doGM',
@@ -120,7 +133,9 @@ export function useSignalContract(): ISignalContractHook {
       setError(null);
     }
     try {
+      await ensureChain();
       const hash = await writeContractAsync({
+        chainId: activeChainId,
         address: contractAddress as `0x${string}`,
         abi: CONTRACT_ABI,
         functionName: 'resetToVIP',
@@ -145,7 +160,9 @@ export function useSignalContract(): ISignalContractHook {
         setError(null);
       }
       try {
+        await ensureChain();
         const hash = await writeContractAsync({
+          chainId: activeChainId,
           address: contractAddress as `0x${string}`,
           abi: CONTRACT_ABI,
           functionName: 'activateNodeInstant',
@@ -177,7 +194,9 @@ export function useSignalContract(): ISignalContractHook {
         setError(null);
       }
       try {
+        await ensureChain();
         const hash = await writeContractAsync({
+          chainId: activeChainId,
           address: contractAddress as `0x${string}`,
           abi: CONTRACT_ABI,
           functionName: 'activateNodeByStreak',

@@ -37,10 +37,8 @@ export default function RankingTable({ initialData, config }: RankingTableProps)
   const { data: storeData, refreshState, hydrate } = useLeaderboardStore();
 
   useEffect(() => {
-    if (initialData && initialData.length > 0) {
-      hydrate(initialData);
-    }
-  }, [initialData, hydrate]);
+    hydrate(initialData, config.slug);
+  }, [initialData, hydrate, config.slug]);
 
   const leaderboard = storeData.length > 0 ? storeData : (initialData || []);
   const isLoading = false;

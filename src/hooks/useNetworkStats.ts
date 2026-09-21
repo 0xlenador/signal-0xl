@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getNextWsRpc } from '@/lib/rpcEngine';
 import { DEFAULT_CHAIN_ID } from '@/lib/config';
-import { useAccount } from 'wagmi';
 
 export interface INetworkStats {
   gasPrice: string;
@@ -256,11 +255,8 @@ function getManager(chainId: number) {
   return managers[chainId];
 }
 
-export function useNetworkStats(chainId?: number): INetworkStats {
-  const { chain } = useAccount();
-  const activeChainId = chainId || chain?.id || DEFAULT_CHAIN_ID;
-  
-  const manager = getManager(activeChainId);
+export function useNetworkStats(chainId: number = DEFAULT_CHAIN_ID): INetworkStats {
+  const manager = getManager(chainId);
   const [stats, setStats] = useState<INetworkStats>(manager.stats);
 
   useEffect(() => {

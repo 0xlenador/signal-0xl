@@ -5,9 +5,10 @@ import { EVM_NETWORKS, DEFAULT_CHAIN_ID } from '@/lib/config';
 interface LeaderboardState {
   data: ILeaderboardUser[];
   refreshState: 'idle' | 'waiting' | 'fetching';
+  networkSlug: string | null;
   
   // Acciones
-  hydrate: (serverData: ILeaderboardUser[]) => void;
+  hydrate: (serverData: ILeaderboardUser[], networkSlug: string) => void;
   notifyGmConfirmed: (address: string, isSuperGM: boolean, chainId?: number) => void;
 }
 
@@ -24,9 +25,25 @@ const clearTimeouts = () => {
 export const useLeaderboardStore = create<LeaderboardState>((set, get) => ({
   data: [],
   refreshState: 'idle',
+  networkSlug: null,
 
-  hydrate: (serverData) => {
-    // Solo hidratar si la data actual está vacía (primera carga)
+  hydrate: (serverData, networkSlug) => {
+    const currentSlug = get().networkSlug;
+    
+    // Network changed — clear stale data and replace with new server data
+    if (currentSlug !== networkSlug) {
+      // Cancel any in-flight refresh sequences from the previous network
+      if (currentAbortController) {
+        currentAbortController.abort();
+        currentAbortController = null;
+      }
+      clearTimeouts();
+      
+      set({ data: serverData, networkSlug, refreshState: 'idle' });
+      return;
+    }
+    
+    // Same network, first hydration only
     if (get().data.length === 0 && serverData.length > 0) {
       set({ data: serverData });
     }

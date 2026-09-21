@@ -17,14 +17,14 @@ interface DashboardPageProps {
 export default function ClientPage({ params, leaderboardData }: DashboardPageProps) {
   const { network, wallet } = use(params);
 
+  const config = Object.values(EVM_NETWORKS).find(c => c.slug === network) || EVM_NETWORKS[DEFAULT_CHAIN_ID];
+
   // Synchronize the URL wallet param with the central user data store.
   // This is the SINGLE coordination point: all components read from the store
   // reactively via Zustand selectors instead of fetching independently.
   useEffect(() => {
-    useUserDataStore.getState().setWallet(wallet);
-  }, [wallet]);
-
-  const config = Object.values(EVM_NETWORKS).find(c => c.slug === network) || EVM_NETWORKS[DEFAULT_CHAIN_ID];
+    useUserDataStore.getState().setWallet(wallet, config.chainId);
+  }, [wallet, config.chainId]);
 
   return (
     <main className="p-4 md:p-6 lg:p-8 w-full mx-auto flex flex-col gap-6">
@@ -38,7 +38,7 @@ export default function ClientPage({ params, leaderboardData }: DashboardPagePro
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-accent-runestone/10 via-transparent to-transparent pointer-events-none group-hover:from-accent-runestone/20 transition-colors duration-700 rounded-[2.5rem]"></div>
             
             <div className="relative z-10 flex flex-col h-full justify-between gap-4">
-              <RunestonePanel />
+              <RunestonePanel config={config} />
               <div className="hidden md:block w-full"><AgentPanel /></div>
               <div className="hidden md:block w-full"><LiveSignals /></div>
             </div>
