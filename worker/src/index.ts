@@ -107,8 +107,8 @@ app.get('/__scheduled', async (c) => {
 async function runCron(event: any, env: Env, ctx: ExecutionContext): Promise<void> {
   console.log("Iniciando Cron Job de Sincronización...");
   
-  const MAX_ITERATIONS = 10;  // Aumentamos iteraciones
-  const CHUNK_SIZE = 100n;    // Reducimos el tamaño de bloque a 100 para evitar "request limit reached"
+  const MAX_ITERATIONS = 5;  // 5 iteraciones por ciclo (ahorro del 50% de recursos)
+  const CHUNK_SIZE = 100n;   // 100 bloques por iteración (Total 500 bloques por min)
   const CONFIRMATION_DELAY = 10n;
   const GENESIS_BLOCK = BigInt(env.GENESIS_BLOCK) || 52000000n;
   
@@ -218,8 +218,8 @@ async function runCron(event: any, env: Env, ctx: ExecutionContext): Promise<voi
       fromBlock = toBlock + 1n;
       iterations++;
       
-      // Pequeña pausa de 2 segundos entre peticiones para respirar y respetar el Rate Limit del RPC
-      await delay(2000);
+      // Pequeña pausa entre peticiones para respirar y respetar el Rate Limit del RPC
+      await delay(100);
     }
 
     if (fromBlock <= safeBlock) {

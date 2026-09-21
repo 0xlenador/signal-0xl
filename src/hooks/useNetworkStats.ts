@@ -52,6 +52,10 @@ class NetworkStatsManager {
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private disconnectTimeout: ReturnType<typeof setTimeout> | null = null;
   
+  private fallbackTimer: ReturnType<typeof setInterval> | null = null;
+  private connectionTimeout: ReturnType<typeof setTimeout> | null = null;
+  private isFallbackMode = false;
+  
   constructor(private chainId: number) {}
 
   public subscribe = (callback: (stats: INetworkStats) => void) => {
@@ -63,7 +67,7 @@ class NetworkStatsManager {
       this.disconnectTimeout = null;
     }
     
-    if (this.subscribers.size === 1 && !this.ws) {
+    if (this.subscribers.size === 1 && !this.ws && !this.isFallbackMode) {
       this.connect();
     }
 
@@ -84,9 +88,65 @@ class NetworkStatsManager {
     this.subscribers.forEach(cb => cb(this.stats));
   }
 
-  private processBlockHeader = (header: Record<string, string>, ws: WebSocket) => {
-    const blockNumber = header.number ? hexToNumber(header.number) : 0;
+  private startFallbackMode = () => {
+    if (this.isFallbackMode) return;
+    this.isFallbackMode = true;
+    console.warn(`[NetworkStats] WS blocked/timeout. Switching to robust HTTP polling for Chain ${this.chainId}`);
+    this.updateStats(prev => ({ ...prev, isError: false })); // Don't show error, just use HTTP
     
+    if (this.ws) {
+      this.ws.onclose = null;
+      this.ws.onerror = null;
+      this.ws.close();
+      this.ws = null;
+    }
+
+    this.pollHttp();
+    this.fallbackTimer = setInterval(() => {
+      if (this.subscribers.size > 0) {
+        this.pollHttp();
+      }
+    }, 4000); // Poll every 4 seconds on fallback
+  }
+
+  private pollHttp = async () => {
+    try {
+      const { getAvailableHttpRpcs, fetchWithFallback } = await import('@/lib/rpcEngine');
+      const urls = getAvailableHttpRpcs(this.chainId);
+      if (!urls || urls.length === 0) return;
+
+      const res = await fetchWithFallback(urls, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'eth_getBlockByNumber',
+          params: ['latest', false]
+        })
+      });
+
+      const data = await res.json();
+      if (data.result) {
+        const blockNumber = data.result.number ? hexToNumber(data.result.number) : 0;
+        if (blockNumber >= this.latestProcessedBlock) {
+          this.latestProcessedBlock = blockNumber;
+          this.processBlockHeader(data.result, null);
+        }
+      }
+    } catch (e) {
+      console.error("[NetworkStats] HTTP Fallback error", e);
+    }
+  }
+
+  private processBlockHeader = (header: Record<string, string>, ws: WebSocket | null) => {
+    // Clear connection timeout since we received data
+    if (this.connectionTimeout) {
+      clearTimeout(this.connectionTimeout);
+      this.connectionTimeout = null;
+    }
+
+    const blockNumber = header.number ? hexToNumber(header.number) : 0;
     const baseFeePerGas = header.baseFeePerGas ? hexToBigInt(header.baseFeePerGas) : 0n;
     const costWei = baseFeePerGas * 21000n;
     const intermediate = costWei / 10n ** 12n;
@@ -133,14 +193,47 @@ class NetworkStatsManager {
       };
     });
 
-    if (ws.readyState === WebSocket.OPEN) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({
         jsonrpc: '2.0',
         id: blockNumber,
         method: 'eth_getBlockTransactionCountByNumber',
         params: [header.number],
       }));
+    } else if (this.isFallbackMode) {
+      this.fetchTxCountHttp(header.number, blockNumber);
     }
+  }
+
+  private fetchTxCountHttp = async (hexNumber: string, blockId: number) => {
+    try {
+      const { getAvailableHttpRpcs, fetchWithFallback } = await import('@/lib/rpcEngine');
+      const urls = getAvailableHttpRpcs(this.chainId);
+      if (!urls || urls.length === 0) return;
+      
+      const res = await fetchWithFallback(urls, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: blockId,
+          method: 'eth_getBlockTransactionCountByNumber',
+          params: [hexNumber]
+        })
+      });
+      const data = await res.json();
+      if (data.result) {
+        const txCount = hexToNumber(data.result);
+        this.updateStats(prev => {
+          const txsCopy = [...prev.history.txs];
+          const blockIndex = prev.history.blocks.indexOf(blockId);
+          if (blockIndex !== -1) {
+            txsCopy[blockIndex] = txCount;
+          }
+          return { ...prev, totalTxs: txCount.toString(), history: { ...prev.history, txs: txsCopy } };
+        });
+      }
+    } catch {}
   }
 
   private connect = () => {
@@ -150,10 +243,21 @@ class NetworkStatsManager {
     }
 
     const wsUrl = getNextWsRpc(this.chainId);
-    if (!wsUrl) return;
+    if (!wsUrl) {
+      this.startFallbackMode();
+      return;
+    }
 
     const ws = new WebSocket(wsUrl);
     this.ws = ws;
+
+    // Set a strict 8-second timeout for the WebSocket to connect and send us the first block
+    if (this.connectionTimeout) clearTimeout(this.connectionTimeout);
+    this.connectionTimeout = setTimeout(() => {
+      if (this.stats.isLoading) {
+        this.startFallbackMode();
+      }
+    }, 8000);
 
     ws.onopen = () => {
       if (this.ws !== ws) return;
@@ -210,20 +314,28 @@ class NetworkStatsManager {
 
     ws.onclose = () => {
       if (this.ws !== ws) return;
-      this.updateStats(prev => ({ ...prev, isError: true }));
-      this.scheduleReconnect();
+      if (this.stats.isLoading) {
+        // Closed before receiving data
+        this.startFallbackMode();
+      } else {
+        this.updateStats(prev => ({ ...prev, isError: true }));
+        this.scheduleReconnect();
+      }
     };
 
     ws.onerror = () => {
       if (this.ws !== ws) return;
-      this.updateStats(prev => ({ ...prev, isError: true }));
+      if (this.stats.isLoading) {
+        this.startFallbackMode();
+      } else {
+        this.updateStats(prev => ({ ...prev, isError: true }));
+      }
     };
   }
 
   private scheduleReconnect = () => {
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
-    
-    if (this.subscribers.size === 0) return;
+    if (this.subscribers.size === 0 || this.isFallbackMode) return;
 
     this.reconnectTimer = setTimeout(() => {
       this.connect();
@@ -237,6 +349,15 @@ class NetworkStatsManager {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
+    if (this.fallbackTimer) {
+      clearInterval(this.fallbackTimer);
+      this.fallbackTimer = null;
+    }
+    if (this.connectionTimeout) {
+      clearTimeout(this.connectionTimeout);
+      this.connectionTimeout = null;
+    }
+    this.isFallbackMode = false;
     if (this.ws) {
       this.ws.onclose = null;
       this.ws.onerror = null;
@@ -265,3 +386,4 @@ export function useNetworkStats(chainId: number = DEFAULT_CHAIN_ID): INetworkSta
 
   return stats;
 }
+
