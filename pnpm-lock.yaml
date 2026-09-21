@@ -12,11 +12,11 @@ importers:
         specifier: ^1.6.0
         version: 1.6.0(@types/react@19.2.17)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@circle-fin/adapter-viem-v2':
-        specifier: ^1.14.1
-        version: 1.14.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)(viem@2.55.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)(zod@4.4.3))
+        specifier: ^1.18.0
+        version: 1.18.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)(viem@2.55.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)(zod@4.4.3))
       '@circle-fin/swap-kit':
-        specifier: ^1.5.0
-        version: 1.5.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)
+        specifier: ^1.7.0
+        version: 1.7.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)
       '@rainbow-me/rainbowkit':
         specifier: ^2.2.11
         version: 2.2.11(@tanstack/react-query@5.101.4(react@19.2.4))(@types/react@19.2.17)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)(viem@2.55.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)(zod@4.4.3))(wagmi@2.19.5(@tanstack/query-core@5.101.4)(@tanstack/react-query@5.101.4(react@19.2.4))(@types/react@19.2.17)(@x402/core@2.19.0)(@x402/evm@2.19.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6))(@x402/svm@2.19.0(@solana/kit@5.5.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6))(@solana/sysvars@5.5.1(typescript@5.9.3)))(bufferutil@4.1.0)(react@19.2.4)(typescript@5.9.3)(utf-8-validate@6.0.6)(viem@2.55.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)(zod@4.4.3))(zod@4.4.3))
@@ -281,18 +281,18 @@ packages:
       '@types/react':
         optional: true
 
-  '@circle-fin/adapter-viem-v2@1.14.1':
-    resolution: {integrity: sha512-C6MGBO0EP1zlu14B3QD7+ko3Jg0eUTKo0mG3uAJAXE6BXXqRwRgWVNdiwIi0Sr16duOabq5QMmql3T/yNoT99A==}
+  '@circle-fin/adapter-viem-v2@1.18.0':
+    resolution: {integrity: sha512-XLqwmxBv/8vkqb8cQ3WeDGnFf2K9Yg62l9HVEqZjuwRG4xRKiDb5dBT1KGZvYKX5EcM0M6N0c/tCIAm0Yhn3wA==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       viem: ^2.30.0
 
-  '@circle-fin/provider-stablecoin-service-swap@1.4.0':
-    resolution: {integrity: sha512-IQUjeFBpyG3v2msLbIXKMFH8Ecdkv448gFDtogk/pm06L4MDuWKQPxNFoUZt+a8o8ogTQ1KkueUrvXj/gmG3Kw==}
+  '@circle-fin/provider-stablecoin-service-swap@1.6.0':
+    resolution: {integrity: sha512-WVA6LY4rYgSCXoVd0ukbTQXjX9RwbKzoq8IJzr9kqSKUllTMMrf449G94WUZKVihSUGs4uPUkhlDBDH2ZVwRng==}
     engines: {node: '>=20.0.0'}
 
-  '@circle-fin/swap-kit@1.5.0':
-    resolution: {integrity: sha512-0qlHZgOmGfkowH88cp/8M9K4NQUBW3elgUofncaz86I1na9zkJfYTo/ROwH759e4PNcfmF7NuR+3lVTRrI+Faw==}
+  '@circle-fin/swap-kit@1.7.0':
+    resolution: {integrity: sha512-kzACxFS+x7QEtFNE/UBe9A+RjeUDN5vKws6ztXA5XaBlazIqIMQwvXNfAiBlCtBmcYTLihsAKA7RARBiwQ9SaQ==}
     engines: {node: '>=20.0.0'}
 
   '@coinbase/cdp-sdk@1.54.0':
@@ -5275,7 +5275,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.17
 
-  '@circle-fin/adapter-viem-v2@1.14.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)(viem@2.55.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)(zod@4.4.3))':
+  '@circle-fin/adapter-viem-v2@1.18.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)(viem@2.55.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)(zod@4.4.3))':
     dependencies:
       '@ethersproject/abi': 5.8.0
       '@ethersproject/address': 5.8.0
@@ -5294,7 +5294,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@circle-fin/provider-stablecoin-service-swap@1.4.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)':
+  '@circle-fin/provider-stablecoin-service-swap@1.6.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)':
     dependencies:
       '@coral-xyz/anchor': 0.31.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)
       '@ethersproject/address': 5.8.0
@@ -5312,9 +5312,9 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@circle-fin/swap-kit@1.5.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)':
+  '@circle-fin/swap-kit@1.7.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)':
     dependencies:
-      '@circle-fin/provider-stablecoin-service-swap': 1.4.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)
+      '@circle-fin/provider-stablecoin-service-swap': 1.6.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)
       '@coral-xyz/anchor': 0.31.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)
       '@ethersproject/abi': 5.8.0
       '@ethersproject/address': 5.8.0

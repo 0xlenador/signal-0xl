@@ -12,8 +12,11 @@ import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
 import { useLeaderboardStore } from '@/stores/leaderboardStore';
 
+import type { NetworkConfig } from '@/lib/config';
+
 interface RankingTableProps {
   initialData: ILeaderboardUser[];
+  config: NetworkConfig;
 }
 
 const SkeletonRow = () => (
@@ -30,7 +33,7 @@ const SkeletonRow = () => (
   </TableRow>
 );
 
-export default function RankingTable({ initialData }: RankingTableProps) {
+export default function RankingTable({ initialData, config }: RankingTableProps) {
   const { data: storeData, refreshState, hydrate } = useLeaderboardStore();
 
   useEffect(() => {
@@ -60,7 +63,7 @@ export default function RankingTable({ initialData }: RankingTableProps) {
               Signal Leaderboard
               {isScanning && <Loader2 className="w-4 h-4 text-muted-foreground animate-spin ml-1" />}
             </h2>
-            <p className="text-xs text-muted-foreground font-medium mt-0.5 mb-0.5">Top contributors on Arc Testnet</p>
+            <p className="text-xs text-muted-foreground font-medium mt-0.5 mb-0.5">Top contributors on {config.name}</p>
           </div>
         </div>
         

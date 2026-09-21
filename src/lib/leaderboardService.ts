@@ -11,17 +11,15 @@ export interface ILeaderboardUser {
   nodeLegacy: boolean;
 }
 
-export async function getLeaderboard(): Promise<ILeaderboardUser[]> {
-  // Aseguramos que la URL exista
-  const workerUrl = process.env.WORKER_URL;
-  if (!workerUrl) {
-    console.warn("WORKER_URL no está definida en las variables de entorno. Devolviendo array vacío.");
+export async function getLeaderboard(indexerUrl: string): Promise<ILeaderboardUser[]> {
+  if (!indexerUrl) {
+    console.warn("indexerUrl no está definida. Devolviendo array vacío.");
     return [];
   }
 
   try {
     // 1. Ejecutamos el fetch con caché estática ISR de Next.js
-    const res = await fetch(`${workerUrl}/api/leaderboard`, {
+    const res = await fetch(`${indexerUrl}/api/leaderboard`, {
       next: { revalidate: 60 } // Next.js cacheará esta petición y solo la revalidará cada 60 segundos
     });
 

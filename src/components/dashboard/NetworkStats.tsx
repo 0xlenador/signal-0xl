@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import dynamic from 'next/dynamic';
+import type { NetworkConfig } from '@/lib/config';
 const MiniSwap = dynamic(() => import('./MiniSwap'), { ssr: false });
 
 const Sparkline = ({ color, data, glowColor }: { color: string, data: number[], glowColor: string }) => {
@@ -70,16 +71,16 @@ const Sparkline = ({ color, data, glowColor }: { color: string, data: number[], 
   );
 };
 
-export default function NetworkStats() {
-  const stats = useNetworkStats();
+export default function NetworkStats({ config }: { config: NetworkConfig }) {
+  const stats = useNetworkStats(config.chainId);
 
   return (
     <Card className="p-4 shadow-sm flex flex-col justify-between group transition-shadow duration-300 relative">
       <div className="flex items-center justify-between mb-2 relative z-10 pb-1">
         <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
           <span className="flex items-center gap-2">
-            <Image src="/assets/arc-logo.jpg" alt="Arc" width={22} height={22} className="rounded-full object-cover border border-border" />
-            ARC TESTNET 
+            <Image src={config.iconUrl || "/assets/arc-logo.jpg"} alt={config.name} width={22} height={22} className="rounded-full object-cover border border-border" />
+            {config.name.toUpperCase()}
           </span>
           <Badge variant="outline" className={`h-5 px-2 py-0 gap-1.5 font-medium ${
             stats.isLoading ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30' :
@@ -112,11 +113,13 @@ export default function NetworkStats() {
             <span>Website</span>
             <ExternalLink className="w-2 h-2 opacity-50 -ml-0.5 group-hover/link:opacity-100 transition-opacity" />
           </a>
-          <a href="https://testnet.arcscan.app/" target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors group/link">
-            <Search className="w-3.5 h-3.5" />
-            <span>Explorer</span>
-            <ExternalLink className="w-2 h-2 opacity-50 -ml-0.5 group-hover/link:opacity-100 transition-opacity" />
-          </a>
+          {config.blockExplorer && (
+            <a href={config.blockExplorer} target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors group/link">
+              <Search className="w-3.5 h-3.5" />
+              <span>Explorer</span>
+              <ExternalLink className="w-2 h-2 opacity-50 -ml-0.5 group-hover/link:opacity-100 transition-opacity" />
+            </a>
+          )}
         </div>
 
         {/* Quick Links Dropdown (Mobile) */}
@@ -144,12 +147,14 @@ export default function NetworkStats() {
                   <span>Website</span>
                 </a>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <a href="https://testnet.arcscan.app/" target="_blank" rel="noreferrer" className="flex items-center gap-2 cursor-pointer text-xs w-full">
-                  <Search className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span>Explorer</span>
-                </a>
-              </DropdownMenuItem>
+              {config.blockExplorer && (
+                <DropdownMenuItem>
+                  <a href={config.blockExplorer} target="_blank" rel="noreferrer" className="flex items-center gap-2 cursor-pointer text-xs w-full">
+                    <Search className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span>Explorer</span>
+                  </a>
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -160,7 +165,7 @@ export default function NetworkStats() {
         
         {/* Left Section: Mini Swap */}
         <div className="w-full xl:w-4/12 flex flex-col min-h-[100px]">
-          <MiniSwap />
+          <MiniSwap config={config} />
         </div>
 
         {/* Right Section: Network Stats Grid */}

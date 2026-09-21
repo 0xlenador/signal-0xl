@@ -13,9 +13,13 @@ interface NetworkPageProps {
   leaderboardData: ILeaderboardUser[];
 }
 
+import { EVM_NETWORKS, DEFAULT_CHAIN_ID } from '@/lib/config';
+
 export default function ClientPage({ params, leaderboardData }: NetworkPageProps) {
   const { connect } = useWeb3();
   const { network } = use(params);
+  
+  const config = Object.values(EVM_NETWORKS).find(c => c.slug === network) || EVM_NETWORKS[DEFAULT_CHAIN_ID];
 
   return (
     <main className="p-4 md:p-6 lg:p-8 w-full mx-auto flex flex-col gap-6 flex-1">
@@ -48,7 +52,7 @@ export default function ClientPage({ params, leaderboardData }: NetworkPageProps
         {/* COLUMNA DERECHA (Span 9) */}
         <div className="xl:col-span-9 flex flex-col gap-4 h-full min-h-[700px]">
           {/* Tarjeta de red (Normal) */}
-          <NetworkStats />
+          <NetworkStats config={config} />
           
           {/* Panel de Nodos (Muted) */}
           <Card className="relative flex flex-col items-center justify-center min-h-[250px] overflow-hidden">
@@ -72,7 +76,7 @@ export default function ClientPage({ params, leaderboardData }: NetworkPageProps
           </Card>
 
           {/* Leaderboard (Normal) */}
-          <RankingTable initialData={leaderboardData} />
+          <RankingTable initialData={leaderboardData} config={config} />
         </div>
 
       </div>

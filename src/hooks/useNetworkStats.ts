@@ -256,9 +256,9 @@ function getManager(chainId: number) {
   return managers[chainId];
 }
 
-export function useNetworkStats(): INetworkStats {
+export function useNetworkStats(chainId?: number): INetworkStats {
   const { chain } = useAccount();
-  const activeChainId = chain?.id || DEFAULT_CHAIN_ID;
+  const activeChainId = chainId || chain?.id || DEFAULT_CHAIN_ID;
   
   const manager = getManager(activeChainId);
   const [stats, setStats] = useState<INetworkStats>(manager.stats);

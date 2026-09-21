@@ -1,22 +1,32 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useAccount, useWalletClient, useBalance, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useWalletClient, useBalance, useWriteContract } from 'wagmi';
 import { ArrowDownUp, Loader2, Wallet } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { parseUnits, formatUnits, erc20Abi } from 'viem';
+import { parseUnits, erc20Abi } from 'viem';
 import { SwapKit, SwapChain, getChainByEnum } from '@circle-fin/swap-kit';
 import { createViemAdapterFromProvider } from '@circle-fin/adapter-viem-v2';
+import type { NetworkConfig } from '@/lib/config';
 
 const TOKENS = ['USDC', 'EURC', 'cirBTC'] as const;
 
-const TOKEN_ADDRESSES: Record<string, `0x${string}`> = {
-  USDC: '0x3600000000000000000000000000000000000000',
-  EURC: '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a',
-  cirBTC: '0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF',
+// Token Addresses by Chain ID
+const CHAIN_TOKENS: Record<number, Record<string, `0x${string}`>> = {
+  5042002: { // Arc Testnet
+    USDC: '0x3600000000000000000000000000000000000000',
+    EURC: '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a',
+    cirBTC: '0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF',
+  },
+  5042: { // Arc Mainnet
+    USDC: '0x3600000000000000000000000000000000000000',
+    EURC: '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1',
+    cirBTC: '0x171A4217b86A807A64eB94757Db6849fb4bDbAA0',
+  }
 };
 
-const DEX_ROUTER_ADDRESS = '0x54599C3e0bcb99ca37b286242b5eC5D331AB9D18'; // Known Arc Testnet V2 Router
+const DEX_ROUTER_ADDRESS_TESTNET = '0x54599C3e0bcb99ca37b286242b5eC5D331AB9D18'; // Known Arc Testnet V2 Router
+
 const ROUTER_ABI = [
   { inputs: [{ name: 'amountIn', type: 'uint256' }, { name: 'path', type: 'address[]' }], name: 'getAmountsOut', outputs: [{ name: 'amounts', type: 'uint256[]' }], stateMutability: 'view', type: 'function' },
   { inputs: [{ name: 'amountIn', type: 'uint256' }, { name: 'amountOutMin', type: 'uint256' }, { name: 'path', type: 'address[]' }, { name: 'to', type: 'address' }, { name: 'deadline', type: 'uint256' }], name: 'swapExactTokensForTokens', outputs: [{ name: 'amounts', type: 'uint256[]' }], stateMutability: 'nonpayable', type: 'function' },
@@ -25,16 +35,12 @@ const ROUTER_ABI = [
 
 const DECIMALS: Record<string, number> = { USDC: 18, EURC: 6, cirBTC: 8 };
 
-// Approximate exchange rates used as fallback when SwapKit estimate fails.
-// Arc Testnet pools can be unstable / low on liquidity for larger amounts,
-// causing the simulation to revert. These rates let the UI show an approximate
-// value instead of "N/A" so the user can still attempt the swap.
 const FALLBACK_RATES: Record<string, Record<string, number>> = {
-  USDC: { EURC: 1 / 1.09 },  // ~0.917 EURC per USDC
-  EURC: { USDC: 1.09 },       // ~1.09 USDC per EURC
+  USDC: { EURC: 1 / 1.09 },
+  EURC: { USDC: 1.09 },
 };
 
-export default function MiniSwap() {
+export default function MiniSwap({ config }: { config: NetworkConfig }) {
   const { address, connector } = useAccount();
   const { data: walletClient } = useWalletClient();
   const { writeContractAsync } = useWriteContract();
@@ -48,15 +54,18 @@ export default function MiniSwap() {
   const [estimatedOutput, setEstimatedOutput] = useState<string>('');
   const [isEstimating, setIsEstimating] = useState(false);
 
+  const tokenAddresses = CHAIN_TOKENS[config.chainId] || CHAIN_TOKENS[5042002];
+  const swapChainStr = config.chainId === 5042 ? 'Arc' : 'Arc_Testnet';
+
   const { data: balanceIn } = useBalance({
     address,
-    token: TOKEN_ADDRESSES[tokenIn],
+    token: tokenAddresses[tokenIn],
     query: { enabled: !!address }
   });
 
   const { data: balanceOut } = useBalance({
     address,
-    token: TOKEN_ADDRESSES[tokenOut],
+    token: tokenAddresses[tokenOut],
     query: { enabled: !!address }
   });
 
@@ -65,7 +74,6 @@ export default function MiniSwap() {
     return Number(data.formatted).toLocaleString(undefined, { maximumFractionDigits: 6 });
   };
 
-  // Guard against double-clicks
   const swapInProgress = useRef(false);
 
   useEffect(() => {
@@ -88,14 +96,11 @@ export default function MiniSwap() {
       if (active) setIsEstimating(true);
       if (active) setError(null);
 
+      // cirBTC fallback for Testnet, or if SwapKit doesn't natively support it yet
       if (tokenIn === 'cirBTC' || tokenOut === 'cirBTC') {
-        // Bypass SwapKit for cirBTC and use direct mock/estimation calculation since API returns 404 No Route
-        // In a real V2 scenario, we would use readContract here, but due to RPC limitations we approximate 
-        // the testnet rate to allow the UI to function and proceed to the swap transaction.
         setTimeout(() => {
           if (!active) return;
           try {
-             // Mock rates based on typical testnet values for cirBTC
              const btcPriceInUsdc = 60000; 
              let outVal = 0;
              if (tokenIn === 'USDC' && tokenOut === 'cirBTC') outVal = Number(amountIn) / btcPriceInUsdc;
@@ -119,7 +124,7 @@ export default function MiniSwap() {
 
       try {
         const provider = await connector.getProvider();
-        const arcChainDef = getChainByEnum('Arc_Testnet');
+        const arcChainDef = getChainByEnum(swapChainStr as any);
         const adapter = await createViemAdapterFromProvider({
           provider: provider as any,
           capabilities: {
@@ -130,7 +135,7 @@ export default function MiniSwap() {
 
         const kit = new SwapKit();
         const estimateResult = await kit.estimate({
-          from: { adapter, chain: SwapChain.Arc_Testnet },
+          from: { adapter, chain: swapChainStr as SwapChain },
           tokenIn: tokenIn as any,
           tokenOut: tokenOut as any,
           amountIn,
@@ -144,10 +149,7 @@ export default function MiniSwap() {
           }
         }
       } catch (err: unknown) {
-        // Arc Testnet pools can be low on liquidity, causing SwapKit estimates to
-        // revert for larger amounts. Fall back to an approximate rate so the UI
-        // remains usable. The prefix '~' signals this is an approximation.
-        console.warn('SwapKit estimate unavailable (likely testnet liquidity):', (err as Error)?.message || err);
+        console.warn(`SwapKit estimate unavailable on ${swapChainStr}:`, (err as Error)?.message || err);
         if (active) {
           const rate = FALLBACK_RATES[tokenIn]?.[tokenOut];
           if (rate) {
@@ -166,7 +168,7 @@ export default function MiniSwap() {
       active = false;
       clearTimeout(handler);
     };
-  }, [amountIn, tokenIn, tokenOut, address, walletClient, connector]);
+  }, [amountIn, tokenIn, tokenOut, address, walletClient, connector, swapChainStr]);
 
   const handleSwap = useCallback(async () => {
     if (!address || !walletClient || !connector) return;
@@ -183,23 +185,23 @@ export default function MiniSwap() {
       if (tokenIn === 'cirBTC' || tokenOut === 'cirBTC') {
         const amountInWei = parseUnits(amountIn, DECIMALS[tokenIn]);
         // 1. Aprobar el token de entrada si es ERC20
-        if (TOKEN_ADDRESSES[tokenIn] !== TOKEN_ADDRESSES['USDC']) { 
+        if (tokenAddresses[tokenIn] !== tokenAddresses['USDC']) { 
            // Asumiendo que USDC es nativo en Arc, si no es USDC, aprobamos.
            await writeContractAsync({
-             address: TOKEN_ADDRESSES[tokenIn],
+             address: tokenAddresses[tokenIn],
              abi: erc20Abi,
              functionName: 'approve',
-             args: [DEX_ROUTER_ADDRESS, amountInWei]
+             args: [DEX_ROUTER_ADDRESS_TESTNET, amountInWei]
            });
         }
         
         // 2. Ejecutar Swap en Router V2
-        const path = [TOKEN_ADDRESSES[tokenIn], TOKEN_ADDRESSES[tokenOut]];
+        const path = [tokenAddresses[tokenIn], tokenAddresses[tokenOut]];
         const deadline = BigInt(Math.floor(Date.now() / 1000) + 60 * 20); // 20 mins
         
         // Mock swap execution request (will trigger wallet)
         const result = await writeContractAsync({
-          address: DEX_ROUTER_ADDRESS,
+          address: DEX_ROUTER_ADDRESS_TESTNET,
           abi: ROUTER_ABI,
           functionName: 'swapExactTokensForTokens',
           args: [amountInWei, 0n, path, address, deadline]
@@ -214,22 +216,22 @@ export default function MiniSwap() {
       // 1. Get the EIP-1193 provider from the active connector
       const provider = await connector.getProvider();
 
-      // 2. Get the Arc Testnet chain definition for the adapter capabilities
-      const arcChainDef = getChainByEnum('Arc_Testnet');
+      // 2. Get the chain definition for the adapter capabilities
+      const arcChainDef = getChainByEnum(swapChainStr as any);
 
       // 3. Create adapter using the official factory method (browser wallets)
       const adapter = await createViemAdapterFromProvider({
         provider: provider as any,
         capabilities: {
           addressContext: 'user-controlled',
-          supportedChains: [arcChainDef],
+          supportedChains: [arcChainDef as any],
         },
       });
 
       // 4. Execute the swap via SwapKit (human-readable amountIn)
       const kit = new SwapKit();
       const result = await kit.swap({
-        from: { adapter, chain: SwapChain.Arc_Testnet },
+        from: { adapter, chain: swapChainStr as SwapChain },
         tokenIn,
         tokenOut,
         amountIn,
@@ -246,7 +248,7 @@ export default function MiniSwap() {
       setIsLoading(false);
       swapInProgress.current = false;
     }
-  }, [address, walletClient, connector, amountIn, tokenIn, tokenOut]);
+  }, [address, walletClient, connector, amountIn, tokenIn, tokenOut, tokenAddresses, swapChainStr]);
 
   const handleSwitchTokens = useCallback(() => {
     setTokenIn(prev => {

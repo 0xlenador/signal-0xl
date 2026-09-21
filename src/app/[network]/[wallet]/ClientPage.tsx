@@ -7,6 +7,7 @@ import NetworkStats from '@/components/dashboard/NetworkStats';
 import RankingTable from '@/components/dashboard/RankingTable';
 import type { ILeaderboardUser } from '@/lib/leaderboardService';
 import { useUserDataStore } from '@/stores/userDataStore';
+import { EVM_NETWORKS, DEFAULT_CHAIN_ID } from '@/lib/config';
 
 interface DashboardPageProps {
   params: Promise<{ network: string; wallet: string }>;
@@ -22,6 +23,8 @@ export default function ClientPage({ params, leaderboardData }: DashboardPagePro
   useEffect(() => {
     useUserDataStore.getState().setWallet(wallet);
   }, [wallet]);
+
+  const config = Object.values(EVM_NETWORKS).find(c => c.slug === network) || EVM_NETWORKS[DEFAULT_CHAIN_ID];
 
   return (
     <main className="p-4 md:p-6 lg:p-8 w-full mx-auto flex flex-col gap-6">
@@ -44,8 +47,8 @@ export default function ClientPage({ params, leaderboardData }: DashboardPagePro
 
         {/* COLUMNA DERECHA (Span 9) */}
         <div className="xl:col-span-9 flex flex-col gap-4 h-full min-h-[700px]">
-          <NetworkStats />
-          <RankingTable initialData={leaderboardData} />
+          <NetworkStats config={config} />
+          <RankingTable initialData={leaderboardData} config={config} />
         </div>
 
       </div>
