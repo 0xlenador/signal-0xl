@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useAccount, useWalletClient, useBalance, useWriteContract } from 'wagmi';
+import { useAccount, useWalletClient, useBalance, useWriteContract, usePublicClient } from 'wagmi';
 import { ArrowDownUp, Loader2, Wallet } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { parseUnits, erc20Abi } from 'viem';
@@ -44,6 +44,7 @@ export default function MiniSwap({ config }: { config: NetworkConfig }) {
   const { address, connector } = useAccount();
   const { data: walletClient } = useWalletClient();
   const { writeContractAsync } = useWriteContract();
+  const publicClient = usePublicClient();
 
   const [tokenIn, setTokenIn] = useState<string>('USDC');
   const [tokenOut, setTokenOut] = useState<string>('EURC');
@@ -57,13 +58,13 @@ export default function MiniSwap({ config }: { config: NetworkConfig }) {
   const tokenAddresses = CHAIN_TOKENS[config.chainId] || CHAIN_TOKENS[5042002];
   const swapChainStr = config.chainId === 5042 ? 'Arc' : 'Arc_Testnet';
 
-  const { data: balanceIn } = useBalance({
+  const { data: balanceIn, refetch: refetchBalanceIn } = useBalance({
     address,
     token: tokenAddresses[tokenIn],
     query: { enabled: !!address }
   });
 
-  const { data: balanceOut } = useBalance({
+  const { data: balanceOut, refetch: refetchBalanceOut } = useBalance({
     address,
     token: tokenAddresses[tokenOut],
     query: { enabled: !!address }
@@ -187,12 +188,16 @@ export default function MiniSwap({ config }: { config: NetworkConfig }) {
         // 1. Aprobar el token de entrada si es ERC20
         if (tokenAddresses[tokenIn] !== tokenAddresses['USDC']) { 
            // Asumiendo que USDC es nativo en Arc, si no es USDC, aprobamos.
-           await writeContractAsync({
+           const approveHash = await writeContractAsync({
              address: tokenAddresses[tokenIn],
              abi: erc20Abi,
              functionName: 'approve',
              args: [DEX_ROUTER_ADDRESS_TESTNET, amountInWei]
            });
+           
+           if (publicClient) {
+             await publicClient.waitForTransactionReceipt({ hash: approveHash });
+           }
         }
         
         // 2. Ejecutar Swap en Router V2
@@ -207,9 +212,15 @@ export default function MiniSwap({ config }: { config: NetworkConfig }) {
           args: [amountInWei, 0n, path, address, deadline]
         });
 
+        if (publicClient && result) {
+          await publicClient.waitForTransactionReceipt({ hash: result });
+        }
+
         console.log('DEX Swap executed:', result);
         setSuccess(true);
         setAmountIn('');
+        refetchBalanceIn();
+        refetchBalanceOut();
         return;
       }
 
@@ -236,10 +247,20 @@ export default function MiniSwap({ config }: { config: NetworkConfig }) {
         tokenOut,
         amountIn,
       });
+      
+      // Attempt to wait for transaction if result is a hash
+      if (typeof result === 'string' && result.startsWith('0x') && publicClient) {
+        await publicClient.waitForTransactionReceipt({ hash: result as `0x${string}` });
+      } else {
+        // Wait an arbitrary time if we couldn't get a hash
+        await new Promise(res => setTimeout(res, 3000));
+      }
 
       console.log('Swap executed:', result);
       setSuccess(true);
       setAmountIn('');
+      refetchBalanceIn();
+      refetchBalanceOut();
     } catch (err: unknown) {
       console.error('Swap failed:', err);
       const message = err instanceof Error ? err.message : 'Transaction failed';
